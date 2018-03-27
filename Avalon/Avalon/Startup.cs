@@ -86,6 +86,17 @@ namespace Avalon
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
+
+            // Shows UseCors with CorsPolicyBuilder.
+            app.UseCors(builder =>
+                builder.WithOrigins("http://localhost:4200")
+                    .AllowAnyHeader()
+            );
+
             app.UseMvcWithDefaultRoute();
 
             // Enable middleware to serve generated Swagger as a JSON endpoint.
@@ -101,7 +112,7 @@ namespace Avalon
             //loggerFactory.AddDebug();
 
             //add NLog to ASP.NET Core
-            loggerFactory.AddNLog();
+            //loggerFactory.AddNLog();
 
             //add NLog.Web
             app.AddNLogWeb();

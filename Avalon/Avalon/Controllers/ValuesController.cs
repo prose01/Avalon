@@ -10,7 +10,7 @@ namespace Avalon.Controllers
         [HttpGet]
         public IEnumerable<string> Get()
         {
-            return new string[] { "Peter", "Rose" };
+            return new string[] { "Value01", "Value02" };
         }
 
         // GET api/values/5
