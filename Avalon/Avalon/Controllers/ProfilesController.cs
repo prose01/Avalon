@@ -30,7 +30,7 @@ namespace Avalon.Controllers
         [HttpGet]
         public Task<IEnumerable<Profile>> Get()
         {
-            _logger.LogInformation("NLog says hello");
+            _logger.LogInformation("Get Information Log.");
             return GetProfileInternal();
         }
 

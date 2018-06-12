@@ -29,9 +29,10 @@ namespace Avalon.Controllers
         [HttpGet]
         public Task<IEnumerable<Profile>> GetLatestProfiles()
         {
-            _logger.LogInformation("NLog says hello");
+            _logger.LogInformation("GetLatestProfiles Information Log.");
             return GetGetLatestProfilesInternal();
         }
+
         private async Task<IEnumerable<Profile>> GetGetLatestProfilesInternal()
         {
             return await _profilesQueryRepository.GetLatestProfiles();
@@ -47,6 +48,7 @@ namespace Avalon.Controllers
         {
             return GetOldestProfilesInternal();
         }
+
         private async Task<IEnumerable<Profile>> GetOldestProfilesInternal()
         {
             return await _profilesQueryRepository.GetLatestProfiles();

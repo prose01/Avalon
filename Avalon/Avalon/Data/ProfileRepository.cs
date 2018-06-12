@@ -1,5 +1,6 @@
 ﻿using Avalon.Interfaces;
 using Avalon.Model;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using System;
@@ -11,10 +12,12 @@ namespace Avalon.Data
     public class ProfileRepository : IProfileRepository
     {
         private readonly ProfileContext _context = null;
+        private readonly ILogger<ProfileRepository> _logger;
 
-        public ProfileRepository(IOptions<Settings> settings)
+        public ProfileRepository(IOptions<Settings> settings, ILogger<ProfileRepository> logger)
         {
             _context = new ProfileContext(settings);
+            _logger = logger;
         }
 
         public async Task<IEnumerable<Profile>> GetAllProfiles()
@@ -27,6 +30,7 @@ namespace Avalon.Data
             catch (Exception ex)
             {
                 // log or manage the exception
+                _logger.LogWarning(ex, "GetAllProfiles threw an exception.");
                 throw ex;
             }
         }
@@ -44,6 +48,7 @@ namespace Avalon.Data
             catch (Exception ex)
             {
                 // log or manage the exception
+                _logger.LogWarning(ex, "GetProfile threw an exception.");
                 throw ex;
             }
         }
@@ -61,6 +66,7 @@ namespace Avalon.Data
             catch (Exception ex)
             {
                 // log or manage the exception
+                _logger.LogWarning(ex, "GetProfileByName threw an exception.");
                 throw ex;
             }
         }
@@ -79,6 +85,7 @@ namespace Avalon.Data
             catch (Exception ex)
             {
                 // log or manage the exception
+                _logger.LogWarning(ex, "AddProfile threw an exception.");
                 throw ex;
             }
         }
@@ -93,6 +100,7 @@ namespace Avalon.Data
             catch (Exception ex)
             {
                 // log or manage the exception
+                _logger.LogWarning(ex, "RemoveProfile threw an exception.");
                 throw ex;
             }
         }
@@ -109,6 +117,7 @@ namespace Avalon.Data
             catch (Exception ex)
             {
                 // log or manage the exception
+                _logger.LogWarning(ex, "UpdateProfileDocument threw an exception.");
                 throw ex;
             }
         }
@@ -125,6 +134,7 @@ namespace Avalon.Data
             catch (Exception ex)
             {
                 // log or manage the exception
+                _logger.LogWarning(ex, "UpdateProfile threw an exception.");
                 throw ex;
             }
         }
