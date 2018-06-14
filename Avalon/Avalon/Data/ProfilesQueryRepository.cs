@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using MongoDB.Bson;
 
 namespace Avalon.Data
 {
@@ -50,6 +51,30 @@ namespace Avalon.Data
             {
                 // log or manage the exception
                 _logger.LogWarning(ex, "GetLatestActiveProfiles threw an exception.");
+                throw ex;
+            }
+        }
+
+        public async Task<IEnumerable<Profile>> GetBookmarkedProfiles(string profileId)
+        {
+            try
+            {
+                // Get all Bookmarked ProfileIds from original profile.
+                var bookmarks = _context.Profiles.AsQueryable()
+                    .Where(p => p.ProfileId == profileId)
+                    .Select(p => new {p.Bookmarks});
+
+                var bookmarkedProfileIds = await Task.FromResult(bookmarks.ToList());
+
+                // Get all other Profiles from ProfileIds
+                var query = _context.Profiles.Find(p => bookmarkedProfileIds.First().Bookmarks.Contains(p.ProfileId));
+
+                return await Task.FromResult(query.ToList());
+            }
+            catch (Exception ex)
+            {
+                // log or manage the exception
+                _logger.LogWarning(ex, "GetBookmarkedProfiles threw an exception.");
                 throw ex;
             }
         }

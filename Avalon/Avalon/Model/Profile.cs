@@ -1,6 +1,7 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System;
+using System.Collections.Generic;
 
 namespace Avalon.Model
 {
@@ -14,6 +15,7 @@ namespace Avalon.Model
         public DateTime CreatedOn { get; set; } = DateTime.Now;
         public string Body { get; set; } = string.Empty;
         public DateTime LastActive { get; set; } = DateTime.Now;
+        public List<string> Bookmarks { get; set; }
 
 
         //public int Height { get; set; }

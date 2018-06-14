@@ -54,5 +54,24 @@ namespace Avalon.Controllers
         {
             return await _profilesQueryRepository.GetLastActiveProfiles();
         }
+
+
+
+        /// <summary>
+        /// Gets Bookmarked Profiles.
+        /// </summary>
+        /// <returns></returns>
+        [NoCache]
+        [HttpGet("~/api/GetBookmarkedProfiles/")]
+        public Task<IEnumerable<Profile>> GetBookmarkedProfiles(string profileId)
+        {
+            _logger.LogInformation("GetBookmarkedProfiles Information Log.");
+            return GetBookmarkedProfilesInternal(profileId);
+        }
+
+        private async Task<IEnumerable<Profile>> GetBookmarkedProfilesInternal(string profileId)
+        {
+            return await _profilesQueryRepository.GetBookmarkedProfiles(profileId);
+        }
     }
 }

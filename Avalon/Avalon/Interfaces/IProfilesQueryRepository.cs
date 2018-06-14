@@ -9,5 +9,7 @@ namespace Avalon.Interfaces
         Task<IEnumerable<Profile>> GetLatestProfiles();
 
         Task<IEnumerable<Profile>> GetLastActiveProfiles();
+
+        Task<IEnumerable<Profile>> GetBookmarkedProfiles(string profileId);
     }
 }
