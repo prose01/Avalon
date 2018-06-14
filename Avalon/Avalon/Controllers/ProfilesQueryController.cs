@@ -30,10 +30,10 @@ namespace Avalon.Controllers
         public Task<IEnumerable<Profile>> GetLatestProfiles()
         {
             _logger.LogInformation("GetLatestProfiles Information Log.");
-            return GetGetLatestProfilesInternal();
+            return GetLatestProfilesInternal();
         }
 
-        private async Task<IEnumerable<Profile>> GetGetLatestProfilesInternal()
+        private async Task<IEnumerable<Profile>> GetLatestProfilesInternal()
         {
             return await _profilesQueryRepository.GetLatestProfiles();
         }

@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Avalon.Data
@@ -25,7 +26,9 @@ namespace Avalon.Data
         {
             try
             {
-                return _context.Profiles.AsQueryable().Take(1);
+                var query = _context.Profiles.AsQueryable().OrderBy(p => p.CreatedOn).OrderByDescending(p => p.CreatedOn).Take(2);
+
+                return await Task.FromResult(query.ToList());
             }
             catch (Exception ex)
             {
