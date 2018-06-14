@@ -22,7 +22,7 @@ namespace Avalon.Controllers
         }
 
         /// <summary>
-        /// Gets this instance.
+        /// Gets Latest Created Profiles.
         /// </summary>
         /// <returns></returns>
         [NoCache]
@@ -39,19 +39,20 @@ namespace Avalon.Controllers
         }
 
         /// <summary>
-        /// Gets oldest Profiles.
+        /// Gets Last Active Profiles.
         /// </summary>
         /// <returns></returns>
         [NoCache]
-        [HttpGet("~/api/OldestProfiles/")]
-        public Task<IEnumerable<Profile>> GetOldestProfiles()
+        [HttpGet("~/api/GetLastActiveProfiles/")]
+        public Task<IEnumerable<Profile>> GetLastActiveProfiles()
         {
-            return GetOldestProfilesInternal();
+            _logger.LogInformation("GetLastActiveProfiles Information Log.");
+            return GetLastActiveProfilesInternal();
         }
 
-        private async Task<IEnumerable<Profile>> GetOldestProfilesInternal()
+        private async Task<IEnumerable<Profile>> GetLastActiveProfilesInternal()
         {
-            return await _profilesQueryRepository.GetLatestProfiles();
+            return await _profilesQueryRepository.GetLastActiveProfiles();
         }
     }
 }

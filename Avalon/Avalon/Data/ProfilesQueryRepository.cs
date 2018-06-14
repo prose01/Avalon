@@ -37,5 +37,21 @@ namespace Avalon.Data
                 throw ex;
             }
         }
+
+        public async Task<IEnumerable<Profile>> GetLastActiveProfiles()
+        {
+            try
+            {
+                var query = _context.Profiles.AsQueryable().OrderBy(p => p.LastActive).OrderByDescending(p => p.LastActive).Take(2);
+
+                return await Task.FromResult(query.ToList());
+            }
+            catch (Exception ex)
+            {
+                // log or manage the exception
+                _logger.LogWarning(ex, "GetLatestActiveProfiles threw an exception.");
+                throw ex;
+            }
+        }
     }
 }
