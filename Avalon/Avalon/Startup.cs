@@ -65,6 +65,8 @@ namespace Avalon
                     License = new Swashbuckle.AspNetCore.Swagger.License { Name = "Use under LICX", Url = "http://Avalon.com" }
                 });
 
+                c.DescribeAllEnumsAsStrings();
+
                 //Set the comments path for the swagger json and ui.
                 //var basePath = PlatformServices.Default.Application.ApplicationBasePath;
                 //var xmlPath = Path.Combine(basePath, "Avalon.xml");
