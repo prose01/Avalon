@@ -30,7 +30,6 @@ namespace Avalon.Controllers
         [HttpGet]
         public Task<IEnumerable<Profile>> Get()
         {
-            _logger.LogInformation("Get Information Log.");
             return GetProfileInternal();
         }
 
@@ -115,6 +114,22 @@ namespace Avalon.Controllers
         public void Delete(string profileId)
         {
             _profileRepository.RemoveProfile(profileId);
+        }
+
+
+        /// <summary>
+        /// Gets the specified profile based on a filter. Eg. { Body: 'something' }
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("~/api/GetProfileByFilter/")]
+        public Task<Profile> GetProfileByFilter(string profileFilter)
+        {
+            return GetProfileByFilterInternal(profileFilter);
+        }
+
+        private async Task<Profile> GetProfileByFilterInternal(string profileFilter)
+        {
+            return await _profileRepository.GetProfileByFilter(profileFilter) ?? new Profile();
         }
     }
 }

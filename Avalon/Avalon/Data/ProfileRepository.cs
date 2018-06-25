@@ -138,5 +138,22 @@ namespace Avalon.Data
                 throw ex;
             }
         }
+
+        // Search for anything in filter - eg. { Body: 'something' }
+        public async Task<Profile> GetProfileByFilter(string filter)
+        {
+            try
+            {
+                return await _context.Profiles
+                    .Find(filter)
+                    .FirstOrDefaultAsync();
+            }
+            catch (Exception ex)
+            {
+                // log or manage the exception
+                _logger.LogWarning(ex, "GetProfileByFilter threw an exception.");
+                throw ex;
+            }
+        }
     }
 }

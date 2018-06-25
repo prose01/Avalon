@@ -13,5 +13,6 @@ namespace Avalon.Interfaces
         Task AddProfile(Profile item);
         Task<DeleteResult> RemoveProfile(string profileId);
         Task<ReplaceOneResult> UpdateProfile(string profileId, Profile item);
+        Task<Profile> GetProfileByFilter(string filter);
     }
 }
