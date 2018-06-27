@@ -94,10 +94,10 @@ namespace Avalon
             }
 
             // Shows UseCors with CorsPolicyBuilder.
-            // Remeber to remove Cors for production.
+            // Remember to remove Cors for production.
             app.UseCors(builder =>
                 builder.WithOrigins("http://localhost:4200")
-                    .WithMethods("GET", "POST", "HEAD")
+                    .WithMethods("GET", "POST", "PUT", "PATCH", "HEAD")
                     .AllowAnyHeader()
             );
 

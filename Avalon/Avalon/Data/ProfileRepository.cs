@@ -76,11 +76,11 @@ namespace Avalon.Data
             try
             {
                 // TODO: create Id
-                item.ProfileId = "124";
+                item.ProfileId = Guid.NewGuid().ToString();
                 item.CreatedOn = DateTime.Now;
                 item.UpdatedOn = DateTime.Now;
 
-                await _context.Profiles.InsertOneAsync(item);
+                //await _context.Profiles.InsertOneAsync(item);
             }
             catch (Exception ex)
             {
@@ -109,10 +109,12 @@ namespace Avalon.Data
         {
             try
             {
-                return await _context.Profiles
-                            .ReplaceOneAsync(p => p.ProfileId.Equals(profileId)
-                                            , item
-                                            , new UpdateOptions { IsUpsert = true });
+                //return await _context.Profiles
+                //            .ReplaceOneAsync(p => p.ProfileId.Equals(profileId)
+                //                            , item
+                //                            , new UpdateOptions { IsUpsert = true });
+
+                return null;
             }
             catch (Exception ex)
             {
@@ -129,7 +131,8 @@ namespace Avalon.Data
             {
                 item.UpdatedOn = DateTime.Now;
 
-                return await UpdateProfileDocument(profileId, item);
+                //return await UpdateProfileDocument(profileId, item);
+                return null;
             }
             catch (Exception ex)
             {

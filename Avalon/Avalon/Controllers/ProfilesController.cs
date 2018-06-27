@@ -105,6 +105,29 @@ namespace Avalon.Controllers
             return Ok(_profileRepository.UpdateProfile(profileId, item));
         }
 
+
+        // Put api/profiles/5       TODO: "SLET denne metode når Patch virker"
+        /// <summary>
+        /// Update the specified profile identifier.
+        /// </summary>
+        /// <param name="profileId">The profile identifier.</param>
+        /// <param name="put">The value.</param>
+        [HttpPut("{profileId}")]
+        public IActionResult Put(string profileId, [FromBody]Profile item)
+        {
+            var profile = _profileRepository.GetProfile(profileId).Result ?? null;
+
+            if (profile == null)
+            {
+                return new BadRequestObjectResult(ModelState);
+            }
+
+            profile.Name = item.Name;
+            profile.Body = item.Body;
+
+            return Ok(_profileRepository.UpdateProfile(profileId, profile));
+        }
+
         // DELETE api/profiles/23243423
         /// <summary>
         /// Deletes the specified profile identifier.
