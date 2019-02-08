@@ -9,6 +9,9 @@ using Microsoft.Extensions.Logging;
 using NLog.Extensions.Logging;
 using NLog.Web;
 using Swashbuckle.AspNetCore.Swagger;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using System.Collections.Generic;
 
 namespace Avalon
 {
@@ -48,6 +51,22 @@ namespace Avalon
 
             services.AddLogging();
 
+            // Add authentication.
+            string domain = $"https://{Configuration["Auth0:Domain"]}/";
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
+            }).AddJwtBearer(options =>
+            {
+                options.Authority = domain;
+                options.Audience = Configuration["Auth0:ApiIdentifier"];
+            });
+
+            // register the scope authorization handler
+            services.AddSingleton<IAuthorizationHandler, HasScopeHandler>();
+
             // Add our repository type(s)
             services.AddSingleton<IProfileRepository, ProfileRepository>();
             services.AddSingleton<IProfilesQueryRepository, ProfilesQueryRepository>();
@@ -66,6 +85,20 @@ namespace Avalon
                 });
 
                 c.DescribeAllEnumsAsStrings();
+
+                var security = new Dictionary<string, IEnumerable<string>>
+                {
+                    {"Bearer", new string[] { }},
+                };
+
+                c.AddSecurityDefinition("Bearer", new ApiKeyScheme
+                {
+                    Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+                    Name = "authorization",
+                    In = "header",
+                    Type = "apiKey"
+                });
+                c.AddSecurityRequirement(security);
 
                 //Set the comments path for the swagger json and ui.
                 //var basePath = PlatformServices.Default.Application.ApplicationBasePath;
@@ -92,6 +125,16 @@ namespace Avalon
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            // Enable Authentication
+            app.UseAuthentication();
+
+            app.UseMvc(routes =>
+            {
+                routes.MapRoute(
+                    name: "default",
+                    template: "{controller=Home}/{action=Index}/{id?}");
+            });
 
             // Shows UseCors with CorsPolicyBuilder.
             // Remember to remove Cors for production.

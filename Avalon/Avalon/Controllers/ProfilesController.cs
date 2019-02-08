@@ -1,6 +1,7 @@
 ﻿using Avalon.Infrastructure;
 using Avalon.Interfaces;
 using Avalon.Model;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -28,6 +29,7 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpGet]
+        [Route("public")]
         public Task<IEnumerable<Profile>> Get()
         {
             return GetProfileInternal();
@@ -46,6 +48,8 @@ namespace Avalon.Controllers
         /// <param name="profileId">The profile identifier.</param>
         /// <returns></returns>
         [HttpGet("{profileId}")]
+        //[Route("private")]
+        [Authorize]
         public Task<Profile> Get(string profileId)
         {
             return GetProfileByIdInternal(profileId);
