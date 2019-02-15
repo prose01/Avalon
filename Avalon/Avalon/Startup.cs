@@ -125,6 +125,14 @@ namespace Avalon
             {
                 app.UseDeveloperExceptionPage();
             }
+            
+            // Shows UseCors with CorsPolicyBuilder.
+            // Remember to remove Cors for production.
+            app.UseCors(builder =>
+                builder.WithOrigins("http://localhost:4200")
+                    .WithMethods("GET", "POST", "PUT", "PATCH", "HEAD")
+                    .AllowAnyHeader()
+            );
 
             // Enable Authentication
             app.UseAuthentication();
@@ -135,14 +143,6 @@ namespace Avalon
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
-
-            // Shows UseCors with CorsPolicyBuilder.
-            // Remember to remove Cors for production.
-            app.UseCors(builder =>
-                builder.WithOrigins("http://localhost:4200")
-                    .WithMethods("GET", "POST", "PUT", "PATCH", "HEAD")
-                    .AllowAnyHeader()
-            );
 
             app.UseMvcWithDefaultRoute();
 

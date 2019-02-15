@@ -29,7 +29,6 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpGet]
-        [Route("public")]
         public Task<IEnumerable<Profile>> Get()
         {
             return GetProfileInternal();
@@ -48,7 +47,6 @@ namespace Avalon.Controllers
         /// <param name="profileId">The profile identifier.</param>
         /// <returns></returns>
         [HttpGet("{profileId}")]
-        //[Route("private")]
         [Authorize]
         public Task<Profile> Get(string profileId)
         {
@@ -66,6 +64,7 @@ namespace Avalon.Controllers
         /// </summary>
         /// <param name="value">The value.</param>
         [HttpPost]
+        [Authorize]
         public IActionResult Post([FromBody]Profile item)
         {
             // Tell user the name is not valid!
@@ -95,6 +94,7 @@ namespace Avalon.Controllers
         /// <param name="profileId">The profile identifier.</param>
         /// <param name="patch">The patch.</param>
         [HttpPatch("{profileId}")]
+        [Authorize]
         public IActionResult Patch(string profileId, [FromBody]JsonPatchDocument<Profile> patch)
         {
             var item = _profileRepository.GetProfile(profileId).Result ?? null;
@@ -117,6 +117,7 @@ namespace Avalon.Controllers
         /// <param name="profileId">The profile identifier.</param>
         /// <param name="put">The value.</param>
         [HttpPut("{profileId}")]
+        [Authorize]
         public IActionResult Put(string profileId, [FromBody]Profile item)
         {
             var profile = _profileRepository.GetProfile(profileId).Result ?? null;
@@ -138,6 +139,7 @@ namespace Avalon.Controllers
         /// </summary>
         /// <param name="profileId">The profile identifier.</param>
         [HttpDelete("{profileId}")]
+        [Authorize]
         public void Delete(string profileId)
         {
             _profileRepository.RemoveProfile(profileId);
@@ -149,6 +151,7 @@ namespace Avalon.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("~/api/GetProfileByFilter/")]
+        [Authorize]
         public Task<Profile> GetProfileByFilter(string profileFilter)
         {
             return GetProfileByFilterInternal(profileFilter);
