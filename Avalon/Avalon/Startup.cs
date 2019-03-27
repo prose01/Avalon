@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using NLog.Extensions.Logging;
 using NLog.Web;
 using Swashbuckle.AspNetCore.Swagger;
+using Okta.AspNetCore;
 
 namespace Avalon
 {
@@ -41,6 +42,18 @@ namespace Avalon
                     .AllowAnyMethod()
                     .AllowAnyHeader()
                     .AllowCredentials());
+            });
+
+            // Add Okta Authentication
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = OktaDefaults.ApiAuthenticationScheme;
+                options.DefaultChallengeScheme = OktaDefaults.ApiAuthenticationScheme;
+                options.DefaultSignInScheme = OktaDefaults.ApiAuthenticationScheme;
+            })
+            .AddOktaWebApi(new OktaWebApiOptions()
+            {
+                OktaDomain = Configuration["Okta:OktaDomain"],
             });
 
             // Add framework services.
@@ -120,6 +133,9 @@ namespace Avalon
 
             //add NLog.Web
             app.AddNLogWeb();
+
+            //Add Okta Authentication
+            app.UseAuthentication();
 
             app.UseMvc();
         }
