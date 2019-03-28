@@ -5,11 +5,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using System;
+using Microsoft.Extensions.Options;
 using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 
 namespace Avalon.Controllers
@@ -21,11 +19,15 @@ namespace Avalon.Controllers
     {
         private readonly IProfileRepository _profileRepository;
         private readonly ILogger<ProfilesController> _logger;
+        private readonly string _claimsNickname;
+        private readonly string _claimsEmail;
 
-        public ProfilesController(IProfileRepository profileRepository, ILogger<ProfilesController> logger)
+        public ProfilesController(IOptions<Settings> settings, IProfileRepository profileRepository, ILogger<ProfilesController> logger)
         {
             _profileRepository = profileRepository;
             _logger = logger;
+            _claimsNickname = settings.Value.ClaimsNickname;
+            _claimsEmail = settings.Value.ClaimsEmail;
         }
 
         /// <summary>
@@ -36,8 +38,9 @@ namespace Avalon.Controllers
         [HttpGet]
         public Task<IEnumerable<Profile>> Get()
         {
-            var nickname = User.Claims.FirstOrDefault(c => c.Type == "http://claims.example.com/nickname")?.Value;
-            var email = User.Claims.FirstOrDefault(c => c.Type == "http://claims.example.com/email")?.Value;
+            var nickname = User.Claims.FirstOrDefault(c => c.Type == _claimsNickname)?.Value;
+            var email = User.Claims.FirstOrDefault(c => c.Type == _claimsEmail)?.Value;
+
             var profileName = string.Empty;
 
             if (nickname == "peterrose03")
@@ -61,25 +64,8 @@ namespace Avalon.Controllers
         /// <param name="profileId">The profile identifier.</param>
         /// <returns></returns>
         [HttpGet("{profileId}")]
-        [Authorize]
         public Task<Profile> Get(string profileId)
         {
-            var nickname = User.Claims.FirstOrDefault(c => c.Type == "http://claims.example.com/nickname")?.Value;
-            var email = User.Claims.FirstOrDefault(c => c.Type == "http://claims.example.com/email")?.Value;
-
-            var authorization = this.Request.Headers["Authorization"].ToString();
-            var tokenstring = authorization.Substring("Bearer ".Length).Trim();
-            var handler = new JwtSecurityTokenHandler();
-            var token = handler.ReadJwtToken(tokenstring);
-
-            var principal = HttpContext.User;
-            if (principal?.Claims != null)
-            {
-                foreach (var claim in principal.Claims)
-                {
-                    Console.WriteLine($"CLAIM TYPE: {claim.Type}; CLAIM VALUE: {claim.Value}");
-                }
-            }
             return GetProfileByIdInternal(profileId);
         }
 
@@ -94,11 +80,9 @@ namespace Avalon.Controllers
         /// </summary>
         /// <param name="value">The value.</param>
         [HttpPost]
-        [Authorize]
         public IActionResult Post([FromBody]Profile item)
         {
             // Tell user the name is not valid!
-
             if (string.IsNullOrEmpty(item.Name))
             {
                 return new BadRequestObjectResult(ModelState);
@@ -107,7 +91,6 @@ namespace Avalon.Controllers
             var profile = _profileRepository.GetProfileByName(item.Name).Result ?? null;
 
             // Tell user that name already exits!
-
             if (profile != null)
             {
                 return new BadRequestObjectResult(ModelState);
@@ -124,7 +107,6 @@ namespace Avalon.Controllers
         /// <param name="profileId">The profile identifier.</param>
         /// <param name="patch">The patch.</param>
         [HttpPatch("{profileId}")]
-        [Authorize]
         public IActionResult Patch(string profileId, [FromBody]JsonPatchDocument<Profile> patch)
         {
             var item = _profileRepository.GetProfile(profileId).Result ?? null;
@@ -147,7 +129,6 @@ namespace Avalon.Controllers
         /// <param name="profileId">The profile identifier.</param>
         /// <param name="put">The value.</param>
         [HttpPut("{profileId}")]
-        [Authorize]
         public IActionResult Put(string profileId, [FromBody]Profile item)
         {
             var profile = _profileRepository.GetProfile(profileId).Result ?? null;
@@ -169,7 +150,6 @@ namespace Avalon.Controllers
         /// </summary>
         /// <param name="profileId">The profile identifier.</param>
         [HttpDelete("{profileId}")]
-        [Authorize]
         public void Delete(string profileId)
         {
             _profileRepository.RemoveProfile(profileId);
@@ -181,7 +161,6 @@ namespace Avalon.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("~/api/GetProfileByFilter/")]
-        [Authorize]
         public Task<Profile> GetProfileByFilter(string profileFilter)
         {
             return GetProfileByFilterInternal(profileFilter);
