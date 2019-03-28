@@ -7,7 +7,7 @@ namespace Avalon.Interfaces
 {
     public interface IProfileRepository
     {
-        Task<IEnumerable<Profile>> GetAllProfiles();
+        Task<IEnumerable<Profile>> GetAllProfiles(string profileName);
         Task<Profile> GetProfile(string profileId);
         Task<Profile> GetProfileByName(string profileName);
         Task AddProfile(Profile item);

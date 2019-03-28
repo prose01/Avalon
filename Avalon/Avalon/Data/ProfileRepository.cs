@@ -20,12 +20,13 @@ namespace Avalon.Data
             _logger = logger;
         }
 
-        public async Task<IEnumerable<Profile>> GetAllProfiles()
+        public async Task<IEnumerable<Profile>> GetAllProfiles(string profileName)
         {
             try
             {
                 //return null;
-                return await _context.Profiles.Find(_ => true).ToListAsync();
+                //return await _context.Profiles.Find(_ => true).ToListAsync();
+                return await _context.Profiles.Find(p => true && p.Name != profileName).ToListAsync();
             }
             catch (Exception ex)
             {

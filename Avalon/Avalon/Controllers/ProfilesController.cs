@@ -5,13 +5,18 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace Avalon.Controllers
 {
     [Produces("application/json")]
     [Route("api/[controller]")]
+    [Authorize]
     public class ProfilesController : Controller
     {
         private readonly IProfileRepository _profileRepository;
@@ -31,12 +36,21 @@ namespace Avalon.Controllers
         [HttpGet]
         public Task<IEnumerable<Profile>> Get()
         {
-            return GetProfileInternal();
+            var nickname = User.Claims.FirstOrDefault(c => c.Type == "http://claims.example.com/nickname")?.Value;
+            var email = User.Claims.FirstOrDefault(c => c.Type == "http://claims.example.com/email")?.Value;
+            var profileName = string.Empty;
+
+            if (nickname == "peterrose03")
+            {
+                profileName = "Peter Rose";
+            }
+
+            return GetProfileInternal(profileName);
         }
 
-        private async Task<IEnumerable<Profile>> GetProfileInternal()
+        private async Task<IEnumerable<Profile>> GetProfileInternal(string profileName)
         {
-            return await _profileRepository.GetAllProfiles();
+            return await _profileRepository.GetAllProfiles(profileName);
         }
 
 
@@ -50,6 +64,22 @@ namespace Avalon.Controllers
         [Authorize]
         public Task<Profile> Get(string profileId)
         {
+            var nickname = User.Claims.FirstOrDefault(c => c.Type == "http://claims.example.com/nickname")?.Value;
+            var email = User.Claims.FirstOrDefault(c => c.Type == "http://claims.example.com/email")?.Value;
+
+            var authorization = this.Request.Headers["Authorization"].ToString();
+            var tokenstring = authorization.Substring("Bearer ".Length).Trim();
+            var handler = new JwtSecurityTokenHandler();
+            var token = handler.ReadJwtToken(tokenstring);
+
+            var principal = HttpContext.User;
+            if (principal?.Claims != null)
+            {
+                foreach (var claim in principal.Claims)
+                {
+                    Console.WriteLine($"CLAIM TYPE: {claim.Type}; CLAIM VALUE: {claim.Value}");
+                }
+            }
             return GetProfileByIdInternal(profileId);
         }
 
