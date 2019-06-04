@@ -18,8 +18,6 @@ namespace Avalon
 {
     public class Startup
     {
-        public const string AppS3BucketKey = "AppS3Bucket";
-
         public Startup(IHostingEnvironment env)
         {
             env.ConfigureNLog("nlog.config");
@@ -118,9 +116,6 @@ namespace Avalon
             });
 
             services.AddTransient<IProfileRepository, ProfileRepository>();
-
-            // Add S3 to the ASP.NET Core dependency injection framework.
-            services.AddAWSService<Amazon.S3.IAmazonS3>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline
