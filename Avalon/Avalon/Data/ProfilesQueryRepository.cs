@@ -21,11 +21,13 @@ namespace Avalon.Data
             _logger = logger;
         }
 
-        public async Task<IEnumerable<Profile>> GetLatestProfiles()
+        public async Task<IEnumerable<Profile>> GetLatestProfiles(Profile currentUser)
         {
             try
             {
-                var query = _context.Profiles.AsQueryable().OrderBy(p => p.CreatedOn).OrderByDescending(p => p.CreatedOn).Take(2);
+                var query = _context.Profiles.AsQueryable()
+                    .Where(p => true && p.Email != currentUser.Email)
+                    .OrderByDescending(p => p.CreatedOn).Take(2);
 
                 return await Task.FromResult(query.ToList());
             }
@@ -37,11 +39,13 @@ namespace Avalon.Data
             }
         }
 
-        public async Task<IEnumerable<Profile>> GetLastActiveProfiles()
+        public async Task<IEnumerable<Profile>> GetLastActiveProfiles(Profile currentUser)
         {
             try
             {
-                var query = _context.Profiles.AsQueryable().OrderBy(p => p.LastActive).OrderByDescending(p => p.LastActive).Take(2);
+                var query = _context.Profiles.AsQueryable()
+                    .Where(p => true && p.Email != currentUser.Email)
+                    .OrderByDescending(p => p.LastActive).Take(2);
 
                 return await Task.FromResult(query.ToList());
             }
@@ -53,13 +57,13 @@ namespace Avalon.Data
             }
         }
 
-        public async Task<IEnumerable<Profile>> GetBookmarkedProfiles(string profileId)
+        public async Task<IEnumerable<Profile>> GetBookmarkedProfiles(Profile currentUser, string profileId)
         {
             try
             {
                 // Get all Bookmarked ProfileIds from original profile.
                 var bookmarks = _context.Profiles.AsQueryable()
-                    .Where(p => p.ProfileId == profileId)
+                    .Where(p => p.ProfileId == profileId && p.Email != currentUser.Email)
                     .Select(p => new {p.Bookmarks});
 
                 var bookmarkedProfileIds = await Task.FromResult(bookmarks.ToList());

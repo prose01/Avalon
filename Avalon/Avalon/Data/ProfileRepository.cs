@@ -20,13 +20,11 @@ namespace Avalon.Data
             _logger = logger;
         }
 
-        public async Task<IEnumerable<Profile>> GetAllProfiles(string profileName)
+        public async Task<IEnumerable<Profile>> GetAllProfiles(Profile currentUser)
         {
             try
             {
-                //return null;
-                //return await _context.Profiles.Find(_ => true).ToListAsync();
-                return await _context.Profiles.Find(p => true && p.Name != profileName).ToListAsync();
+                return await _context.Profiles.Find(p => true && p.Email != currentUser.Email).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -156,6 +154,24 @@ namespace Avalon.Data
             {
                 // log or manage the exception
                 _logger.LogWarning(ex, "GetProfileByFilter threw an exception.");
+                throw ex;
+            }
+        }
+
+        public async Task<Profile> GetCurrentProfileByEmail(string email)
+        {
+            var filter = Builders<Profile>.Filter.Eq("Email", email);
+
+            try
+            {
+                return await _context.Profiles
+                    .Find(filter)
+                    .FirstOrDefaultAsync();
+            }
+            catch (Exception ex)
+            {
+                // log or manage the exception
+                _logger.LogWarning(ex, "GetCurrentProfileByEmail threw an exception.");
                 throw ex;
             }
         }

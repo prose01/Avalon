@@ -12,6 +12,7 @@ using Swashbuckle.AspNetCore.Swagger;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using System.Collections.Generic;
+using Avalon.Helpers;
 
 namespace Avalon
 {
@@ -70,6 +71,9 @@ namespace Avalon
             // Add our repository type(s)
             services.AddSingleton<IProfileRepository, ProfileRepository>();
             services.AddSingleton<IProfilesQueryRepository, ProfilesQueryRepository>();
+
+            // Add our helper method(s)
+            services.AddSingleton<IHelperMethods, HelperMethods>();
 
             // Register the Swagger generator, defining one or more Swagger documents
             services.AddSwaggerGen(c =>

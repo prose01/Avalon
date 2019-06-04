@@ -4,7 +4,6 @@ using Avalon.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -17,15 +16,13 @@ namespace Avalon.Controllers
     {
         private readonly IProfilesQueryRepository _profilesQueryRepository;
         private readonly ILogger<ProfilesQueryController> _logger;
-        private readonly string _claimsNickname;
-        private readonly string _claimsEmail;
+        private readonly IHelperMethods _helper;
 
-        public ProfilesQueryController(IOptions<Settings> settings, IProfilesQueryRepository profilesQueryRepository, ILogger<ProfilesQueryController> logger)
+        public ProfilesQueryController(IProfilesQueryRepository profilesQueryRepository, ILogger<ProfilesQueryController> logger, IHelperMethods helperMethods)
         {
             _profilesQueryRepository = profilesQueryRepository;
             _logger = logger;
-            _claimsNickname = settings.Value.ClaimsNickname;
-            _claimsEmail = settings.Value.ClaimsEmail;
+            _helper = helperMethods;
         }
 
         /// <summary>
@@ -34,15 +31,17 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpGet]
-        public Task<IEnumerable<Profile>> GetLatestProfiles()
+        public async Task<IEnumerable<Profile>> GetLatestProfiles()
         {
+            var currentUser = await _helper.GetCurrentUserProfile(User);
+
             _logger.LogInformation("GetLatestProfiles Information Log.");
-            return GetLatestProfilesInternal();
+            return await GetLatestProfilesInternal(currentUser);
         }
 
-        private async Task<IEnumerable<Profile>> GetLatestProfilesInternal()
+        private async Task<IEnumerable<Profile>> GetLatestProfilesInternal(Profile currentUser)
         {
-            return await _profilesQueryRepository.GetLatestProfiles();
+            return await _profilesQueryRepository.GetLatestProfiles(currentUser);
         }
 
         /// <summary>
@@ -51,15 +50,17 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpGet("~/api/GetLastActiveProfiles/")]
-        public Task<IEnumerable<Profile>> GetLastActiveProfiles()
+        public async Task<IEnumerable<Profile>> GetLastActiveProfiles()
         {
+            var currentUser = await _helper.GetCurrentUserProfile(User);
+
             _logger.LogInformation("GetLastActiveProfiles Information Log.");
-            return GetLastActiveProfilesInternal();
+            return await GetLastActiveProfilesInternal(currentUser);
         }
 
-        private async Task<IEnumerable<Profile>> GetLastActiveProfilesInternal()
+        private async Task<IEnumerable<Profile>> GetLastActiveProfilesInternal(Profile currentUser)
         {
-            return await _profilesQueryRepository.GetLastActiveProfiles();
+            return await _profilesQueryRepository.GetLastActiveProfiles(currentUser);
         }
 
         /// <summary>
@@ -68,15 +69,17 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpGet("~/api/GetBookmarkedProfiles/")]
-        public Task<IEnumerable<Profile>> GetBookmarkedProfiles(string profileId)
+        public async Task<IEnumerable<Profile>> GetBookmarkedProfiles(string profileId)
         {
+            var currentUser = await _helper.GetCurrentUserProfile(User);
+
             _logger.LogInformation("GetBookmarkedProfiles Information Log.");
-            return GetBookmarkedProfilesInternal(profileId);
+            return await GetBookmarkedProfilesInternal(currentUser, profileId);
         }
 
-        private async Task<IEnumerable<Profile>> GetBookmarkedProfilesInternal(string profileId)
+        private async Task<IEnumerable<Profile>> GetBookmarkedProfilesInternal(Profile currentUser, string profileId)
         {
-            return await _profilesQueryRepository.GetBookmarkedProfiles(profileId);
+            return await _profilesQueryRepository.GetBookmarkedProfiles(currentUser, profileId);
         }
     }
 }

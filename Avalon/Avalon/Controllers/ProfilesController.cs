@@ -5,9 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Avalon.Controllers
@@ -19,41 +17,31 @@ namespace Avalon.Controllers
     {
         private readonly IProfileRepository _profileRepository;
         private readonly ILogger<ProfilesController> _logger;
-        private readonly string _claimsNickname;
-        private readonly string _claimsEmail;
+        private readonly IHelperMethods _helper;
 
-        public ProfilesController(IOptions<Settings> settings, IProfileRepository profileRepository, ILogger<ProfilesController> logger)
+        public ProfilesController(IProfileRepository profileRepository, ILogger<ProfilesController> logger, IHelperMethods helperMethods)
         {
             _profileRepository = profileRepository;
             _logger = logger;
-            _claimsNickname = settings.Value.ClaimsNickname;
-            _claimsEmail = settings.Value.ClaimsEmail;
+            _helper = helperMethods;
         }
 
         /// <summary>
-        /// Gets this instance.
+        /// Gets all Profiles.
         /// </summary>
         /// <returns></returns>
         [NoCache]
         [HttpGet]
-        public Task<IEnumerable<Profile>> Get()
+        public async Task<IEnumerable<Profile>> Get()
         {
-            var nickname = User.Claims.FirstOrDefault(c => c.Type == _claimsNickname)?.Value;
-            var email = User.Claims.FirstOrDefault(c => c.Type == _claimsEmail)?.Value;
+            var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            var profileName = string.Empty;
-
-            if (nickname == "peterrose03")
-            {
-                profileName = "Peter Rose";
-            }
-
-            return GetProfileInternal(profileName);
+            return await GetProfileInternal(currentUser);
         }
 
-        private async Task<IEnumerable<Profile>> GetProfileInternal(string profileName)
+        private async Task<IEnumerable<Profile>> GetProfileInternal(Profile currentUser)
         {
-            return await _profileRepository.GetAllProfiles(profileName);
+            return await _profileRepository.GetAllProfiles(currentUser);
         }
 
 
@@ -63,15 +51,20 @@ namespace Avalon.Controllers
         /// </summary>
         /// <param name="profileId">The profile identifier.</param>
         /// <returns></returns>
+        [NoCache]
         [HttpGet("{profileId}")]
-        public Task<Profile> Get(string profileId)
+        public async Task<Profile> Get(string profileId)
         {
-            return GetProfileByIdInternal(profileId);
+            var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            if (currentUser.ProfileId == profileId) return null;
+
+            return await GetProfileByIdInternal(profileId);
         }
 
         private async Task<Profile> GetProfileByIdInternal(string profileId)
         {
-            return await _profileRepository.GetProfile(profileId) ?? new Profile();
+            return await _profileRepository.GetProfile(profileId) ?? null;
         }
 
         // POST api/profiles
@@ -160,6 +153,7 @@ namespace Avalon.Controllers
         /// Gets the specified profile based on a filter. Eg. { Body: 'something' }
         /// </summary>
         /// <returns></returns>
+        [NoCache]
         [HttpGet("~/api/GetProfileByFilter/")]
         public Task<Profile> GetProfileByFilter(string profileFilter)
         {
