@@ -35,7 +35,6 @@ namespace Avalon.Controllers
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            _logger.LogInformation("GetLatestProfiles Information Log.");
             return await GetLatestProfilesInternal(currentUser);
         }
 
@@ -54,7 +53,6 @@ namespace Avalon.Controllers
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            _logger.LogInformation("GetLastActiveProfiles Information Log.");
             return await GetLastActiveProfilesInternal(currentUser);
         }
 
@@ -73,7 +71,6 @@ namespace Avalon.Controllers
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            _logger.LogInformation("GetBookmarkedProfiles Information Log.");
             return await GetBookmarkedProfilesInternal(currentUser, profileId);
         }
 
