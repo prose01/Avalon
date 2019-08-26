@@ -1,6 +1,5 @@
 ﻿using Avalon.Interfaces;
 using Avalon.Model;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Linq;
 using System.Security.Claims;
@@ -11,13 +10,11 @@ namespace Avalon.Helpers
     public class HelperMethods : IHelperMethods
     {
         private readonly IProfileRepository _profileRepository;
-        private readonly ILogger<HelperMethods> _logger;
         private readonly string _claimsEmail;
 
-        public HelperMethods(IOptions<Settings> settings, IProfileRepository profileRepository, ILogger<HelperMethods> logger)
+        public HelperMethods(IOptions<Settings> settings, IProfileRepository profileRepository)
         {
             _profileRepository = profileRepository;
-            _logger = logger;
             _claimsEmail = settings.Value.ClaimsEmail;
         }
 

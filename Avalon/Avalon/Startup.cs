@@ -1,18 +1,16 @@
 using Avalon.Data;
+using Avalon.Helpers;
 using Avalon.Interfaces;
 using Avalon.Model;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NLog.Extensions.Logging;
-using NLog.Web;
 using Swashbuckle.AspNetCore.Swagger;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using System.Collections.Generic;
-using Avalon.Helpers;
 
 namespace Avalon
 {
@@ -20,8 +18,6 @@ namespace Avalon
     {
         public Startup(IHostingEnvironment env)
         {
-            env.ConfigureNLog("nlog.config");
-
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
@@ -47,8 +43,6 @@ namespace Avalon
 
             // Add framework services.
             services.AddMvc();
-
-            services.AddLogging();
 
             // Add authentication.
             string domain = $"https://{Configuration["Auth0:Domain"]}/";
@@ -154,15 +148,6 @@ namespace Avalon
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Avalon V1");
             });
-
-            //loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-            //loggerFactory.AddDebug();
-
-            //add NLog to ASP.NET Core
-            //loggerFactory.AddNLog();
-
-            //add NLog.Web
-            app.AddNLogWeb();
 
             app.UseMvc();
         }

@@ -1,6 +1,5 @@
 ﻿using Avalon.Interfaces;
 using Avalon.Model;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using System;
@@ -13,12 +12,10 @@ namespace Avalon.Data
     public class ProfilesQueryRepository : IProfilesQueryRepository
     {
         private readonly ProfileContext _context = null;
-        private readonly ILogger<ProfilesQueryRepository> _logger;
 
-        public ProfilesQueryRepository(IOptions<Settings> settings, ILogger<ProfilesQueryRepository> logger)
+        public ProfilesQueryRepository(IOptions<Settings> settings)
         {
             _context = new ProfileContext(settings);
-            _logger = logger;
         }
 
         #region Profiles
@@ -35,8 +32,6 @@ namespace Avalon.Data
             }
             catch (Exception ex)
             {
-                // log or manage the exception
-                _logger.LogWarning(ex, "GetLatestCreatedProfiles threw an exception.");
                 throw ex;
             }
         }
@@ -53,8 +48,6 @@ namespace Avalon.Data
             }
             catch (Exception ex)
             {
-                // log or manage the exception
-                _logger.LogWarning(ex, "GetLastUpdatedProfiles threw an exception.");
                 throw ex;
             }
         }
@@ -71,8 +64,6 @@ namespace Avalon.Data
             }
             catch (Exception ex)
             {
-                // log or manage the exception
-                _logger.LogWarning(ex, "GetLatestActiveProfiles threw an exception.");
                 throw ex;
             }
         }
@@ -100,8 +91,6 @@ namespace Avalon.Data
             }
             catch (Exception ex)
             {
-                // log or manage the exception
-                _logger.LogWarning(ex, "GetBookmarkedProfiles threw an exception.");
                 throw ex;
             }
         }
@@ -128,8 +117,6 @@ namespace Avalon.Data
         //    }
         //    catch (Exception ex)
         //    {
-        //        // log or manage the exception
-        //        _logger.LogWarning(ex, "GetBookmarkedLatestCreatedProfiles threw an exception.");
         //        throw ex;
         //    }
         //}
@@ -154,8 +141,6 @@ namespace Avalon.Data
         //    }
         //    catch (Exception ex)
         //    {
-        //        // log or manage the exception
-        //        _logger.LogWarning(ex, "GetBookmarkedLastUpdatedProfiles threw an exception.");
         //        throw ex;
         //    }
         //}
@@ -180,8 +165,6 @@ namespace Avalon.Data
         //    }
         //    catch (Exception ex)
         //    {
-        //        // log or manage the exception
-        //        _logger.LogWarning(ex, "GetBookmarkedLastActiveProfiles threw an exception.");
         //        throw ex;
         //    }
         //}
