@@ -128,17 +128,16 @@ namespace Avalon
                     .AllowAnyHeader()
             );
 
+            // Enable routing
+            app.UseRouting();
+
             // Enable Authentication
             app.UseAuthentication();
 
-            app.UseMvc(routes =>
-            {
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+            // Add endpoints 
+            app.UseEndpoints(endpoints => {
+                endpoints.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
             });
-
-            app.UseMvcWithDefaultRoute();
 
             // Enable middleware to serve generated Swagger as a JSON endpoint.
             app.UseSwagger();
@@ -148,8 +147,6 @@ namespace Avalon
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Avalon V1");
             });
-
-            app.UseMvc();
         }
     }
 }
