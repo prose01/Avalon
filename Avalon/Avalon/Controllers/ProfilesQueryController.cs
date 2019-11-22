@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace Avalon.Controllers
 {
     [Produces("application/json")]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [Authorize]
     public class ProfilesQueryController : Controller
     {
@@ -48,7 +48,7 @@ namespace Avalon.Controllers
         /// </summary>
         /// <returns></returns>
         [NoCache]
-        [HttpGet("~/api/GetLastActiveProfiles/")]
+        [HttpGet("~/GetLastActiveProfiles/")]
         public async Task<IEnumerable<Profile>> GetLastActiveProfiles()
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
@@ -66,7 +66,7 @@ namespace Avalon.Controllers
         /// </summary>
         /// <returns></returns>
         [NoCache]
-        [HttpGet("~/api/GetBookmarkedProfiles/")]
+        [HttpGet("~/GetBookmarkedProfiles/")]
         public async Task<IEnumerable<Profile>> GetBookmarkedProfiles()
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);

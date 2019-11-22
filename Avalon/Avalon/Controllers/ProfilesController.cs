@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace Avalon.Controllers
 {
     [Produces("application/json")]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [Authorize]
     public class ProfilesController : Controller
     {
@@ -31,7 +31,7 @@ namespace Avalon.Controllers
         /// </summary>
         /// <returns></returns>
         [NoCache]
-        [HttpGet]
+        [HttpGet("~/Profiles/GetCurrentUserProfile/")]
         public async Task<Profile> GetCurrentUserProfile()
         {
             return await _helper.GetCurrentUserProfile(User);
@@ -165,7 +165,7 @@ namespace Avalon.Controllers
         /// </summary>
         /// <returns></returns>
         [NoCache]
-        [HttpGet("~/api/GetProfileByFilter/")]
+        [HttpGet("~/GetProfileByFilter/")]
         public Task<Profile> GetProfileByFilter(string profileFilter)
         {
             return GetProfileByFilterInternal(profileFilter);
