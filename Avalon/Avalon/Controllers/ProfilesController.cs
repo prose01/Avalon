@@ -27,6 +27,17 @@ namespace Avalon.Controllers
         }
 
         /// <summary>
+        /// Gets the current user profile.
+        /// </summary>
+        /// <returns></returns>
+        [NoCache]
+        [HttpGet]
+        public async Task<Profile> GetCurrentUserProfile()
+        {
+            return await _helper.GetCurrentUserProfile(User);
+        }
+
+        /// <summary>
         /// Gets all Profiles.
         /// </summary>
         /// <returns></returns>
