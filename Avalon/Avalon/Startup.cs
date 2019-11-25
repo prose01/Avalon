@@ -8,8 +8,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Swashbuckle.AspNetCore.Swagger;
+using Microsoft.OpenApi.Models;
+using System;
 using System.Collections.Generic;
 
 namespace Avalon
@@ -35,10 +35,11 @@ namespace Avalon
             services.AddCors(options =>
             {
                 options.AddPolicy("CorsPolicy",
-                    builder => builder.AllowAnyOrigin()
-                    .AllowAnyMethod()
-                    .AllowAnyHeader()
-                    .AllowCredentials());
+                    builder => builder
+                        .AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader()
+                    );
             });
 
             // Add framework services.
@@ -70,36 +71,33 @@ namespace Avalon
             // Register the Swagger generator, defining one or more Swagger documents
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new Info
+                c.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Version = "v1",
                     Title = "Avalon API",
                     Description = "A simple example Avalon API",
-                    TermsOfService = "None",
-                    Contact = new Contact { Name = "Peter Rose", Email = "", Url = "http://Avalon.com/" },
-                    License = new Swashbuckle.AspNetCore.Swagger.License { Name = "Use under LICX", Url = "http://Avalon.com" }
+                    //TermsOfService = "None",
+                    //Contact = new Contact { Name = "Peter Rose", Email = "", Url = "http://Avalon.com/" },
+                    //License = new Swashbuckle.AspNetCore.Swagger.License { Name = "Use under LICX", Url = "http://Avalon.com" }
                 });
-
-                c.DescribeAllEnumsAsStrings();
-
-                var security = new Dictionary<string, IEnumerable<string>>
+                
+                // Define the ApiKey scheme that's in use (i.e. Implicit Flow)
+                c.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
                 {
-                    {"Bearer", new string[] { }},
-                };
-
-                c.AddSecurityDefinition("Bearer", new ApiKeyScheme
-                {
-                    Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
-                    Name = "authorization",
-                    In = "header",
-                    Type = "apiKey"
+                    Type = SecuritySchemeType.ApiKey,
+                    Flows = new OpenApiOAuthFlows
+                    {
+                        Implicit = new OpenApiOAuthFlow
+                        {
+                            AuthorizationUrl = new Uri("/auth-server/connect/authorize", UriKind.Relative),
+                            Scopes = new Dictionary<string, string>
+                            {
+                                { "readAccess", "Access read operations" },
+                                { "writeAccess", "Access write operations" }
+                            }
+                        }
+                    }
                 });
-                c.AddSecurityRequirement(security);
-
-                //Set the comments path for the swagger json and ui.
-                //var basePath = PlatformServices.Default.Application.ApplicationBasePath;
-                //var xmlPath = Path.Combine(basePath, "Avalon.xml");
-                //c.IncludeXmlComments(xmlPath);
             });
 
             services.Configure<Settings>(options =>
@@ -113,8 +111,11 @@ namespace Avalon
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            // Enable Authorization
+            app.UseAuthorization();
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -126,14 +127,12 @@ namespace Avalon
                 builder.WithOrigins("http://localhost:4200")
                     .WithMethods("GET", "POST", "PUT", "PATCH", "HEAD")
                     .AllowAnyHeader()
+                    .AllowCredentials()
             );
 
             // Enable routing
             app.UseRouting();
-
-            // Enable Authentication
-            app.UseAuthentication();
-
+            
             // Add endpoints 
             app.UseEndpoints(endpoints => {
                 endpoints.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");

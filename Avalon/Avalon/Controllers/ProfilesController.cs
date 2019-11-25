@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace Avalon.Controllers
 {
     [Produces("application/json")]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [Authorize]
     public class ProfilesController : Controller
     {

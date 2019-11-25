@@ -25,7 +25,7 @@ namespace Avalon.Model
         public int Weight { get; set; }
         //Skal ændres til BodyType
         public string Body { get; set; } = string.Empty;
-        public string Descruption { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
         //public SmokingHabitsType SmokingHabits { get; set; }
         //public AllergiesType Allergies { get; set; }
         //public bool HasChildren { get; set; }
