@@ -91,12 +91,12 @@ namespace Avalon.Data
             }
         }
 
-        private async Task<ReplaceOneResult> UpdateProfileDocument(string profileId, Profile item)
+        private async Task<ReplaceOneResult> UpdateProfileDocument(Profile item)
         {
             try
             {
                 //return await _context.Profiles
-                //            .ReplaceOneAsync(p => p.ProfileId.Equals(profileId)
+                //            .ReplaceOneAsync(p => p.ProfileId.Equals(item.ProfileId)
                 //                            , item
                 //                            , new UpdateOptions { IsUpsert = true });
 
@@ -109,14 +109,13 @@ namespace Avalon.Data
         }
 
         //Demo function - full document update
-        public async Task<ReplaceOneResult> UpdateProfile(string profileId, Profile item)
+        public async Task<ReplaceOneResult> UpdateProfile(Profile item)
         {
             try
             {
                 item.UpdatedOn = DateTime.Now;
 
-                //return await UpdateProfileDocument(profileId, item);
-                return null;
+                return await UpdateProfileDocument(item);
             }
             catch (Exception ex)
             {

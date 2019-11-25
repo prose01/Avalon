@@ -16,13 +16,11 @@ namespace Avalon.Controllers
     public class ProfilesController : Controller
     {
         private readonly IProfileRepository _profileRepository;
-        private readonly ILogger<ProfilesController> _logger;
         private readonly IHelperMethods _helper;
 
-        public ProfilesController(IProfileRepository profileRepository, ILogger<ProfilesController> logger, IHelperMethods helperMethods)
+        public ProfilesController(IProfileRepository profileRepository, IHelperMethods helperMethods)
         {
             _profileRepository = profileRepository;
-            _logger = logger;
             _helper = helperMethods;
         }
 
@@ -108,12 +106,13 @@ namespace Avalon.Controllers
         /// <summary>
         /// Patches the specified profile identifier.
         /// </summary>
-        /// <param name="profileId">The profile identifier.</param>
         /// <param name="patch">The patch.</param>
-        [HttpPatch("{profileId}")]
-        public IActionResult Patch(string profileId, [FromBody]JsonPatchDocument<Profile> patch)
+        [HttpPatch]
+        public async Task<IActionResult> Patch([FromBody]JsonPatchDocument<Profile> patch)
         {
-            var item = _profileRepository.GetProfile(profileId).Result ?? null;
+            var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            var item = _profileRepository.GetProfile(currentUser.ProfileId).Result ?? null;
 
             patch.ApplyTo(item, ModelState);
 
@@ -122,30 +121,30 @@ namespace Avalon.Controllers
                 return new BadRequestObjectResult(ModelState);
             }
 
-            return Ok(_profileRepository.UpdateProfile(profileId, item));
+            return Ok(_profileRepository.UpdateProfile(item));
         }
 
 
         // Put api/profiles/5       TODO: "SLET denne metode når Patch virker"
-        /// <summary>
-        /// Update the specified profile identifier.
-        /// </summary>
-        /// <param name="profileId">The profile identifier.</param>
-        /// <param name="put">The value.</param>
-        [HttpPut("{profileId}")]
-        public IActionResult Put(string profileId, [FromBody]Profile item)
+        /// <summary>Update the specified profile identifier.</summary>
+        /// <param name="item"></param>
+        [HttpPut]
+        public async Task<IActionResult> PutAsync([FromBody]Profile item)
         {
-            var profile = _profileRepository.GetProfile(profileId).Result ?? null;
+            if (item == null) return new BadRequestObjectResult(nameof(item));
 
-            if (profile == null)
-            {
-                return new BadRequestObjectResult(ModelState);
-            }
+            var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            profile.Name = item.Name;
-            profile.Body = item.Body;
+            if (currentUser.ProfileId != currentUser.ProfileId) return new BadRequestObjectResult(nameof(item));
 
-            return Ok(_profileRepository.UpdateProfile(profileId, profile));
+            //var profile = _profileRepository.GetProfile(profileId).Result ?? null;
+
+            //if (profile == null) return new BadRequestObjectResult(ModelState);
+
+            currentUser.Name = item.Name;
+            currentUser.Body = item.Body;
+
+            return Ok(_profileRepository.UpdateProfile(currentUser));
         }
 
         // DELETE api/profiles/23243423

@@ -12,7 +12,7 @@ namespace Avalon.Interfaces
         Task<Profile> GetProfileByName(string profileName);
         Task AddProfile(Profile item);
         Task<DeleteResult> RemoveProfile(string profileId);
-        Task<ReplaceOneResult> UpdateProfile(string profileId, Profile item);
+        Task<ReplaceOneResult> UpdateProfile(Profile item);
         Task<Profile> GetProfileByFilter(string filter);
         Task<Profile> GetCurrentProfileByEmail(string email);
     }
