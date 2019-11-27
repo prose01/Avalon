@@ -75,35 +75,47 @@ namespace Avalon.Controllers
             return await _profileRepository.GetProfile(profileId) ?? null;
         }
 
-        // POST api/profiles
         /// <summary>
-        /// Posts the specified value.
+        /// Add new profile to database
         /// </summary>
-        /// <param name="value">The value.</param>
+        /// <param name = "profile" > The value.</param>
         [HttpPost]
-        public IActionResult Post([FromBody]Profile item)
+        public async Task<IActionResult> Post([FromBody]Profile item)
         {
-            // Tell user the name is not valid!
-            if (string.IsNullOrEmpty(item.Name))
-            {
-                return new BadRequestObjectResult(ModelState);
-            }
+            if (!ModelState.IsValid) return BadRequest();
 
-            var profile = _profileRepository.GetProfileByName(item.Name).Result ?? null;
+            var currentUser = await _helper.GetCurrentUserProfile(User); // New user don't exists!!!
 
-            // Tell user that name already exits!
-            if (profile != null)
-            {
-                return new BadRequestObjectResult(ModelState);
-            }
+            if (currentUser.ProfileId != item.ProfileId) return BadRequest();
 
             return Ok(_profileRepository.AddProfile(item));
+
+            //if (ModelState.IsValid)
+            //{
+            //    //...
+            //    return Ok();
+            //}
+            //return BadRequest();
+
+            //// Tell user the name is not valid!
+            //if (string.IsNullOrEmpty(item.Name))
+            //{
+            //    return new BadRequestObjectResult(ModelState);
+            //}
+
+            //var profile = _profileRepository.GetProfileByName(item.Name).Result ?? null;
+
+            //// Tell user that name already exits!
+            //if (profile != null)
+            //{
+            //    return new BadRequestObjectResult(ModelState);
+            //}
+
+            //return Ok(_profileRepository.AddProfile(item));
         }
 
-
-        // Patch api/profiles/5
         /// <summary>
-        /// Patches the specified profile identifier.
+        /// Patches the specified profile identifier. Does not work!!!
         /// </summary>
         /// <param name="patch">The patch.</param>
         [HttpPatch]
@@ -124,26 +136,19 @@ namespace Avalon.Controllers
         }
 
 
-        // Put api/profiles/5       TODO: "SLET denne metode når Patch virker"
+        /// TODO: "SLET denne metode når Patch virker"
         /// <summary>Update the specified profile identifier.</summary>
         /// <param name="item"></param>
         [HttpPut]
-        public async Task<IActionResult> PutAsync([FromBody]Profile item)
+        public async Task<IActionResult> Put([FromBody]Profile item)
         {
-            if (item == null) return new BadRequestObjectResult(nameof(item));
+            if (!ModelState.IsValid) return BadRequest();
 
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            if (currentUser.ProfileId != currentUser.ProfileId) return new BadRequestObjectResult(nameof(item));
+            if (currentUser.ProfileId != item.ProfileId) return BadRequest();
 
-            //var profile = _profileRepository.GetProfile(profileId).Result ?? null;
-
-            //if (profile == null) return new BadRequestObjectResult(ModelState);
-
-            currentUser.Name = item.Name;
-            currentUser.Body = item.Body;
-
-            return Ok(_profileRepository.UpdateProfile(currentUser));
+            return Ok(_profileRepository.UpdateProfile(item));
         }
 
         // DELETE api/profiles/23243423

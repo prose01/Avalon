@@ -43,7 +43,7 @@ namespace Avalon
             });
 
             // Add framework services.
-            services.AddMvc();
+            services.AddMvc().AddNewtonsoftJson();
 
             // Add authentication.
             string domain = $"https://{Configuration["Auth0:Domain"]}/";
@@ -115,6 +115,9 @@ namespace Avalon
         {
             // Enable Authorization
             app.UseAuthorization();
+
+            // Enable Authentication
+            app.UseAuthentication();
 
             if (env.IsDevelopment())
             {
