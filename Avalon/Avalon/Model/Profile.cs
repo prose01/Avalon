@@ -1,7 +1,5 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
@@ -162,7 +160,6 @@ namespace Avalon.Model
     {
     }
 
-    [JsonConverter(typeof(StringEnumConverter))]
     public enum SmokingHabitsType
     {
         [EnumMember(Value = "Non Smoker")]
