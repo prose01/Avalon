@@ -148,6 +148,8 @@ namespace Avalon.Controllers
 
             if (currentUser.ProfileId != item.ProfileId) return BadRequest();
 
+            item._id = currentUser._id; // _id is immutable and the type is unknow by BluePenguin.
+
             return Ok(_profileRepository.UpdateProfile(item));
         }
 

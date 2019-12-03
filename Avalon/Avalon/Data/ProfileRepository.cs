@@ -82,8 +82,10 @@ namespace Avalon.Data
         {
             try
             {
-                return await _context.Profiles.DeleteOneAsync(
-                    Builders<Profile>.Filter.Eq("ProfileId", profileId));
+                //return await _context.Profiles.DeleteOneAsync(
+                //    Builders<Profile>.Filter.Eq("ProfileId", profileId));
+
+                return null;
             }
             catch (Exception ex)
             {

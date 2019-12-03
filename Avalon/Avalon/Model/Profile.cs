@@ -18,33 +18,69 @@ namespace Avalon.Model
         public DateTime UpdatedOn { get; set; } = DateTime.Now;
         public DateTime CreatedOn { get; set; } = DateTime.Now;
         public DateTime LastActive { get; set; } = DateTime.Now;
-        public List<string> Bookmarks { get; set; }
-        public GenderType Gender { get; set; }
         public int Age { get; set; }
         public int Height { get; set; }
         public int Weight { get; set; }
-        //Skal ændres til BodyType
-        public string Body { get; set; } = string.Empty;
         public string Description { get; set; }
-        //public SmokingHabitsType SmokingHabits { get; set; }
-        //public AllergiesType Allergies { get; set; }
-        //public bool HasChildren { get; set; }
-        //public WantChildrenType WantChildren { get; set; }
-        //public LocationType LivesIn { get; set; }
-        //public EducationType EducationArea { get; set; }
-        //public EducationStatusType EducationStatus { get; set; }
-        //public EducationLevelType EducationLevel { get; set; }
-        //public EmploymentStatusType EmploymentStatus { get; set; }
-        //public EmploymentAreaType EmploymentArea { get; set; }
-        //public EmploymentLevelType EmploymentLevel { get; set; }
-        //public string JobTitle { get; set; } = string.Empty;
-        //public PoliticalOrientationType PoliticalOrientation { get; set; }
-        //public SportType Sport { get; set; }
-        //public EatingHabitsType EatingHabits { get; set; }
-        //public ClotheStyleType ClotheStyle { get; set; }
-        //public BodyArtType BodyArt { get; set; }
+        public List<string> Bookmarks { get; set; }
 
-        //public string Tags { get; set; }
+        //public string[] Tags { get; set; }
+
+        //public string JobTitle { get; set; } = string.Empty;
+
+        [BsonRepresentation(BsonType.String)]
+        public GenderType Gender { get; set; }
+
+        [BsonRepresentation(BsonType.String)]
+        public BodyType Body { get; set; }
+
+        //[BsonRepresentation(BsonType.String)]
+        //public SmokingHabitsType SmokingHabits { get; set; }
+
+        //[BsonRepresentation(BsonType.String)]
+        //public AllergiesType Allergies { get; set; }
+
+        //[BsonRepresentation(BsonType.String)]
+        //public bool HasChildren { get; set; }
+
+        //[BsonRepresentation(BsonType.String)]
+        //public WantChildrenType WantChildren { get; set; }
+
+        //[BsonRepresentation(BsonType.String)]
+        //public LocationType LivesIn { get; set; }
+
+        //[BsonRepresentation(BsonType.String)]
+        //public EducationType EducationArea { get; set; }
+
+        //[BsonRepresentation(BsonType.String)]
+        //public EducationStatusType EducationStatus { get; set; }
+
+        //[BsonRepresentation(BsonType.String)]
+        //public EducationLevelType EducationLevel { get; set; }
+
+        //[BsonRepresentation(BsonType.String)]
+        //public EmploymentStatusType EmploymentStatus { get; set; }
+
+        //[BsonRepresentation(BsonType.String)]
+        //public EmploymentAreaType EmploymentArea { get; set; }
+
+        //[BsonRepresentation(BsonType.String)]
+        //public EmploymentLevelType EmploymentLevel { get; set; }
+
+        //[BsonRepresentation(BsonType.String)]
+        //public PoliticalOrientationType PoliticalOrientation { get; set; }
+
+        //[BsonRepresentation(BsonType.String)]
+        //public SportType Sport { get; set; }
+
+        //[BsonRepresentation(BsonType.String)]
+        //public EatingHabitsType EatingHabits { get; set; }
+
+        //[BsonRepresentation(BsonType.String)]
+        //public ClotheStyleType ClotheStyle { get; set; }
+
+        //[BsonRepresentation(BsonType.String)]
+        //public BodyArtType BodyArt { get; set; }
     }
 
 
@@ -141,6 +177,8 @@ namespace Avalon.Model
 
     public enum WantChildrenType
     {
+        Yes,
+        No
     }
 
     #endregion

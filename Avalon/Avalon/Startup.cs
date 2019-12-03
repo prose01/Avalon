@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace Avalon
 {
@@ -43,7 +44,9 @@ namespace Avalon
             });
 
             // Add framework services.
-            services.AddMvc().AddNewtonsoftJson();
+            services.AddMvc().AddJsonOptions(options => {
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            });
 
             // Add authentication.
             string domain = $"https://{Configuration["Auth0:Domain"]}/";
