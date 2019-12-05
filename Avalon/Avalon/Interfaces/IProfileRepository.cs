@@ -15,5 +15,7 @@ namespace Avalon.Interfaces
         Task<ReplaceOneResult> UpdateProfile(Profile item);
         Task<Profile> GetProfileByFilter(string filter);
         Task<Profile> GetCurrentProfileByEmail(string email);
+        Task<Profile> AddProfilesToBookmarks(Profile currentUser, string[] profileIds);
+        Task<Profile> RemoveProfilesFromBookmarks(Profile currentUser, string[] profileIds);
     }
 }

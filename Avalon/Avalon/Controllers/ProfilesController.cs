@@ -2,7 +2,7 @@
 using Avalon.Interfaces;
 using Avalon.Model;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.JsonPatch;
+//using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -165,5 +165,31 @@ namespace Avalon.Controllers
         {
             return await _profileRepository.GetProfileByFilter(profileFilter) ?? new Profile(); // Should be null if no filter match.
         }
+
+        /// <summary>Adds the profiles to currentUser bookmarks.</summary>
+        /// <param name="profileIds">The profile ids.</param>
+        /// <returns></returns>
+        [NoCache]
+        [HttpGet("~/AddProfilesToBookmarks/{profileIds}")]
+        public async Task<Profile> AddProfilesToBookmarks(string[] profileIds)
+        {
+            var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            return await _profileRepository.AddProfilesToBookmarks(currentUser, profileIds);
+        }
+
+
+        /// <summary>Removes the profiles from currentUser bookmarks.</summary>
+        /// <param name="profileIds">The profile ids.</param>
+        /// <returns></returns>
+        [NoCache]
+        [HttpGet("~/RemoveProfilesFromBookmarks/{profileIds}")]
+        public async Task<Profile> RemoveProfilesFromBookmarks(string[] profileIds)
+        {
+            var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            return await _profileRepository.RemoveProfilesFromBookmarks(currentUser, profileIds);
+        }
+
     }
 }

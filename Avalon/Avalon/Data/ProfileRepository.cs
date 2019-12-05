@@ -165,5 +165,49 @@ namespace Avalon.Data
                 throw ex;
             }
         }
+
+        /// <summary>Adds the profiles to currentUser bookmarks.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <param name="profileIds">The profile ids.</param>
+        /// <returns></returns>
+        public async Task<Profile> AddProfilesToBookmarks(Profile currentUser, string[] profileIds)
+        {
+            try
+            {
+                var filter = Builders<Profile>
+                                .Filter.Eq(e => e.ProfileId, currentUser.ProfileId);
+
+                var update = Builders<Profile>.Update
+                        .PushEach(e => e.Bookmarks, profileIds);
+
+                return await _context.Profiles.FindOneAndUpdateAsync(filter, update);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        /// <summary>Removes the profiles from currentUser bookmarks.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <param name="profileIds">The profile ids.</param>
+        /// <returns></returns>
+        public async Task<Profile> RemoveProfilesFromBookmarks(Profile currentUser, string[] profileIds)
+        {
+            try
+            {
+                var filter = Builders<Profile>
+                                .Filter.Eq(e => e.ProfileId, currentUser.ProfileId);
+
+                var update = Builders<Profile>.Update
+                        .PullAll(e => e.Bookmarks, profileIds);
+
+                return await _context.Profiles.FindOneAndUpdateAsync(filter, update);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
     }
 }
