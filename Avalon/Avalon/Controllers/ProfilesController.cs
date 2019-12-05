@@ -170,7 +170,7 @@ namespace Avalon.Controllers
         /// <param name="profileIds">The profile ids.</param>
         /// <returns></returns>
         [NoCache]
-        [HttpGet("~/AddProfilesToBookmarks/{profileIds}")]
+        [HttpPost("~/AddProfilesToBookmarks}")]
         public async Task<Profile> AddProfilesToBookmarks(string[] profileIds)
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
@@ -183,7 +183,7 @@ namespace Avalon.Controllers
         /// <param name="profileIds">The profile ids.</param>
         /// <returns></returns>
         [NoCache]
-        [HttpGet("~/RemoveProfilesFromBookmarks/{profileIds}")]
+        [HttpPost("~/RemoveProfilesFromBookmarks}")]
         public async Task<Profile> RemoveProfilesFromBookmarks(string[] profileIds)
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);

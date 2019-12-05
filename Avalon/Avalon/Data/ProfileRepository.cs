@@ -37,7 +37,8 @@ namespace Avalon.Data
         /// <returns></returns>
         public async Task<Profile> GetProfileById(string profileId)
         {
-            var filter = Builders<Profile>.Filter.Eq("ProfileId", profileId);
+            var filter = Builders<Profile>
+                            .Filter.Eq(e => e.ProfileId, profileId);
 
             try
             {
@@ -56,7 +57,8 @@ namespace Avalon.Data
         /// <returns></returns>
         public async Task<Profile> GetProfileByName(string profileName)
         {
-            var filter = Builders<Profile>.Filter.Eq("Name", profileName);
+            var filter = Builders<Profile>
+                            .Filter.Eq(e => e.Name, profileName);
 
             try
             {
@@ -177,8 +179,8 @@ namespace Avalon.Data
                 var filter = Builders<Profile>
                                 .Filter.Eq(e => e.ProfileId, currentUser.ProfileId);
 
-                var update = Builders<Profile>.Update
-                        .PushEach(e => e.Bookmarks, profileIds);
+                var update = Builders<Profile>
+                                .Update.PushEach(e => e.Bookmarks, profileIds);
 
                 return await _context.Profiles.FindOneAndUpdateAsync(filter, update);
             }
@@ -199,8 +201,8 @@ namespace Avalon.Data
                 var filter = Builders<Profile>
                                 .Filter.Eq(e => e.ProfileId, currentUser.ProfileId);
 
-                var update = Builders<Profile>.Update
-                        .PullAll(e => e.Bookmarks, profileIds);
+                var update = Builders<Profile>
+                                .Update.PullAll(e => e.Bookmarks, profileIds);
 
                 return await _context.Profiles.FindOneAndUpdateAsync(filter, update);
             }
