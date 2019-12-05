@@ -17,6 +17,9 @@ namespace Avalon.Data
             _context = new ProfileContext(settings);
         }
 
+        /// <summary>Gets all profiles.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <returns></returns>
         public async Task<IEnumerable<Profile>> GetAllProfiles(Profile currentUser)
         {
             try
@@ -29,7 +32,10 @@ namespace Avalon.Data
             }
         }
 
-        public async Task<Profile> GetProfile(string profileId)
+        /// <summary>Gets the profile by identifier.</summary>
+        /// <param name="profileId">The profile identifier.</param>
+        /// <returns></returns>
+        public async Task<Profile> GetProfileById(string profileId)
         {
             var filter = Builders<Profile>.Filter.Eq("ProfileId", profileId);
 
@@ -45,6 +51,9 @@ namespace Avalon.Data
             }
         }
 
+        /// <summary>Gets the profile by name.</summary>
+        /// <param name="profileName">Name of the profile.</param>
+        /// <returns></returns>
         public async Task<Profile> GetProfileByName(string profileName)
         {
             var filter = Builders<Profile>.Filter.Eq("Name", profileName);
@@ -61,6 +70,8 @@ namespace Avalon.Data
             }
         }
 
+        /// <summary>Adds a new profile.</summary>
+        /// <param name="item">The profile.</param>
         public async Task AddProfile(Profile item)
         {
             try
@@ -78,6 +89,9 @@ namespace Avalon.Data
             }
         }
 
+        /// <summary>Deletes the profile.</summary>
+        /// <param name="profileId">The profile identifier.</param>
+        /// <returns></returns>
         public async Task<DeleteResult> RemoveProfile(string profileId)
         {
             try
@@ -93,31 +107,21 @@ namespace Avalon.Data
             }
         }
 
-        private async Task<ReplaceOneResult> UpdateProfileDocument(Profile item)
-        {
-            try
-            {
-                //return await _context.Profiles
-                //            .ReplaceOneAsync(p => p.ProfileId.Equals(item.ProfileId)
-                //                            , item
-                //                            , new UpdateOptions { IsUpsert = true });
-
-                return null;
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
-
-        //Demo function - full document update
+        /// <summary>Updates the profile.</summary>
+        /// <param name="item">The profile.</param>
+        /// <returns></returns>
         public async Task<ReplaceOneResult> UpdateProfile(Profile item)
         {
             try
             {
                 item.UpdatedOn = DateTime.Now;
 
-                return await UpdateProfileDocument(item);
+                return await _context.Profiles
+                            .ReplaceOneAsync(p => p.ProfileId.Equals(item.ProfileId)
+                                            , item
+                                            , new UpdateOptions { IsUpsert = true });
+
+                //return null;
             }
             catch (Exception ex)
             {
@@ -126,6 +130,9 @@ namespace Avalon.Data
         }
 
         // Search for anything in filter - eg. { Body: 'something' }
+        /// <summary>Gets the profile by filter.</summary>
+        /// <param name="filter">The filter.</param>
+        /// <returns></returns>
         public async Task<Profile> GetProfileByFilter(string filter)
         {
             try
@@ -140,6 +147,9 @@ namespace Avalon.Data
             }
         }
 
+        /// <summary>Gets the current profile by email.</summary>
+        /// <param name="email">The email.</param>
+        /// <returns></returns>
         public async Task<Profile> GetCurrentProfileByEmail(string email)
         {
             var filter = Builders<Profile>.Filter.Eq("Email", email);

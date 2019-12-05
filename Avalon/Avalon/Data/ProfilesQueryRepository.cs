@@ -20,6 +20,9 @@ namespace Avalon.Data
 
         #region Profiles
 
+        /// <summary>Gets the latest created profiles.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <returns></returns>
         public async Task<IEnumerable<Profile>> GetLatestCreatedProfiles(Profile currentUser)
         {
             try
@@ -36,6 +39,9 @@ namespace Avalon.Data
             }
         }
 
+        /// <summary>Gets the last updated profiles.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <returns></returns>
         public async Task<IEnumerable<Profile>> GetLastUpdatedProfiles(Profile currentUser)
         {
             try
@@ -52,6 +58,9 @@ namespace Avalon.Data
             }
         }
 
+        /// <summary>Gets the last active profiles.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <returns></returns>
         public async Task<IEnumerable<Profile>> GetLastActiveProfiles(Profile currentUser)
         {
             try
@@ -73,6 +82,9 @@ namespace Avalon.Data
         #region Bookmarked 
         // Bør nok reduceres til kun GetBookmarkedProfiles da filtreringen kan ske i frontend. 
 
+        /// <summary>Gets the bookmarked profiles.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <returns></returns>
         public async Task<IEnumerable<Profile>> GetBookmarkedProfiles(Profile currentUser)
         {
             try

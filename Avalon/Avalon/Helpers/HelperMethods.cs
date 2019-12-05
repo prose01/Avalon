@@ -18,9 +18,8 @@ namespace Avalon.Helpers
             _claimsEmail = settings.Value.ClaimsEmail;
         }
 
-        /// <summary>
-        /// Gets the current user profile.
-        /// </summary>
+        /// <summary>Gets the current user profile.</summary>
+        /// <param name="user"></param>
         /// <returns></returns>
         public async Task<Profile> GetCurrentUserProfile(ClaimsPrincipal user)
         {

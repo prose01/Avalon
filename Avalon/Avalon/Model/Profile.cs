@@ -13,8 +13,8 @@ namespace Avalon.Model
         public string ProfileId { get; set; }
         public string Email { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
-        public DateTime UpdatedOn { get; set; } = DateTime.Now;
         public DateTime CreatedOn { get; set; } = DateTime.Now;
+        public DateTime UpdatedOn { get; set; } = DateTime.Now;
         public DateTime LastActive { get; set; } = DateTime.Now;
         public int Age { get; set; }
         public int Height { get; set; }

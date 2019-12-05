@@ -44,14 +44,8 @@ namespace Avalon.Controllers
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            return await GetProfileInternal(currentUser);
-        }
-
-        private async Task<IEnumerable<Profile>> GetProfileInternal(Profile currentUser)
-        {
             return await _profileRepository.GetAllProfiles(currentUser);
         }
-
 
         // GET api/profiles/5
         /// <summary>
@@ -67,18 +61,13 @@ namespace Avalon.Controllers
 
             if (currentUser.ProfileId == profileId) return null;
 
-            return await GetProfileByIdInternal(profileId);
-        }
-
-        private async Task<Profile> GetProfileByIdInternal(string profileId)
-        {
-            return await _profileRepository.GetProfile(profileId) ?? null;
+            return await _profileRepository.GetProfileById(profileId) ?? null;
         }
 
         /// <summary>
         /// Add new profile to database
         /// </summary>
-        /// <param name = "profile" > The value.</param>
+        /// <param name="profile"> The value.</param>
         [HttpPost]
         public async Task<IActionResult> Post([FromBody]Profile item)
         {
@@ -118,27 +107,28 @@ namespace Avalon.Controllers
         /// Patches the specified profile identifier. Does not work!!!
         /// </summary>
         /// <param name="patch">The patch.</param>
-        [HttpPatch]
-        public async Task<IActionResult> Patch([FromBody]JsonPatchDocument<Profile> patch)
-        {
-            var currentUser = await _helper.GetCurrentUserProfile(User);
+        //[HttpPatch]
+        //public async Task<IActionResult> Patch([FromBody]JsonPatchDocument<Profile> patch)
+        //{
+        //    var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            var item = _profileRepository.GetProfile(currentUser.ProfileId).Result ?? null;
+        //    var item = _profileRepository.GetProfileById(currentUser.ProfileId).Result ?? null;
 
-            patch.ApplyTo(item, ModelState);
+        //    patch.ApplyTo(item, ModelState);
 
-            if (!ModelState.IsValid)
-            {
-                return new BadRequestObjectResult(ModelState);
-            }
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return new BadRequestObjectResult(ModelState);
+        //    }
 
-            return Ok(_profileRepository.UpdateProfile(item));
-        }
+        //    return Ok(_profileRepository.UpdateProfile(item));
+        //}
 
 
         /// TODO: "SLET denne metode når Patch virker"
         /// <summary>Update the specified profile identifier.</summary>
-        /// <param name="item"></param>
+        /// <param name="item">The profile</param>
+        [NoCache]
         [HttpPut]
         public async Task<IActionResult> Put([FromBody]Profile item)
         {
@@ -171,14 +161,9 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpGet("~/GetProfileByFilter/")]
-        public Task<Profile> GetProfileByFilter(string profileFilter)
+        public async Task<Profile> GetProfileByFilter(string profileFilter)
         {
-            return GetProfileByFilterInternal(profileFilter);
-        }
-
-        private async Task<Profile> GetProfileByFilterInternal(string profileFilter)
-        {
-            return await _profileRepository.GetProfileByFilter(profileFilter) ?? new Profile();
+            return await _profileRepository.GetProfileByFilter(profileFilter) ?? new Profile(); // Should be null if no filter match.
         }
     }
 }
