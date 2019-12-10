@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Avalon.Data
@@ -176,13 +177,24 @@ namespace Avalon.Data
         {
             try
             {
+                //Filter out allready bookmarked profiles.
+                var newBookmarks = profileIds.Where(i => !currentUser.Bookmarks.Contains(i)).ToList();
+
+                if (newBookmarks.Count == 0)
+                    return null;
+
                 var filter = Builders<Profile>
                                 .Filter.Eq(e => e.ProfileId, currentUser.ProfileId);
 
                 var update = Builders<Profile>
-                                .Update.PushEach(e => e.Bookmarks, profileIds);
+                                .Update.PushEach(e => e.Bookmarks, newBookmarks);
 
-                return await _context.Profiles.FindOneAndUpdateAsync(filter, update);
+                var options = new FindOneAndUpdateOptions<Profile>
+                {
+                    ReturnDocument = ReturnDocument.After
+                };
+
+                return  _context.Profiles.FindOneAndUpdate(filter, update, options);
             }
             catch (Exception ex)
             {
@@ -198,13 +210,24 @@ namespace Avalon.Data
         {
             try
             {
+                //Filter out allready bookmarked profiles.
+                var removeBookmarks = profileIds.Where(i => currentUser.Bookmarks.Contains(i)).ToList();
+
+                if (removeBookmarks.Count == 0)
+                    return null;
+
                 var filter = Builders<Profile>
                                 .Filter.Eq(e => e.ProfileId, currentUser.ProfileId);
 
                 var update = Builders<Profile>
-                                .Update.PullAll(e => e.Bookmarks, profileIds);
+                                .Update.PullAll(e => e.Bookmarks, removeBookmarks);
 
-                return await _context.Profiles.FindOneAndUpdateAsync(filter, update);
+                var options = new FindOneAndUpdateOptions<Profile>
+                {
+                    ReturnDocument = ReturnDocument.After
+                };
+
+                return _context.Profiles.FindOneAndUpdate(filter, update, options);
             }
             catch (Exception ex)
             {

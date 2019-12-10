@@ -170,12 +170,15 @@ namespace Avalon.Controllers
         /// <param name="profileIds">The profile ids.</param>
         /// <returns></returns>
         [NoCache]
-        [HttpPost("~/AddProfilesToBookmarks}")]
-        public async Task<Profile> AddProfilesToBookmarks(string[] profileIds)
+        [HttpPost("~/Profiles/AddProfilesToBookmarks")]
+        public async Task<IActionResult> AddProfilesToBookmarks([FromBody]string[] profileIds)
         {
+            if (!ModelState.IsValid) return BadRequest();
+            if (profileIds == null || profileIds.Length < 1) return BadRequest();
+
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            return await _profileRepository.AddProfilesToBookmarks(currentUser, profileIds);
+            return Ok(_profileRepository.AddProfilesToBookmarks(currentUser, profileIds));
         }
 
 
@@ -183,12 +186,15 @@ namespace Avalon.Controllers
         /// <param name="profileIds">The profile ids.</param>
         /// <returns></returns>
         [NoCache]
-        [HttpPost("~/RemoveProfilesFromBookmarks}")]
-        public async Task<Profile> RemoveProfilesFromBookmarks(string[] profileIds)
+        [HttpPost("~/Profiles/RemoveProfilesFromBookmarks")]
+        public async Task<IActionResult> RemoveProfilesFromBookmarks([FromBody]string[] profileIds)
         {
+            if (!ModelState.IsValid) return BadRequest();
+            if (profileIds == null || profileIds.Length < 1) return BadRequest();
+
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            return await _profileRepository.RemoveProfilesFromBookmarks(currentUser, profileIds);
+            return Ok(_profileRepository.RemoveProfilesFromBookmarks(currentUser, profileIds));
         }
 
     }
