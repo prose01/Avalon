@@ -1,182 +1,80 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System;
-using System.Collections.Generic;
-using System.Runtime.Serialization;
 
 namespace Avalon.Model
 {
-    public class Profile
+    public class Profile : AbstractProfile
     {
         [BsonId]
-        public ObjectId _id { get; set; }
-        public string ProfileId { get; set; }
-        public string Email { get; set; } = string.Empty;
-        public string Name { get; set; } = string.Empty;
-        public DateTime CreatedOn { get; set; } = DateTime.Now;
-        public DateTime UpdatedOn { get; set; } = DateTime.Now;
-        public DateTime LastActive { get; set; } = DateTime.Now;
-        public int Age { get; set; }
-        public int Height { get; set; }
-        public int Weight { get; set; }
-        public string Description { get; set; }
-        public List<string> Bookmarks { get; set; }
+        public override ObjectId _id { get; set; }
+        public override string ProfileId { get; set; }
+        public override string Email { get; set; }
+        public override string Name { get; set; }
+        public override DateTime CreatedOn { get; set; }
+        public override DateTime UpdatedOn { get; set; }
+        public override DateTime LastActive { get; set; }
+        public override int Age { get; set; }
+        public override int Height { get; set; }
+        public override int Weight { get; set; }
+        public override string Description { get; set; }
 
-        //public string[] Tags { get; set; }
+        //public override string[] Tags { get; set; }
 
-        //public string JobTitle { get; set; } = string.Empty;
-
-        [BsonRepresentation(BsonType.String)]
-        public GenderType Gender { get; set; }
+        //public override string JobTitle { get; set; } = string.Empty;
 
         [BsonRepresentation(BsonType.String)]
-        public BodyType Body { get; set; }
+        public override GenderType Gender { get; set; }
+
+        [BsonRepresentation(BsonType.String)]
+        public override BodyType Body { get; set; }
 
         //[BsonRepresentation(BsonType.String)]
-        //public SmokingHabitsType SmokingHabits { get; set; }
+        //public override SmokingHabitsType SmokingHabits { get; set; }
 
         //[BsonRepresentation(BsonType.String)]
-        //public AllergiesType Allergies { get; set; }
+        //public override AllergiesType Allergies { get; set; }
 
         //[BsonRepresentation(BsonType.String)]
-        //public bool HasChildren { get; set; }
+        //public override bool HasChildren { get; set; }
 
         //[BsonRepresentation(BsonType.String)]
-        //public WantChildrenType WantChildren { get; set; }
+        //public override WantChildrenType WantChildren { get; set; }
 
         //[BsonRepresentation(BsonType.String)]
-        //public LocationType LivesIn { get; set; }
+        //public override LocationType LivesIn { get; set; }
 
         //[BsonRepresentation(BsonType.String)]
-        //public EducationType EducationArea { get; set; }
+        //public override EducationType EducationArea { get; set; }
 
         //[BsonRepresentation(BsonType.String)]
-        //public EducationStatusType EducationStatus { get; set; }
+        //public override EducationStatusType EducationStatus { get; set; }
 
         //[BsonRepresentation(BsonType.String)]
-        //public EducationLevelType EducationLevel { get; set; }
+        //public override EducationLevelType EducationLevel { get; set; }
 
         //[BsonRepresentation(BsonType.String)]
-        //public EmploymentStatusType EmploymentStatus { get; set; }
+        //public override EmploymentStatusType EmploymentStatus { get; set; }
 
         //[BsonRepresentation(BsonType.String)]
-        //public EmploymentAreaType EmploymentArea { get; set; }
+        //public override EmploymentAreaType EmploymentArea { get; set; }
 
         //[BsonRepresentation(BsonType.String)]
-        //public EmploymentLevelType EmploymentLevel { get; set; }
+        //public override EmploymentLevelType EmploymentLevel { get; set; }
 
         //[BsonRepresentation(BsonType.String)]
-        //public PoliticalOrientationType PoliticalOrientation { get; set; }
+        //public override PoliticalOrientationType PoliticalOrientation { get; set; }
 
         //[BsonRepresentation(BsonType.String)]
-        //public SportType Sport { get; set; }
+        //public override SportType Sport { get; set; }
 
         //[BsonRepresentation(BsonType.String)]
-        //public EatingHabitsType EatingHabits { get; set; }
+        //public override EatingHabitsType EatingHabits { get; set; }
 
         //[BsonRepresentation(BsonType.String)]
-        //public ClotheStyleType ClotheStyle { get; set; }
+        //public override ClotheStyleType ClotheStyle { get; set; }
 
         //[BsonRepresentation(BsonType.String)]
-        //public BodyArtType BodyArt { get; set; }
+        //public override BodyArtType BodyArt { get; set; }
     }
-
-
-    #region enums
-
-    public enum AllergiesType
-    {
-        Yes,
-        No
-    }
-
-    public enum ClotheStyleType
-    {
-    }
-
-    public enum BodyType
-    {
-        Atletic,
-        Chubby,
-        Normal,
-        Robust,
-        Slim
-    }
-
-    public enum BodyArtType
-    {
-        Piercing,
-        Tatoo,
-        Other
-    }
-
-    public enum GenderType
-    {
-        Female,
-        Male
-    }
-    
-    public enum EatingHabitsType
-    {
-        Healthy,
-        Gastronomic,
-        Normal,
-        Kosher,
-        Organic,
-        Traditional,
-        Vegetarian
-    }
-
-    public enum EducationLevelType
-    {
-    }
-
-    public enum EducationStatusType
-    {
-        Graduated,
-        Student
-    }
-
-    public enum EducationType
-    {
-    }
-    public enum EmploymentLevelType
-    {
-    }
-
-    public enum EmploymentAreaType
-    {
-    }
-
-    public enum EmploymentStatusType
-    {
-    }
-
-    public enum LocationType
-    {
-    }
-
-    public enum PoliticalOrientationType
-    {
-    }
-
-    public enum SmokingHabitsType
-    {
-        [EnumMember(Value = "Non Smoker")]
-        NonSmoker,
-        Occationally,
-        Smoker
-    }
-
-    public enum SportType
-    {
-    }
-
-    public enum WantChildrenType
-    {
-        Yes,
-        No
-    }
-
-    #endregion
 }

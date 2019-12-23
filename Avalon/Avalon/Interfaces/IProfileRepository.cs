@@ -7,15 +7,15 @@ namespace Avalon.Interfaces
 {
     public interface IProfileRepository
     {
-        Task<IEnumerable<Profile>> GetAllProfiles(Profile currentUser);
-        Task<Profile> GetProfileById(string profileId);
-        Task<Profile> GetProfileByName(string profileName);
-        Task AddProfile(Profile item);
+        Task<IEnumerable<CurrentUser>> GetAllProfiles(CurrentUser currentUser);
+        Task<CurrentUser> GetProfileById(string profileId);
+        Task<CurrentUser> GetProfileByName(string profileName);
+        Task AddProfile(CurrentUser item);
         Task<DeleteResult> RemoveProfile(string profileId);
-        Task<ReplaceOneResult> UpdateProfile(Profile item);
-        Task<Profile> GetProfileByFilter(string filter);
-        Task<Profile> GetCurrentProfileByEmail(string email);
-        Task<Profile> AddProfilesToBookmarks(Profile currentUser, string[] profileIds);
-        Task<Profile> RemoveProfilesFromBookmarks(Profile currentUser, string[] profileIds);
+        Task<ReplaceOneResult> UpdateProfile(CurrentUser item);
+        Task<CurrentUser> GetProfileByFilter(string filter);
+        Task<CurrentUser> GetCurrentProfileByEmail(string email);
+        Task<CurrentUser> AddProfilesToBookmarks(CurrentUser currentUser, string[] profileIds);
+        Task<CurrentUser> RemoveProfilesFromBookmarks(CurrentUser currentUser, string[] profileIds);
     }
 }

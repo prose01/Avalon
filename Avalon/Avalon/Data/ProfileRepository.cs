@@ -21,11 +21,11 @@ namespace Avalon.Data
         /// <summary>Gets all profiles.</summary>
         /// <param name="currentUser">The current user.</param>
         /// <returns></returns>
-        public async Task<IEnumerable<Profile>> GetAllProfiles(Profile currentUser)
+        public async Task<IEnumerable<CurrentUser>> GetAllProfiles(CurrentUser currentUser)
         {
             try
             {
-                return await _context.Profiles.Find(p => true && p.Email != currentUser.Email).ToListAsync();
+                return await _context.Profiles.Find<CurrentUser>(p => true && p.Email != currentUser.Email).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -36,9 +36,9 @@ namespace Avalon.Data
         /// <summary>Gets the profile by identifier.</summary>
         /// <param name="profileId">The profile identifier.</param>
         /// <returns></returns>
-        public async Task<Profile> GetProfileById(string profileId)
+        public async Task<CurrentUser> GetProfileById(string profileId)
         {
-            var filter = Builders<Profile>
+            var filter = Builders<CurrentUser>
                             .Filter.Eq(e => e.ProfileId, profileId);
 
             try
@@ -56,9 +56,9 @@ namespace Avalon.Data
         /// <summary>Gets the profile by name.</summary>
         /// <param name="profileName">Name of the profile.</param>
         /// <returns></returns>
-        public async Task<Profile> GetProfileByName(string profileName)
+        public async Task<CurrentUser> GetProfileByName(string profileName)
         {
-            var filter = Builders<Profile>
+            var filter = Builders<CurrentUser>
                             .Filter.Eq(e => e.Name, profileName);
 
             try
@@ -75,7 +75,7 @@ namespace Avalon.Data
 
         /// <summary>Adds a new profile.</summary>
         /// <param name="item">The profile.</param>
-        public async Task AddProfile(Profile item)
+        public async Task AddProfile(CurrentUser item)
         {
             try
             {
@@ -100,7 +100,7 @@ namespace Avalon.Data
             try
             {
                 //return await _context.Profiles.DeleteOneAsync(
-                //    Builders<Profile>.Filter.Eq("ProfileId", profileId));
+                //    Builders<CurrentUser>.Filter.Eq("ProfileId", profileId));
 
                 return null;
             }
@@ -113,7 +113,7 @@ namespace Avalon.Data
         /// <summary>Updates the profile.</summary>
         /// <param name="item">The profile.</param>
         /// <returns></returns>
-        public async Task<ReplaceOneResult> UpdateProfile(Profile item)
+        public async Task<ReplaceOneResult> UpdateProfile(CurrentUser item)
         {
             try
             {
@@ -136,7 +136,7 @@ namespace Avalon.Data
         /// <summary>Gets the profile by filter.</summary>
         /// <param name="filter">The filter.</param>
         /// <returns></returns>
-        public async Task<Profile> GetProfileByFilter(string filter)
+        public async Task<CurrentUser> GetProfileByFilter(string filter)
         {
             try
             {
@@ -153,9 +153,9 @@ namespace Avalon.Data
         /// <summary>Gets the current profile by email.</summary>
         /// <param name="email">The email.</param>
         /// <returns></returns>
-        public async Task<Profile> GetCurrentProfileByEmail(string email)
+        public async Task<CurrentUser> GetCurrentProfileByEmail(string email)
         {
-            var filter = Builders<Profile>.Filter.Eq("Email", email);
+            var filter = Builders<CurrentUser>.Filter.Eq("Email", email);
 
             try
             {
@@ -173,7 +173,7 @@ namespace Avalon.Data
         /// <param name="currentUser">The current user.</param>
         /// <param name="profileIds">The profile ids.</param>
         /// <returns></returns>
-        public async Task<Profile> AddProfilesToBookmarks(Profile currentUser, string[] profileIds)
+        public async Task<CurrentUser> AddProfilesToBookmarks(CurrentUser currentUser, string[] profileIds)
         {
             try
             {
@@ -183,13 +183,13 @@ namespace Avalon.Data
                 if (newBookmarks.Count == 0)
                     return null;
 
-                var filter = Builders<Profile>
+                var filter = Builders<CurrentUser>
                                 .Filter.Eq(e => e.ProfileId, currentUser.ProfileId);
 
-                var update = Builders<Profile>
+                var update = Builders<CurrentUser>
                                 .Update.PushEach(e => e.Bookmarks, newBookmarks);
 
-                var options = new FindOneAndUpdateOptions<Profile>
+                var options = new FindOneAndUpdateOptions<CurrentUser>
                 {
                     ReturnDocument = ReturnDocument.After
                 };
@@ -206,7 +206,7 @@ namespace Avalon.Data
         /// <param name="currentUser">The current user.</param>
         /// <param name="profileIds">The profile ids.</param>
         /// <returns></returns>
-        public async Task<Profile> RemoveProfilesFromBookmarks(Profile currentUser, string[] profileIds)
+        public async Task<CurrentUser> RemoveProfilesFromBookmarks(CurrentUser currentUser, string[] profileIds)
         {
             try
             {
@@ -216,13 +216,13 @@ namespace Avalon.Data
                 if (removeBookmarks.Count == 0)
                     return null;
 
-                var filter = Builders<Profile>
+                var filter = Builders<CurrentUser>
                                 .Filter.Eq(e => e.ProfileId, currentUser.ProfileId);
 
-                var update = Builders<Profile>
+                var update = Builders<CurrentUser>
                                 .Update.PullAll(e => e.Bookmarks, removeBookmarks);
 
-                var options = new FindOneAndUpdateOptions<Profile>
+                var options = new FindOneAndUpdateOptions<CurrentUser>
                 {
                     ReturnDocument = ReturnDocument.After
                 };

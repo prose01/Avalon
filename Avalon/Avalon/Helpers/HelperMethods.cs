@@ -21,11 +21,11 @@ namespace Avalon.Helpers
         /// <summary>Gets the current user profile.</summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public async Task<Profile> GetCurrentUserProfile(ClaimsPrincipal user)
+        public async Task<CurrentUser> GetCurrentUserProfile(ClaimsPrincipal user)
         {
             var email = user.Claims.FirstOrDefault(c => c.Type == _claimsEmail)?.Value;
 
-            return await _profileRepository.GetCurrentProfileByEmail(email) ?? new Profile();
+            return await _profileRepository.GetCurrentProfileByEmail(email) ?? new CurrentUser();
         }
     }
 }

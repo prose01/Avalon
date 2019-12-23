@@ -15,11 +15,11 @@ namespace Avalon.Data
                 _database = client.GetDatabase(settings.Value.Database);
         }
 
-        public IMongoCollection<Profile> Profiles
+        public IMongoCollection<AbstractProfile> Profiles
         {
             get
             {
-                return _database.GetCollection<Profile>("Profile");
+                return _database.GetCollection<AbstractProfile>("Profile");
             }
         }
     }

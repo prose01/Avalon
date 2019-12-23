@@ -29,7 +29,7 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpGet("~/Profiles/GetCurrentUserProfile/")]
-        public async Task<Profile> GetCurrentUserProfile()
+        public async Task<CurrentUser> GetCurrentUserProfile()
         {
             return await _helper.GetCurrentUserProfile(User);
         }
@@ -40,7 +40,7 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpGet]
-        public async Task<IEnumerable<Profile>> Get()
+        public async Task<IEnumerable<CurrentUser>> Get()
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
@@ -55,7 +55,7 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpGet("{profileId}")]
-        public async Task<Profile> Get(string profileId)
+        public async Task<CurrentUser> Get(string profileId)
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
@@ -69,7 +69,7 @@ namespace Avalon.Controllers
         /// </summary>
         /// <param name="profile"> The value.</param>
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody]Profile item)
+        public async Task<IActionResult> Post([FromBody]CurrentUser item)
         {
             if (!ModelState.IsValid) return BadRequest();
 
@@ -108,7 +108,7 @@ namespace Avalon.Controllers
         /// </summary>
         /// <param name="patch">The patch.</param>
         //[HttpPatch]
-        //public async Task<IActionResult> Patch([FromBody]JsonPatchDocument<Profile> patch)
+        //public async Task<IActionResult> Patch([FromBody]JsonPatchDocument<CurrentUser> patch)
         //{
         //    var currentUser = await _helper.GetCurrentUserProfile(User);
 
@@ -130,7 +130,7 @@ namespace Avalon.Controllers
         /// <param name="item">The profile</param>
         [NoCache]
         [HttpPut]
-        public async Task<IActionResult> Put([FromBody]Profile item)
+        public async Task<IActionResult> Put([FromBody]CurrentUser item)
         {
             if (!ModelState.IsValid) return BadRequest();
 
@@ -161,9 +161,9 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpGet("~/GetProfileByFilter/")]
-        public async Task<Profile> GetProfileByFilter(string profileFilter)
+        public async Task<CurrentUser> GetProfileByFilter(string profileFilter)
         {
-            return await _profileRepository.GetProfileByFilter(profileFilter) ?? new Profile(); // Should be null if no filter match.
+            return await _profileRepository.GetProfileByFilter(profileFilter) ?? new CurrentUser(); // Should be null if no filter match.
         }
 
         /// <summary>Adds the profiles to currentUser bookmarks.</summary>

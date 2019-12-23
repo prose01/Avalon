@@ -6,6 +6,6 @@ namespace Avalon.Interfaces
 {
     public interface IHelperMethods
     {
-        Task<Profile> GetCurrentUserProfile(ClaimsPrincipal user);
+        Task<CurrentUser> GetCurrentUserProfile(ClaimsPrincipal user);
     }
 }

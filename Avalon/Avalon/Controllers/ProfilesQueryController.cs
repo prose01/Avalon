@@ -15,13 +15,11 @@ namespace Avalon.Controllers
     public class ProfilesQueryController : Controller
     {
         private readonly IProfilesQueryRepository _profilesQueryRepository;
-        private readonly ILogger<ProfilesQueryController> _logger;
         private readonly IHelperMethods _helper;
 
-        public ProfilesQueryController(IProfilesQueryRepository profilesQueryRepository, ILogger<ProfilesQueryController> logger, IHelperMethods helperMethods)
+        public ProfilesQueryController(IProfilesQueryRepository profilesQueryRepository, IHelperMethods helperMethods)
         {
             _profilesQueryRepository = profilesQueryRepository;
-            _logger = logger;
             _helper = helperMethods;
         }
 
@@ -31,15 +29,10 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpGet]
-        public async Task<IEnumerable<Profile>> GetLatestProfiles()
+        public async Task<IEnumerable<CurrentUser>> GetLatestProfiles()
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            return await GetLatestProfilesInternal(currentUser);
-        }
-
-        private async Task<IEnumerable<Profile>> GetLatestProfilesInternal(Profile currentUser)
-        {
             return await _profilesQueryRepository.GetLatestCreatedProfiles(currentUser);
         }
 
@@ -49,15 +42,10 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpGet("~/GetLastActiveProfiles/")]
-        public async Task<IEnumerable<Profile>> GetLastActiveProfiles()
+        public async Task<IEnumerable<CurrentUser>> GetLastActiveProfiles()
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            return await GetLastActiveProfilesInternal(currentUser);
-        }
-
-        private async Task<IEnumerable<Profile>> GetLastActiveProfilesInternal(Profile currentUser)
-        {
             return await _profilesQueryRepository.GetLastActiveProfiles(currentUser);
         }
 
@@ -66,16 +54,11 @@ namespace Avalon.Controllers
         /// </summary>
         /// <returns></returns>
         [NoCache]
-        [HttpGet("~/GetBookmarkedProfiles/")]
-        public async Task<IEnumerable<Profile>> GetBookmarkedProfiles()
+        [HttpGet("~/ProfilesQuery/GetBookmarkedProfiles/")]
+        public async Task<IEnumerable<CurrentUser>> GetBookmarkedProfiles()
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            return await GetBookmarkedProfilesInternal(currentUser);
-        }
-
-        private async Task<IEnumerable<Profile>> GetBookmarkedProfilesInternal(Profile currentUser)
-        {
             return await _profilesQueryRepository.GetBookmarkedProfiles(currentUser);
         }
     }

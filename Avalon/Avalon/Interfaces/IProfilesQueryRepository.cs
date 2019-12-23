@@ -6,18 +6,18 @@ namespace Avalon.Interfaces
 {
     public interface IProfilesQueryRepository
     {
-        Task<IEnumerable<Profile>> GetLatestCreatedProfiles(Profile currentUser);
+        //Task<IEnumerable<Profile>> GetLatestCreatedProfiles(CurrentUser profile);
 
-        Task<IEnumerable<Profile>> GetLastUpdatedProfiles(Profile currentUser);
+        //Task<IEnumerable<Profile>> GetLastUpdatedProfiles(CurrentUser profile);
 
-        Task<IEnumerable<Profile>> GetLastActiveProfiles(Profile currentUser);
+        //Task<IEnumerable<Profile>> GetLastActiveProfiles(CurrentUser profile);
 
-        Task<IEnumerable<Profile>> GetBookmarkedProfiles(Profile currentUser);
+        Task<IEnumerable<Profile>> GetBookmarkedProfiles(AbstractProfile profile);
 
-        //Task<IEnumerable<Profile>> GetBookmarkedLatestCreatedProfiles(Profile currentUser);
+        //Task<IEnumerable<CurrentUser>> GetBookmarkedLatestCreatedProfiles(CurrentUser currentUser);
 
-        //Task<IEnumerable<Profile>> GetBookmarkedLastUpdatedProfiles(Profile currentUser);
+        //Task<IEnumerable<CurrentUser>> GetBookmarkedLastUpdatedProfiles(CurrentUser currentUser);
 
-        //Task<IEnumerable<Profile>> GetBookmarkedLastActiveProfiles(Profile currentUser);
+        //Task<IEnumerable<CurrentUser>> GetBookmarkedLastActiveProfiles(CurrentUser currentUser);
     }
 }
