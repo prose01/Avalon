@@ -4,7 +4,6 @@ using Avalon.Model;
 using Microsoft.AspNetCore.Authorization;
 //using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Avalon.Controllers
@@ -12,12 +11,12 @@ namespace Avalon.Controllers
     [Produces("application/json")]
     [Route("[controller]")]
     [Authorize]
-    public class ProfilesController : Controller
+    public class CurrentUserController : Controller
     {
         private readonly ICurrentUserRepository _profileRepository;
         private readonly IHelperMethods _helper;
 
-        public ProfilesController(ICurrentUserRepository profileRepository, IHelperMethods helperMethods)
+        public CurrentUserController(ICurrentUserRepository profileRepository, IHelperMethods helperMethods)
         {
             _profileRepository = profileRepository;
             _helper = helperMethods;
@@ -28,40 +27,10 @@ namespace Avalon.Controllers
         /// </summary>
         /// <returns></returns>
         [NoCache]
-        [HttpGet("~/Profiles/GetCurrentUserProfile/")]
+        [HttpGet("~/CurrentUser/GetCurrentUserProfile/")]
         public async Task<CurrentUser> GetCurrentUserProfile()
         {
             return await _helper.GetCurrentUserProfile(User);
-        }
-
-        /// <summary>
-        /// Gets all Profiles.
-        /// </summary>
-        /// <returns></returns>
-        [NoCache]
-        [HttpGet]
-        public async Task<IEnumerable<Profile>> Get()
-        {
-            var currentUser = await _helper.GetCurrentUserProfile(User);
-
-            return await _profileRepository.GetAllProfiles(currentUser);
-        }
-
-        // GET api/profiles/5
-        /// <summary>
-        /// Gets the specified profile identifier.
-        /// </summary>
-        /// <param name="profileId">The profile identifier.</param>
-        /// <returns></returns>
-        [NoCache]
-        [HttpGet("{profileId}")]
-        public async Task<Profile> Get(string profileId)
-        {
-            var currentUser = await _helper.GetCurrentUserProfile(User);
-
-            if (currentUser.ProfileId == profileId) return null;
-
-            return await _profileRepository.GetProfileById(profileId) ?? null;
         }
 
         /// <summary>
@@ -154,23 +123,11 @@ namespace Avalon.Controllers
             _profileRepository.RemoveProfile(profileId);
         }
 
-
-        /// <summary>
-        /// Gets the specified profile based on a filter. Eg. { Body: 'something' }
-        /// </summary>
-        /// <returns></returns>
-        [NoCache]
-        [HttpGet("~/GetProfileByFilter/")]
-        public async Task<Profile> GetProfileByFilter(string profileFilter)
-        {
-            return await _profileRepository.GetProfileByFilter(profileFilter) ?? new Profile(); // Should be null if no filter match.
-        }
-
         /// <summary>Adds the profiles to currentUser bookmarks.</summary>
         /// <param name="profileIds">The profile ids.</param>
         /// <returns></returns>
         [NoCache]
-        [HttpPost("~/Profiles/AddProfilesToBookmarks")]
+        [HttpPost("~/CurrentUser/AddProfilesToBookmarks")]
         public async Task<IActionResult> AddProfilesToBookmarks([FromBody]string[] profileIds)
         {
             if (!ModelState.IsValid) return BadRequest();
@@ -186,7 +143,7 @@ namespace Avalon.Controllers
         /// <param name="profileIds">The profile ids.</param>
         /// <returns></returns>
         [NoCache]
-        [HttpPost("~/Profiles/RemoveProfilesFromBookmarks")]
+        [HttpPost("~/CurrentUser/RemoveProfilesFromBookmarks")]
         public async Task<IActionResult> RemoveProfilesFromBookmarks([FromBody]string[] profileIds)
         {
             if (!ModelState.IsValid) return BadRequest();

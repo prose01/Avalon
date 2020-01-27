@@ -23,6 +23,47 @@ namespace Avalon.Controllers
         }
 
         /// <summary>
+        /// Gets all Profiles.
+        /// </summary>
+        /// <returns></returns>
+        [NoCache]
+        [HttpGet]
+        public async Task<IEnumerable<Profile>> Get()
+        {
+            var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            return await _profilesQueryRepository.GetAllProfiles(currentUser);
+        }
+
+        // GET api/profiles/5
+        /// <summary>
+        /// Gets the specified profile identifier.
+        /// </summary>
+        /// <param name="profileId">The profile identifier.</param>
+        /// <returns></returns>
+        [NoCache]
+        [HttpGet("{profileId}")]
+        public async Task<Profile> Get(string profileId)
+        {
+            var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            if (currentUser.ProfileId == profileId) return null;
+
+            return await _profilesQueryRepository.GetProfileById(profileId) ?? null;
+        }
+
+        /// <summary>
+        /// Gets the specified profile based on a filter. Eg. { Body: 'something' }
+        /// </summary>
+        /// <returns></returns>
+        [NoCache]
+        [HttpGet("~/GetProfileByFilter/")]
+        public async Task<Profile> GetProfileByFilter(string profileFilter)
+        {
+            return await _profilesQueryRepository.GetProfileByFilter(profileFilter) ?? new Profile(); // Should be null if no filter match.
+        }
+
+        /// <summary>
         /// Gets Latest Created Profiles.
         /// </summary>
         /// <returns></returns>

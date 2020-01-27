@@ -20,6 +20,79 @@ namespace Avalon.Data
 
         #region Profiles
 
+        /// <summary>Gets all profiles.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <returns></returns>
+        public async Task<IEnumerable<Profile>> GetAllProfiles(CurrentUser currentUser)
+        {
+            try
+            {
+                return await _context.Profiles.Find(p => true && p.Email != currentUser.Email).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        /// <summary>Gets the profile by identifier.</summary>
+        /// <param name="profileId">The profile identifier.</param>
+        /// <returns></returns>
+        public async Task<Profile> GetProfileById(string profileId)
+        {
+            var filter = Builders<Profile>
+                            .Filter.Eq(e => e.ProfileId, profileId);
+
+            try
+            {
+                return await _context.Profiles
+                    .Find(filter)
+                    .FirstOrDefaultAsync();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        /// <summary>Gets the profile by name.</summary>
+        /// <param name="profileName">Name of the profile.</param>
+        /// <returns></returns>
+        public async Task<Profile> GetProfileByName(string profileName)
+        {
+            var filter = Builders<Profile>
+                            .Filter.Eq(e => e.Name, profileName);
+
+            try
+            {
+                return await _context.Profiles
+                    .Find(filter)
+                    .FirstOrDefaultAsync();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        // Search for anything in filter - eg. { Body: 'something' }
+        /// <summary>Gets the profile by filter.</summary>
+        /// <param name="filter">The filter.</param>
+        /// <returns></returns>
+        public async Task<Profile> GetProfileByFilter(string filter)
+        {
+            try
+            {
+                return await _context.Profiles
+                    .Find(filter)
+                    .FirstOrDefaultAsync();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         /// <summary>Gets the latest created profiles.</summary>
         /// <param name="currentUser">The current user.</param>
         /// <returns></returns>

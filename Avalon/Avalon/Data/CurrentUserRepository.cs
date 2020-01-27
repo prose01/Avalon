@@ -3,7 +3,6 @@ using Avalon.Model;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -16,64 +15,7 @@ namespace Avalon.Data
         public CurrentUserRepository(IOptions<Settings> settings)
         {
             _context = new ProfileContext(settings);
-        }
-
-        #region move to Profile
-        /// <summary>Gets all profiles.</summary>
-        /// <param name="currentUser">The current user.</param>
-        /// <returns></returns>
-        public async Task<IEnumerable<Profile>> GetAllProfiles(CurrentUser currentUser)
-        {
-            try
-            {
-                return await _context.Profiles.Find(p => true && p.Email != currentUser.Email).ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
-
-        /// <summary>Gets the profile by identifier.</summary>
-        /// <param name="profileId">The profile identifier.</param>
-        /// <returns></returns>
-        public async Task<Profile> GetProfileById(string profileId)
-        {
-            var filter = Builders<Profile>
-                            .Filter.Eq(e => e.ProfileId, profileId);
-
-            try
-            {
-                return await _context.Profiles
-                    .Find(filter)
-                    .FirstOrDefaultAsync();
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
-
-        /// <summary>Gets the profile by name.</summary>
-        /// <param name="profileName">Name of the profile.</param>
-        /// <returns></returns>
-        public async Task<Profile> GetProfileByName(string profileName)
-        {
-            var filter = Builders<Profile>
-                            .Filter.Eq(e => e.Name, profileName);
-
-            try
-            {
-                return await _context.Profiles
-                    .Find(filter)
-                    .FirstOrDefaultAsync();
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
-        #endregion
+        }        
 
         /// <summary>Adds a new profile.</summary>
         /// <param name="item">The profile.</param>
@@ -127,24 +69,6 @@ namespace Avalon.Data
                                             , new UpdateOptions { IsUpsert = true });
 
                 //return null;
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
-
-        // Search for anything in filter - eg. { Body: 'something' }
-        /// <summary>Gets the profile by filter.</summary>
-        /// <param name="filter">The filter.</param>
-        /// <returns></returns>
-        public async Task<Profile> GetProfileByFilter(string filter)
-        {
-            try
-            {
-                return await _context.Profiles
-                    .Find(filter)
-                    .FirstOrDefaultAsync();
             }
             catch (Exception ex)
             {

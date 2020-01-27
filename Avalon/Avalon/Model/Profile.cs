@@ -11,7 +11,6 @@ namespace Avalon.Model
 
         #endregion
 
-        //[BsonId]
         public override ObjectId _id { get; set; }
         public override string ProfileId { get; set; }
         public override string Email { get; set; }
@@ -28,10 +27,8 @@ namespace Avalon.Model
 
         //public override string JobTitle { get; set; } = string.Empty;
 
-        //[BsonRepresentation(BsonType.String)]
         public override GenderType Gender { get; set; }
 
-        //[BsonRepresentation(BsonType.String)]
         public override BodyType Body { get; set; }
 
         //[BsonRepresentation(BsonType.String)]
