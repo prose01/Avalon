@@ -27,7 +27,7 @@ namespace Avalon.Controllers
         /// </summary>
         /// <returns></returns>
         [NoCache]
-        [HttpGet("~/CurrentUser/GetCurrentUserProfile/")]
+        [HttpGet("~/CurrentUser/")]
         public async Task<CurrentUser> GetCurrentUserProfile()
         {
             return await _helper.GetCurrentUserProfile(User);
@@ -127,7 +127,7 @@ namespace Avalon.Controllers
         /// <param name="profileIds">The profile ids.</param>
         /// <returns></returns>
         [NoCache]
-        [HttpPost("~/CurrentUser/AddProfilesToBookmarks")]
+        [HttpPost("~/AddProfilesToBookmarks")]
         public async Task<IActionResult> AddProfilesToBookmarks([FromBody]string[] profileIds)
         {
             if (!ModelState.IsValid) return BadRequest();
@@ -143,7 +143,7 @@ namespace Avalon.Controllers
         /// <param name="profileIds">The profile ids.</param>
         /// <returns></returns>
         [NoCache]
-        [HttpPost("~/CurrentUser/RemoveProfilesFromBookmarks")]
+        [HttpPost("~/RemoveProfilesFromBookmarks")]
         public async Task<IActionResult> RemoveProfilesFromBookmarks([FromBody]string[] profileIds)
         {
             if (!ModelState.IsValid) return BadRequest();

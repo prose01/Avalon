@@ -27,7 +27,7 @@ namespace Avalon.Controllers
         /// </summary>
         /// <returns></returns>
         [NoCache]
-        [HttpGet]
+        [HttpGet("~/GetAllProfiles/")]
         public async Task<IEnumerable<Profile>> Get()
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
@@ -42,7 +42,7 @@ namespace Avalon.Controllers
         /// <param name="profileId">The profile identifier.</param>
         /// <returns></returns>
         [NoCache]
-        [HttpGet("{profileId}")]
+        [HttpGet("~/GetProfileById/{profileId}")]
         public async Task<Profile> Get(string profileId)
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
@@ -57,7 +57,7 @@ namespace Avalon.Controllers
         /// </summary>
         /// <returns></returns>
         [NoCache]
-        [HttpGet("~/GetProfileByFilter/")]
+        [HttpGet("~/GetProfileByFilter/{profileFilter}")]
         public async Task<Profile> GetProfileByFilter(string profileFilter)
         {
             return await _profilesQueryRepository.GetProfileByFilter(profileFilter) ?? new Profile(); // Should be null if no filter match.
@@ -68,7 +68,7 @@ namespace Avalon.Controllers
         /// </summary>
         /// <returns></returns>
         [NoCache]
-        [HttpGet]
+        [HttpGet("~/GetLatestProfiles/")]
         public async Task<IEnumerable<Profile>> GetLatestProfiles()
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
@@ -94,7 +94,7 @@ namespace Avalon.Controllers
         /// </summary>
         /// <returns></returns>
         [NoCache]
-        [HttpGet("~/ProfilesQuery/GetBookmarkedProfiles/")]
+        [HttpGet("~/GetBookmarkedProfiles/")]
         public async Task<IEnumerable<Profile>> GetBookmarkedProfiles()
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
