@@ -20,62 +20,62 @@ namespace Avalon.Data
 
         #region Profiles
 
-        ///// <summary>Gets the latest created profiles.</summary>
-        ///// <param name="currentUser">The current user.</param>
-        ///// <returns></returns>
-        //public async Task<IEnumerable<Profile>> GetLatestCreatedProfiles(CurrentUser currentUser)
-        //{
-        //    try
-        //    {
-        //        var query = _context.Profiles.AsQueryable()
-        //            .Where(p => true && p.Email != currentUser.Email)
-        //            .OrderByDescending(p => p.CreatedOn).Take(2);
+        /// <summary>Gets the latest created profiles.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <returns></returns>
+        public async Task<IEnumerable<Profile>> GetLatestCreatedProfiles(CurrentUser currentUser)
+        {
+            try
+            {
+                var query = _context.Profiles.AsQueryable()
+                    .Where(p => true && p.Email != currentUser.Email)
+                    .OrderByDescending(p => p.CreatedOn).Take(2);
 
-        //        return await Task.FromResult(query.ToList());
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw ex;
-        //    }
-        //}
+                return await Task.FromResult(query.ToList());
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
 
-        ///// <summary>Gets the last updated profiles.</summary>
-        ///// <param name="currentUser">The current user.</param>
-        ///// <returns></returns>
-        //public async Task<IEnumerable<Profile>> GetLastUpdatedProfiles(CurrentUser currentUser)
-        //{
-        //    try
-        //    {
-        //        var query = _context.Profiles.AsQueryable()
-        //            .Where(p => true && p.Email != currentUser.Email)
-        //            .OrderByDescending(p => p.UpdatedOn).Take(2);
+        /// <summary>Gets the last updated profiles.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <returns></returns>
+        public async Task<IEnumerable<Profile>> GetLastUpdatedProfiles(CurrentUser currentUser)
+        {
+            try
+            {
+                var query = _context.Profiles.AsQueryable()
+                    .Where(p => true && p.Email != currentUser.Email)
+                    .OrderByDescending(p => p.UpdatedOn).Take(2);
 
-        //        return await Task.FromResult(query.ToList());
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw ex;
-        //    }
-        //}
+                return await Task.FromResult(query.ToList());
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
 
-        ///// <summary>Gets the last active profiles.</summary>
-        ///// <param name="currentUser">The current user.</param>
-        ///// <returns></returns>
-        //public async Task<IEnumerable<Profile>> GetLastActiveProfiles(CurrentUser currentUser)
-        //{
-        //    try
-        //    {
-        //        var query = _context.Profiles.AsQueryable()
-        //            .Where(p => true && p.Email != currentUser.Email)
-        //            .OrderByDescending(p => p.LastActive).Take(2);
+        /// <summary>Gets the last active profiles.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <returns></returns>
+        public async Task<IEnumerable<Profile>> GetLastActiveProfiles(CurrentUser currentUser)
+        {
+            try
+            {
+                var query = _context.Profiles.AsQueryable()
+                    .Where(p => true && p.Email != currentUser.Email)
+                    .OrderByDescending(p => p.LastActive).Take(2);
 
-        //        return await Task.FromResult(query.ToList());
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw ex;
-        //    }
-        //}
+                return await Task.FromResult(query.ToList());
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
 
         #endregion
 

@@ -65,7 +65,7 @@ namespace Avalon
             services.AddSingleton<IAuthorizationHandler, HasScopeHandler>();
 
             // Add our repository type(s)
-            services.AddSingleton<IProfileRepository, ProfileRepository>();
+            services.AddSingleton<ICurrentUserRepository, CurrentUserRepository>();
             services.AddSingleton<IProfilesQueryRepository, ProfilesQueryRepository>();
 
             // Add our helper method(s)
@@ -110,7 +110,7 @@ namespace Avalon
                 options.ClaimsEmail = Configuration.GetSection("Auth0:Claims-email").Value;
             });
 
-            services.AddTransient<IProfileRepository, ProfileRepository>();
+            services.AddTransient<ICurrentUserRepository, CurrentUserRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline

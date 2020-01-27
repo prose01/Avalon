@@ -3,7 +3,6 @@ using Avalon.Interfaces;
 using Avalon.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -29,7 +28,7 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpGet]
-        public async Task<IEnumerable<CurrentUser>> GetLatestProfiles()
+        public async Task<IEnumerable<Profile>> GetLatestProfiles()
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
@@ -42,7 +41,7 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpGet("~/GetLastActiveProfiles/")]
-        public async Task<IEnumerable<CurrentUser>> GetLastActiveProfiles()
+        public async Task<IEnumerable<Profile>> GetLastActiveProfiles()
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
@@ -55,7 +54,7 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpGet("~/ProfilesQuery/GetBookmarkedProfiles/")]
-        public async Task<IEnumerable<CurrentUser>> GetBookmarkedProfiles()
+        public async Task<IEnumerable<Profile>> GetBookmarkedProfiles()
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 

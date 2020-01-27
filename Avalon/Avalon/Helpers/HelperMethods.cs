@@ -9,10 +9,10 @@ namespace Avalon.Helpers
 {
     public class HelperMethods : IHelperMethods
     {
-        private readonly IProfileRepository _profileRepository;
+        private readonly ICurrentUserRepository _profileRepository;
         private readonly string _claimsEmail;
 
-        public HelperMethods(IOptions<Settings> settings, IProfileRepository profileRepository)
+        public HelperMethods(IOptions<Settings> settings, ICurrentUserRepository profileRepository)
         {
             _profileRepository = profileRepository;
             _claimsEmail = settings.Value.ClaimsEmail;

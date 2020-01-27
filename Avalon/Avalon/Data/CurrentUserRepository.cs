@@ -9,23 +9,24 @@ using System.Threading.Tasks;
 
 namespace Avalon.Data
 {
-    public class ProfileRepository : IProfileRepository
+    public class CurrentUserRepository : ICurrentUserRepository
     {
         private readonly ProfileContext _context = null;
 
-        public ProfileRepository(IOptions<Settings> settings)
+        public CurrentUserRepository(IOptions<Settings> settings)
         {
             _context = new ProfileContext(settings);
         }
 
+        #region move to Profile
         /// <summary>Gets all profiles.</summary>
         /// <param name="currentUser">The current user.</param>
         /// <returns></returns>
-        public async Task<IEnumerable<CurrentUser>> GetAllProfiles(CurrentUser currentUser)
+        public async Task<IEnumerable<Profile>> GetAllProfiles(CurrentUser currentUser)
         {
             try
             {
-                return await _context.Profiles.Find<CurrentUser>(p => true && p.Email != currentUser.Email).ToListAsync();
+                return await _context.Profiles.Find(p => true && p.Email != currentUser.Email).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -36,9 +37,9 @@ namespace Avalon.Data
         /// <summary>Gets the profile by identifier.</summary>
         /// <param name="profileId">The profile identifier.</param>
         /// <returns></returns>
-        public async Task<CurrentUser> GetProfileById(string profileId)
+        public async Task<Profile> GetProfileById(string profileId)
         {
-            var filter = Builders<CurrentUser>
+            var filter = Builders<Profile>
                             .Filter.Eq(e => e.ProfileId, profileId);
 
             try
@@ -56,9 +57,9 @@ namespace Avalon.Data
         /// <summary>Gets the profile by name.</summary>
         /// <param name="profileName">Name of the profile.</param>
         /// <returns></returns>
-        public async Task<CurrentUser> GetProfileByName(string profileName)
+        public async Task<Profile> GetProfileByName(string profileName)
         {
-            var filter = Builders<CurrentUser>
+            var filter = Builders<Profile>
                             .Filter.Eq(e => e.Name, profileName);
 
             try
@@ -72,6 +73,7 @@ namespace Avalon.Data
                 throw ex;
             }
         }
+        #endregion
 
         /// <summary>Adds a new profile.</summary>
         /// <param name="item">The profile.</param>
@@ -119,7 +121,7 @@ namespace Avalon.Data
             {
                 item.UpdatedOn = DateTime.Now;
 
-                return await _context.Profiles
+                return await _context.CurrentUser
                             .ReplaceOneAsync(p => p.ProfileId.Equals(item.ProfileId)
                                             , item
                                             , new UpdateOptions { IsUpsert = true });
@@ -136,7 +138,7 @@ namespace Avalon.Data
         /// <summary>Gets the profile by filter.</summary>
         /// <param name="filter">The filter.</param>
         /// <returns></returns>
-        public async Task<CurrentUser> GetProfileByFilter(string filter)
+        public async Task<Profile> GetProfileByFilter(string filter)
         {
             try
             {
@@ -159,7 +161,7 @@ namespace Avalon.Data
 
             try
             {
-                return await _context.Profiles
+                return await _context.CurrentUser
                     .Find(filter)
                     .FirstOrDefaultAsync();
             }
@@ -194,7 +196,7 @@ namespace Avalon.Data
                     ReturnDocument = ReturnDocument.After
                 };
 
-                return  _context.Profiles.FindOneAndUpdate(filter, update, options);
+                return  _context.CurrentUser.FindOneAndUpdate(filter, update, options);
             }
             catch (Exception ex)
             {
@@ -227,7 +229,7 @@ namespace Avalon.Data
                     ReturnDocument = ReturnDocument.After
                 };
 
-                return _context.Profiles.FindOneAndUpdate(filter, update, options);
+                return _context.CurrentUser.FindOneAndUpdate(filter, update, options);
             }
             catch (Exception ex)
             {

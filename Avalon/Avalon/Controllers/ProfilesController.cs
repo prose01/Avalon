@@ -14,10 +14,10 @@ namespace Avalon.Controllers
     [Authorize]
     public class ProfilesController : Controller
     {
-        private readonly IProfileRepository _profileRepository;
+        private readonly ICurrentUserRepository _profileRepository;
         private readonly IHelperMethods _helper;
 
-        public ProfilesController(IProfileRepository profileRepository, IHelperMethods helperMethods)
+        public ProfilesController(ICurrentUserRepository profileRepository, IHelperMethods helperMethods)
         {
             _profileRepository = profileRepository;
             _helper = helperMethods;
@@ -40,7 +40,7 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpGet]
-        public async Task<IEnumerable<CurrentUser>> Get()
+        public async Task<IEnumerable<Profile>> Get()
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
@@ -55,7 +55,7 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpGet("{profileId}")]
-        public async Task<CurrentUser> Get(string profileId)
+        public async Task<Profile> Get(string profileId)
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
@@ -161,9 +161,9 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpGet("~/GetProfileByFilter/")]
-        public async Task<CurrentUser> GetProfileByFilter(string profileFilter)
+        public async Task<Profile> GetProfileByFilter(string profileFilter)
         {
-            return await _profileRepository.GetProfileByFilter(profileFilter) ?? new CurrentUser(); // Should be null if no filter match.
+            return await _profileRepository.GetProfileByFilter(profileFilter) ?? new Profile(); // Should be null if no filter match.
         }
 
         /// <summary>Adds the profiles to currentUser bookmarks.</summary>
