@@ -116,11 +116,8 @@ namespace Avalon
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            // Enable Authorization
-            app.UseAuthorization();
-
-            // Enable Authentication
-            app.UseAuthentication();
+            // Enable routing
+            app.UseRouting();
 
             if (env.IsDevelopment())
             {
@@ -135,10 +132,13 @@ namespace Avalon
                     .AllowAnyHeader()
                     .AllowCredentials()
             );
-
-            // Enable routing
-            app.UseRouting();
             
+            // Enable Authentication
+            app.UseAuthentication();
+
+            // Enable Authorization
+            app.UseAuthorization();
+
             // Add endpoints 
             app.UseEndpoints(endpoints => {
                 endpoints.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");

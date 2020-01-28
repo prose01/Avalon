@@ -28,7 +28,7 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpGet("~/GetAllProfiles/")]
-        public async Task<IEnumerable<Profile>> Get()
+        public async Task<IEnumerable<Profile>> GetAllProfiles()
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 

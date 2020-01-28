@@ -27,7 +27,7 @@ namespace Avalon.Controllers
         /// </summary>
         /// <returns></returns>
         [NoCache]
-        [HttpGet("~/CurrentUser/")]
+        [HttpGet("~/CurrentUser")]
         public async Task<CurrentUser> GetCurrentUserProfile()
         {
             return await _helper.GetCurrentUserProfile(User);
@@ -37,7 +37,7 @@ namespace Avalon.Controllers
         /// Add new profile to database
         /// </summary>
         /// <param name="profile"> The value.</param>
-        [HttpPost]
+        [HttpPost("~/CurrentUser")]
         public async Task<IActionResult> Post([FromBody]CurrentUser item)
         {
             if (!ModelState.IsValid) return BadRequest();
@@ -76,7 +76,7 @@ namespace Avalon.Controllers
         /// Patches the specified profile identifier. Does not work!!!
         /// </summary>
         /// <param name="patch">The patch.</param>
-        //[HttpPatch]
+        //[HttpPatch("~/CurrentUser/")]
         //public async Task<IActionResult> Patch([FromBody]JsonPatchDocument<CurrentUser> patch)
         //{
         //    var currentUser = await _helper.GetCurrentUserProfile(User);
@@ -98,7 +98,7 @@ namespace Avalon.Controllers
         /// <summary>Update the specified profile identifier.</summary>
         /// <param name="item">The profile</param>
         [NoCache]
-        [HttpPut]
+        [HttpPut("~/CurrentUser")]
         public async Task<IActionResult> Put([FromBody]CurrentUser item)
         {
             if (!ModelState.IsValid) return BadRequest();
