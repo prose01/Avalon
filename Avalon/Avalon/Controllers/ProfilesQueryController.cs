@@ -57,8 +57,8 @@ namespace Avalon.Controllers
         /// </summary>
         /// <returns></returns>
         [NoCache]
-        [HttpGet("~/GetProfileByFilter/{profileFilter}")]
-        public async Task<Profile> GetProfileByFilter(string profileFilter)
+        [HttpPost("~/GetProfileByFilter")]
+        public async Task<Profile> GetProfileByFilter([FromBody]Profile profileFilter)
         {
             return await _profilesQueryRepository.GetProfileByFilter(profileFilter) ?? new Profile(); // Should be null if no filter match.
         }

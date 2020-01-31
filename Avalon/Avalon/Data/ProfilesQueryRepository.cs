@@ -79,8 +79,11 @@ namespace Avalon.Data
         /// <summary>Gets the profile by filter.</summary>
         /// <param name="filter">The filter.</param>
         /// <returns></returns>
-        public async Task<Profile> GetProfileByFilter(string filter)
+        public async Task<Profile> GetProfileByFilter(Profile profileFilter)
         {
+            var filter = Builders<Profile>
+                            .Filter.Eq(e => e.Age, profileFilter.Age);
+
             try
             {
                 return await _context.Profiles
