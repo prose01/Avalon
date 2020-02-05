@@ -1,6 +1,7 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace Avalon.Model
 {
@@ -10,14 +11,30 @@ namespace Avalon.Model
         [BsonId]
         public abstract ObjectId _id { get; set; }
         public abstract string ProfileId { get; set; }
+
+        [EmailAddress]
         public abstract string Email { get; set; }
         public abstract string Name { get; set; }
+
+        [DataType(DataType.DateTime)]
         public abstract DateTime CreatedOn { get; set; }
+
+        [DataType(DataType.DateTime)]
         public abstract DateTime UpdatedOn { get; set; }
+
+        [DataType(DataType.DateTime)]
         public abstract DateTime LastActive { get; set; }
-        public abstract int Age { get; set; }
-        public abstract int Height { get; set; }
-        public abstract int Weight { get; set; }
+
+        [Range(0, 120)]
+        public abstract int? Age { get; set; }
+
+        [Range(0, 220)]
+        public abstract int? Height { get; set; }
+
+        [Range(0, 200)]
+        public abstract int? Weight { get; set; }
+
+        [StringLength(2000, ErrorMessage = "Description length cannot be more than 2000.")]
         public abstract string Description { get; set; }
 
         //public abstract string[] Tags { get; set; }
@@ -25,6 +42,7 @@ namespace Avalon.Model
         //public abstract string JobTitle { get; set; }
 
         [BsonRepresentation(BsonType.String)]
+        [EnumDataType(typeof(GenderType))]
         public abstract GenderType Gender { get; set; }
 
         [BsonRepresentation(BsonType.String)]

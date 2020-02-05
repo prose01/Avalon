@@ -11,6 +11,7 @@ namespace Avalon.Controllers
     [Produces("application/json")]
     [Route("[controller]")]
     [Authorize]
+    [ApiController]
     public class ProfilesQueryController : Controller
     {
         private readonly IProfilesQueryRepository _profilesQueryRepository;
@@ -60,7 +61,7 @@ namespace Avalon.Controllers
         [HttpPost("~/GetProfileByFilter")]
         public async Task<Profile> GetProfileByFilter([FromBody]Profile profileFilter)
         {
-            return await _profilesQueryRepository.GetProfileByFilter(profileFilter) ?? new Profile(); // Should be null if no filter match.
+            return await _profilesQueryRepository.GetProfileByFilter(profileFilter) ?? null; // Should be null if no filter match.
         }
 
         /// <summary>

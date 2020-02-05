@@ -11,6 +11,7 @@ namespace Avalon.Controllers
     [Produces("application/json")]
     [Route("[controller]")]
     [Authorize]
+    [ApiController]
     public class CurrentUserController : Controller
     {
         private readonly ICurrentUserRepository _profileRepository;
@@ -44,7 +45,7 @@ namespace Avalon.Controllers
 
             var currentUser = await _helper.GetCurrentUserProfile(User); // New user don't exists!!!
 
-            if (currentUser.ProfileId != item.ProfileId) return BadRequest();
+            if (currentUser.ProfileId != item.ProfileId) return BadRequest();   // Check if Name exists!!
 
             return Ok(_profileRepository.AddProfile(item));
 

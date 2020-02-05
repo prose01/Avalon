@@ -18,9 +18,9 @@ namespace Avalon.Model
         public override DateTime CreatedOn { get; set; } = DateTime.Now;
         public override DateTime UpdatedOn { get; set; } = DateTime.Now;
         public override DateTime LastActive { get; set; } = DateTime.Now;
-        public override int Age { get; set; }
-        public override int Height { get; set; }
-        public override int Weight { get; set; }
+        public override int? Age { get; set; } = null;
+        public override int? Height { get; set; }
+        public override int? Weight { get; set; }
         public override string Description { get; set; }
 
         //public override string[] Tags { get; set; }
