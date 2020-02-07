@@ -79,15 +79,22 @@ namespace Avalon.Data
         /// <summary>Gets the profile by filter.</summary>
         /// <param name="filter">The filter.</param>
         /// <returns></returns>
-        public async Task<Profile> GetProfileByFilter(Profile profileFilter)
+        public async Task<Profile> GetProfileByFilter(ProfileFilter profileFilter)
         {
-            var filter = Builders<Profile>
-                            .Filter.Eq(e => e.Age, profileFilter.Age);
+            List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>();
+
+            if (profileFilter.Name != null)
+                filters.Add(Builders<Profile>.Filter.Eq(x => x.Name, profileFilter.Name));
+
+            if (profileFilter.Age != null)
+                filters.Add(Builders<Profile>.Filter.In(x => x.Age, profileFilter.Age));
+
+            var combineFilters = Builders<Profile>.Filter.And(filters);
 
             try
             {
                 return await _context.Profiles
-                    .Find(filter)
+                    .Find(combineFilters)
                     .FirstOrDefaultAsync();
             }
             catch (Exception ex)
