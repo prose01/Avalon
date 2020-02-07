@@ -1,35 +1,26 @@
-﻿using MongoDB.Bson;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace Avalon.Model
 {
-    public class Profile : AbstractProfile
+    public class ProfileFilter
     {
-        #region special properties
-        public List<string> Bookmarks { private get; set; }
-
-        #endregion
-
-        public override ObjectId _id { get; set; }
-        public override string ProfileId { get; set; }
-        public override string Email { get; set; }
-        public override string Name { get; set; }
-        public override DateTime CreatedOn { get; set; }
-        public override DateTime UpdatedOn { get; set; }
-        public override DateTime LastActive { get; set; }
-        public override int? Age { get; set; } = null;
-        public override int? Height { get; set; }
-        public override int? Weight { get; set; }
-        public override string Description { get; set; }
+        public string Name { get; set; }
+        public DateTime CreatedOn { get; set; }
+        public DateTime UpdatedOn { get; set; }
+        public DateTime LastActive { get; set; }
+        public List<int?> Age { get; set; }
+        public List<int?> Height { get; set; }
+        public List<int?> Weight { get; set; }
+        public string Description { get; set; }
 
         //public override string[] Tags { get; set; }
 
         //public override string JobTitle { get; set; } = string.Empty;
 
-        public override GenderType Gender { get; set; }
+        public GenderType Gender { get; set; }
 
-        public override BodyType Body { get; set; }
+        public BodyType Body { get; set; }
 
         //[BsonRepresentation(BsonType.String)]
         //public override SmokingHabitsType SmokingHabits { get; set; }

@@ -4,10 +4,10 @@ using System.Collections.Generic;
 
 namespace Avalon.Model
 {
-    public class Profile : AbstractProfile
+    public class CurrentUser : AbstractProfile
     {
         #region special properties
-        public List<string> Bookmarks { private get; set; }
+        public List<string> Bookmarks { get; set; }
 
         #endregion
 
@@ -15,9 +15,9 @@ namespace Avalon.Model
         public override string ProfileId { get; set; }
         public override string Email { get; set; }
         public override string Name { get; set; }
-        public override DateTime CreatedOn { get; set; }
-        public override DateTime UpdatedOn { get; set; }
-        public override DateTime LastActive { get; set; }
+        public override DateTime CreatedOn { get; set; } = DateTime.Now;
+        public override DateTime UpdatedOn { get; set; } = DateTime.Now;
+        public override DateTime LastActive { get; set; } = DateTime.Now;
         public override int? Age { get; set; } = null;
         public override int? Height { get; set; }
         public override int? Weight { get; set; }

@@ -15,12 +15,7 @@ namespace Avalon.Data
                 _database = client.GetDatabase(settings.Value.Database);
         }
 
-        public IMongoCollection<Profile> Profiles
-        {
-            get
-            {
-                return _database.GetCollection<Profile>("Profile");
-            }
-        }
+        public IMongoCollection<CurrentUser> CurrentUser => _database.GetCollection<CurrentUser>("Profile");
+        public IMongoCollection<Profile> Profiles => _database.GetCollection<Profile>("Profile");
     }
 }

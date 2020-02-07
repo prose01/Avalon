@@ -1,26 +1,24 @@
 using Avalon.Data;
+using Avalon.Helpers;
 using Avalon.Interfaces;
 using Avalon.Model;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using NLog.Extensions.Logging;
-using NLog.Web;
-using Swashbuckle.AspNetCore.Swagger;
-using Okta.AspNetCore;
+using Microsoft.OpenApi.Models;
+using System;
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace Avalon
 {
     public class Startup
     {
-        public const string AppS3BucketKey = "AppS3Bucket";
-
         public Startup(IHostingEnvironment env)
         {
-            env.ConfigureNLog("nlog.config");
-
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
@@ -34,92 +32,117 @@ namespace Avalon
         // This method gets called by the runtime. Use this method to add services to the container
         public void ConfigureServices(IServiceCollection services)
         {
-            // Add Okta Authentication
-            services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = OktaDefaults.ApiAuthenticationScheme;
-                options.DefaultChallengeScheme = OktaDefaults.ApiAuthenticationScheme;
-                options.DefaultSignInScheme = OktaDefaults.ApiAuthenticationScheme;
-            })
-            .AddOktaWebApi(new OktaWebApiOptions()
-            {
-                OktaDomain = Configuration["Okta:OktaDomain"],
-                ClientId = Configuration["Okta:ClientId"]
-            });
-
-
             // Add service and create Policy with options
             services.AddCors(options =>
             {
                 options.AddPolicy("CorsPolicy",
-                    builder => builder.AllowAnyOrigin()
-                    .AllowAnyMethod()
-                    .AllowAnyHeader()
-                    .AllowCredentials());
+                    builder => builder
+                        .AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader()
+                    );
             });
 
             // Add framework services.
-            services.AddMvc();
+            services.AddMvc().AddJsonOptions(options => {
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            });
 
-            services.AddLogging();
+            // Add authentication.
+            string domain = $"https://{Configuration["Auth0:Domain"]}/";
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
+            }).AddJwtBearer(options =>
+            {
+                options.Authority = domain;
+                options.Audience = Configuration["Auth0:ApiIdentifier"];
+            });
+
+            // register the scope authorization handler
+            services.AddSingleton<IAuthorizationHandler, HasScopeHandler>();
 
             // Add our repository type(s)
-            services.AddSingleton<IProfileRepository, ProfileRepository>();
+            services.AddSingleton<ICurrentUserRepository, CurrentUserRepository>();
             services.AddSingleton<IProfilesQueryRepository, ProfilesQueryRepository>();
+
+            // Add our helper method(s)
+            services.AddSingleton<IHelperMethods, HelperMethods>();
 
             // Register the Swagger generator, defining one or more Swagger documents
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new Info
+                c.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Version = "v1",
                     Title = "Avalon API",
                     Description = "A simple example Avalon API",
-                    TermsOfService = "None",
-                    Contact = new Contact { Name = "Peter Rose", Email = "", Url = "http://Avalon.com/" },
-                    License = new Swashbuckle.AspNetCore.Swagger.License { Name = "Use under LICX", Url = "http://Avalon.com" }
+                    //TermsOfService = "None",
+                    //Contact = new Contact { Name = "Peter Rose", Email = "", Url = "http://Avalon.com/" },
+                    //License = new Swashbuckle.AspNetCore.Swagger.License { Name = "Use under LICX", Url = "http://Avalon.com" }
                 });
-
-                c.DescribeAllEnumsAsStrings();
-
-                //Set the comments path for the swagger json and ui.
-                //var basePath = PlatformServices.Default.Application.ApplicationBasePath;
-                //var xmlPath = Path.Combine(basePath, "Avalon.xml");
-                //c.IncludeXmlComments(xmlPath);
+                
+                // Define the ApiKey scheme that's in use (i.e. Implicit Flow)
+                c.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+                {
+                    Type = SecuritySchemeType.ApiKey,
+                    Flows = new OpenApiOAuthFlows
+                    {
+                        Implicit = new OpenApiOAuthFlow
+                        {
+                            AuthorizationUrl = new Uri("/auth-server/connect/authorize", UriKind.Relative),
+                            Scopes = new Dictionary<string, string>
+                            {
+                                { "readAccess", "Access read operations" },
+                                { "writeAccess", "Access write operations" }
+                            }
+                        }
+                    }
+                });
             });
 
             services.Configure<Settings>(options =>
             {
                 options.ConnectionString = Configuration.GetSection("MongoConnection:ConnectionString").Value;
                 options.Database = Configuration.GetSection("MongoConnection:Database").Value;
+                options.ClaimsEmail = Configuration.GetSection("Auth0:Claims-email").Value;
             });
 
-            services.AddTransient<IProfileRepository, ProfileRepository>();
-
-            // Add S3 to the ASP.NET Core dependency injection framework.
-            services.AddAWSService<Amazon.S3.IAmazonS3>();
+            services.AddTransient<ICurrentUserRepository, CurrentUserRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            // Add Okta Authentication
-            app.UseAuthentication();
+            // Enable routing
+            app.UseRouting();
 
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
-
+            
             // Shows UseCors with CorsPolicyBuilder.
             // Remember to remove Cors for production.
             app.UseCors(builder =>
                 builder.WithOrigins("http://localhost:4200")
                     .WithMethods("GET", "POST", "PUT", "PATCH", "HEAD")
                     .AllowAnyHeader()
+                    .AllowCredentials()
             );
+            
+            // Enable Authentication
+            app.UseAuthentication();
 
-            app.UseMvcWithDefaultRoute();
+            // Enable Authorization
+            app.UseAuthorization();
+
+            // Add endpoints 
+            app.UseEndpoints(endpoints => {
+                endpoints.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
+            });
 
             // Enable middleware to serve generated Swagger as a JSON endpoint.
             app.UseSwagger();
@@ -129,17 +152,6 @@ namespace Avalon
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Avalon V1");
             });
-
-            //loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-            //loggerFactory.AddDebug();
-
-            //add NLog to ASP.NET Core
-            //loggerFactory.AddNLog();
-
-            //add NLog.Web
-            app.AddNLogWeb();
-
-            app.UseMvc();
         }
     }
 }

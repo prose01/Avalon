@@ -1,24 +1,67 @@
 ﻿using Avalon.Infrastructure;
 using Avalon.Interfaces;
 using Avalon.Model;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Avalon.Controllers
 {
     [Produces("application/json")]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
+    [Authorize]
+    [ApiController]
     public class ProfilesQueryController : Controller
     {
         private readonly IProfilesQueryRepository _profilesQueryRepository;
-        private readonly ILogger<ProfilesQueryController> _logger;
+        private readonly IHelperMethods _helper;
 
-        public ProfilesQueryController(IProfilesQueryRepository profilesQueryRepository, ILogger<ProfilesQueryController> logger)
+        public ProfilesQueryController(IProfilesQueryRepository profilesQueryRepository, IHelperMethods helperMethods)
         {
             _profilesQueryRepository = profilesQueryRepository;
-            _logger = logger;
+            _helper = helperMethods;
+        }
+
+        /// <summary>
+        /// Gets all Profiles.
+        /// </summary>
+        /// <returns></returns>
+        [NoCache]
+        [HttpGet("~/GetAllProfiles/")]
+        public async Task<IEnumerable<Profile>> GetAllProfiles()
+        {
+            var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            return await _profilesQueryRepository.GetAllProfiles(currentUser);
+        }
+
+        // GET api/profiles/5
+        /// <summary>
+        /// Gets the specified profile identifier.
+        /// </summary>
+        /// <param name="profileId">The profile identifier.</param>
+        /// <returns></returns>
+        [NoCache]
+        [HttpGet("~/GetProfileById/{profileId}")]
+        public async Task<Profile> Get(string profileId)
+        {
+            var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            if (currentUser.ProfileId == profileId) return null;
+
+            return await _profilesQueryRepository.GetProfileById(profileId) ?? null;
+        }
+
+        /// <summary>
+        /// Gets the specified profile based on a filter. Eg. { Body: 'something' }
+        /// </summary>
+        /// <returns></returns>
+        [NoCache]
+        [HttpPost("~/GetProfileByFilter")]
+        public async Task<Profile> GetProfileByFilter([FromBody]ProfileFilter profileFilter)
+        {
+            return await _profilesQueryRepository.GetProfileByFilter(profileFilter) ?? null; // Should be null if no filter match.
         }
 
         /// <summary>
@@ -26,16 +69,12 @@ namespace Avalon.Controllers
         /// </summary>
         /// <returns></returns>
         [NoCache]
-        [HttpGet]
-        public Task<IEnumerable<Profile>> GetLatestProfiles()
+        [HttpGet("~/GetLatestProfiles/")]
+        public async Task<IEnumerable<Profile>> GetLatestProfiles()
         {
-            _logger.LogInformation("GetLatestProfiles Information Log.");
-            return GetLatestProfilesInternal();
-        }
+            var currentUser = await _helper.GetCurrentUserProfile(User);
 
-        private async Task<IEnumerable<Profile>> GetLatestProfilesInternal()
-        {
-            return await _profilesQueryRepository.GetLatestProfiles();
+            return await _profilesQueryRepository.GetLatestCreatedProfiles(currentUser);
         }
 
         /// <summary>
@@ -43,35 +82,25 @@ namespace Avalon.Controllers
         /// </summary>
         /// <returns></returns>
         [NoCache]
-        [HttpGet("~/api/GetLastActiveProfiles/")]
-        public Task<IEnumerable<Profile>> GetLastActiveProfiles()
+        [HttpGet("~/GetLastActiveProfiles/")]
+        public async Task<IEnumerable<Profile>> GetLastActiveProfiles()
         {
-            _logger.LogInformation("GetLastActiveProfiles Information Log.");
-            return GetLastActiveProfilesInternal();
+            var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            return await _profilesQueryRepository.GetLastActiveProfiles(currentUser);
         }
-
-        private async Task<IEnumerable<Profile>> GetLastActiveProfilesInternal()
-        {
-            return await _profilesQueryRepository.GetLastActiveProfiles();
-        }
-
-
 
         /// <summary>
         /// Gets Bookmarked Profiles.
         /// </summary>
         /// <returns></returns>
         [NoCache]
-        [HttpGet("~/api/GetBookmarkedProfiles/")]
-        public Task<IEnumerable<Profile>> GetBookmarkedProfiles(string profileId)
+        [HttpGet("~/GetBookmarkedProfiles/")]
+        public async Task<IEnumerable<Profile>> GetBookmarkedProfiles()
         {
-            _logger.LogInformation("GetBookmarkedProfiles Information Log.");
-            return GetBookmarkedProfilesInternal(profileId);
-        }
+            var currentUser = await _helper.GetCurrentUserProfile(User);
 
-        private async Task<IEnumerable<Profile>> GetBookmarkedProfilesInternal(string profileId)
-        {
-            return await _profilesQueryRepository.GetBookmarkedProfiles(profileId);
+            return await _profilesQueryRepository.GetBookmarkedProfiles(currentUser);
         }
     }
 }
