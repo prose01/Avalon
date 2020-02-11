@@ -79,7 +79,7 @@ namespace Avalon.Data
         /// <summary>Gets the profile by filter.</summary>
         /// <param name="filter">The filter.</param>
         /// <returns></returns>
-        public async Task<Profile> GetProfileByFilter(ProfileFilter profileFilter)
+        public async Task<IEnumerable<Profile>> GetProfileByFilter(ProfileFilter profileFilter)
         {
             List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>();
 
@@ -93,9 +93,8 @@ namespace Avalon.Data
 
             try
             {
-                return await _context.Profiles
-                    .Find(combineFilters)
-                    .FirstOrDefaultAsync();
+                return _context.Profiles
+                    .Find(combineFilters).ToList();
             }
             catch (Exception ex)
             {
