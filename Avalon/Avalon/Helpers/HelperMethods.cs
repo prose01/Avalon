@@ -25,7 +25,7 @@ namespace Avalon.Helpers
         {
             var email = user.Claims.FirstOrDefault(c => c.Type == _claimsEmail)?.Value;
 
-            return await _profileRepository.GetCurrentProfileByEmail(email) ?? new CurrentUser();
+            return await _profileRepository.GetCurrentProfileByEmail(email) ?? new CurrentUser(); // Burde smide en fejl hvis bruger ikke findes.
         }
     }
 }

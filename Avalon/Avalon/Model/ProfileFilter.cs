@@ -5,6 +5,11 @@ namespace Avalon.Model
 {
     public class ProfileFilter
     {
+        #region special properties
+        public string CurrentUserId { get; set; }
+
+        #endregion
+
         public string Name { get; set; }
         public DateTime CreatedOn { get; set; }
         public DateTime UpdatedOn { get; set; }

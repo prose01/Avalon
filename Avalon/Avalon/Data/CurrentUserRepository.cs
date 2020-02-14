@@ -120,7 +120,7 @@ namespace Avalon.Data
                     ReturnDocument = ReturnDocument.After
                 };
 
-                return  _context.CurrentUser.FindOneAndUpdate(filter, update, options);
+                return await _context.CurrentUser.FindOneAndUpdateAsync(filter, update, options);
             }
             catch (Exception ex)
             {
@@ -153,7 +153,7 @@ namespace Avalon.Data
                     ReturnDocument = ReturnDocument.After
                 };
 
-                return _context.CurrentUser.FindOneAndUpdate(filter, update, options);
+                return await _context.CurrentUser.FindOneAndUpdateAsync(filter, update, options);
             }
             catch (Exception ex)
             {

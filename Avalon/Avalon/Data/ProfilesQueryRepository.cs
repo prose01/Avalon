@@ -83,6 +83,9 @@ namespace Avalon.Data
         {
             List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>();
 
+            //Remove currentUser from the list.
+            filters.Add(Builders<Profile>.Filter.Ne(x => x.ProfileId, profileFilter.CurrentUserId));
+
             if (profileFilter.Name != null)
                 filters.Add(Builders<Profile>.Filter.Eq(x => x.Name, profileFilter.Name));
 

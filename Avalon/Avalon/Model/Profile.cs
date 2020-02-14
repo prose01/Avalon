@@ -13,7 +13,7 @@ namespace Avalon.Model
 
         public override ObjectId _id { get; set; }
         public override string ProfileId { get; set; }
-        public override string Email { get; set; }
+        public override string Email { get; set; } // Skal være internal!!!!
         public override string Name { get; set; }
         public override DateTime CreatedOn { get; set; }
         public override DateTime UpdatedOn { get; set; }

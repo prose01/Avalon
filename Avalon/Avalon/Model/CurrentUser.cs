@@ -7,13 +7,13 @@ namespace Avalon.Model
     public class CurrentUser : AbstractProfile
     {
         #region special properties
-        public List<string> Bookmarks { get; set; }
+        public List<string> Bookmarks { get; set; } // Remember to initiate the list when new user is created!!! 
 
         #endregion
 
         public override ObjectId _id { get; set; }
         public override string ProfileId { get; set; }
-        public override string Email { get; set; }
+        public override string Email { get; set; } // Skal være internal!!!! Måske, hvad hvis man vil ændre den?
         public override string Name { get; set; }
         public override DateTime CreatedOn { get; set; } = DateTime.Now;
         public override DateTime UpdatedOn { get; set; } = DateTime.Now;
