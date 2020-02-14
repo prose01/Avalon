@@ -15,11 +15,13 @@ namespace Avalon.Controllers
     public class CurrentUserController : Controller
     {
         private readonly ICurrentUserRepository _profileRepository;
+        private readonly IProfilesQueryRepository _profilesQueryRepository;
         private readonly IHelperMethods _helper;
 
-        public CurrentUserController(ICurrentUserRepository profileRepository, IHelperMethods helperMethods)
+        public CurrentUserController(ICurrentUserRepository profileRepository, IProfilesQueryRepository profilesQueryRepository, IHelperMethods helperMethods)
         {
             _profileRepository = profileRepository;
+            _profilesQueryRepository = profilesQueryRepository;
             _helper = helperMethods;
         }
 
@@ -45,32 +47,11 @@ namespace Avalon.Controllers
 
             var currentUser = await _helper.GetCurrentUserProfile(User); // New user don't exists!!!
 
-            if (currentUser.ProfileId != item.ProfileId) return BadRequest();   // Check if Name exists!!
+            if (currentUser.ProfileId != item.ProfileId) return BadRequest();   // Check if ProfileId exists!!
+
+            if (_profilesQueryRepository.GetProfileByName(item.Name).Result != null) return BadRequest();   // Check if Name exists!!
 
             return Ok(_profileRepository.AddProfile(item));
-
-            //if (ModelState.IsValid)
-            //{
-            //    //...
-            //    return Ok();
-            //}
-            //return BadRequest();
-
-            //// Tell user the name is not valid!
-            //if (string.IsNullOrEmpty(item.Name))
-            //{
-            //    return new BadRequestObjectResult(ModelState);
-            //}
-
-            //var profile = _profileRepository.GetProfileByName(item.Name).Result ?? null;
-
-            //// Tell user that name already exits!
-            //if (profile != null)
-            //{
-            //    return new BadRequestObjectResult(ModelState);
-            //}
-
-            //return Ok(_profileRepository.AddProfile(item));
         }
 
         /// <summary>
