@@ -114,7 +114,7 @@ namespace Avalon.Data
             {
                 var query = _context.Profiles.AsQueryable()
                     .Where(p => true && p.Email != currentUser.Email)
-                    .OrderByDescending(p => p.CreatedOn).Take(2);
+                    .OrderByDescending(p => p.CreatedOn).Take(10);
 
                 return await Task.FromResult(query.ToList());
             }
@@ -133,7 +133,7 @@ namespace Avalon.Data
             {
                 var query = _context.Profiles.AsQueryable()
                     .Where(p => true && p.Email != currentUser.Email)
-                    .OrderByDescending(p => p.UpdatedOn).Take(2);
+                    .OrderByDescending(p => p.UpdatedOn).Take(10);
 
                 return await Task.FromResult(query.ToList());
             }
@@ -152,7 +152,7 @@ namespace Avalon.Data
             {
                 var query = _context.Profiles.AsQueryable()
                     .Where(p => true && p.Email != currentUser.Email)
-                    .OrderByDescending(p => p.LastActive).Take(2);
+                    .OrderByDescending(p => p.LastActive).Take(10);
 
                 return await Task.FromResult(query.ToList());
             }
