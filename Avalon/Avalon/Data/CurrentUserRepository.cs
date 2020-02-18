@@ -23,12 +23,12 @@ namespace Avalon.Data
         {
             try
             {
-                // TODO: create Id
                 item.ProfileId = Guid.NewGuid().ToString();
                 item.CreatedOn = DateTime.Now;
                 item.UpdatedOn = DateTime.Now;
+                item.LastActive = DateTime.Now;
 
-                //await _context.Profiles.InsertOneAsync(item);
+                //await _context.CurrentUser.InsertOneAsync(item);
             }
             catch (Exception ex)
             {

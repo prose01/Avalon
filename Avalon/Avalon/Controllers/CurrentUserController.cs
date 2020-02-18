@@ -45,11 +45,17 @@ namespace Avalon.Controllers
         {
             if (!ModelState.IsValid) return BadRequest();
 
-            var currentUser = await _helper.GetCurrentUserProfile(User); // New user don't exists!!!
+            // Check if Email exists
+            var email = _helper.GetCurrentUserEmail(User);
 
-            if (currentUser.ProfileId != item.ProfileId) return BadRequest();   // Check if ProfileId exists!!
+            if (string.IsNullOrEmpty(email)) return BadRequest();
 
-            if (_profilesQueryRepository.GetProfileByName(item.Name).Result != null) return BadRequest();   // Check if Name exists!!
+            if (_profilesQueryRepository.GetProfileByEmail(email).Result != null) return BadRequest();
+
+            item.Email = email;
+
+            // Check if Name exists
+            if (_profilesQueryRepository.GetProfileByName(item.Name).Result != null) return BadRequest();
 
             return Ok(_profileRepository.AddProfile(item));
         }
