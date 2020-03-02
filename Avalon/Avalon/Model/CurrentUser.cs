@@ -12,6 +12,7 @@ namespace Avalon.Model
         #endregion
 
         public override ObjectId _id { get; set; }
+        public override string Auth0Id { get; set; }
         public override string ProfileId { get; set; }
         public override string Email { get; set; } // Skal være internal!!!! Måske, hvad hvis man vil ændre den?
         public override string Name { get; set; }

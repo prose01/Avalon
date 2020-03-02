@@ -45,14 +45,14 @@ namespace Avalon.Controllers
         {
             if (!ModelState.IsValid) return BadRequest();
 
-            // Check if Email exists
-            var email = _helper.GetCurrentUserEmail(User);
+            // Check if Auth0Id exists
+            var auth0Id = _helper.GetCurrentUserAuth0Id(User);
 
-            if (string.IsNullOrEmpty(email)) return BadRequest();
+            if (string.IsNullOrEmpty(auth0Id)) return BadRequest();
 
-            if (_profilesQueryRepository.GetProfileByEmail(email).Result != null) return BadRequest();
+            if (_profilesQueryRepository.GetProfileByAuth0Id(auth0Id).Result != null) return BadRequest();
 
-            item.Email = email;
+            item.Auth0Id = auth0Id;
 
             // Check if Name exists
             if (_profilesQueryRepository.GetProfileByName(item.Name).Result != null) return BadRequest();

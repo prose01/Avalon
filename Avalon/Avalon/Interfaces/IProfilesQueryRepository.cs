@@ -8,7 +8,8 @@ namespace Avalon.Interfaces
     {
         Task<IEnumerable<Profile>> GetAllProfiles(CurrentUser currentUser);
         Task<Profile> GetProfileById(string profileId);
-        Task<Profile> GetProfileByEmail(string profileEmail);
+        //Task<Profile> GetProfileByEmail(string profileEmail);
+        Task<Profile> GetProfileByAuth0Id(string auth0Id);
         Task<Profile> GetProfileByName(string profileName);
         Task<IEnumerable<Profile>> GetProfileByFilter(ProfileFilter profileFilter);
         Task<IEnumerable<Profile>> GetLatestCreatedProfiles(CurrentUser profile);

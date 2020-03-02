@@ -10,6 +10,7 @@ namespace Avalon.Model
     {
         [BsonId]
         public abstract ObjectId _id { get; set; }
+        public abstract string Auth0Id { get; set; }
         public abstract string ProfileId { get; set; }
 
         [EmailAddress]

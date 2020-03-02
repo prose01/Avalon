@@ -108,6 +108,7 @@ namespace Avalon
                 options.ConnectionString = Configuration.GetSection("MongoConnection:ConnectionString").Value;
                 options.Database = Configuration.GetSection("MongoConnection:Database").Value;
                 options.ClaimsEmail = Configuration.GetSection("Auth0:Claims-email").Value;
+                options.auth0Id = Configuration.GetSection("Auth0:Claims-nameidentifier").Value;
             });
 
             services.AddTransient<ICurrentUserRepository, CurrentUserRepository>();

@@ -27,7 +27,7 @@ namespace Avalon.Data
         {
             try
             {
-                return await _context.Profiles.Find(p => true && p.Email != currentUser.Email).ToListAsync();
+                return await _context.Profiles.Find(p => true && p.Auth0Id != currentUser.Auth0Id).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -55,13 +55,33 @@ namespace Avalon.Data
             }
         }
 
-        /// <summary>Gets the profile by email.</summary>
-        /// <param name="profileEmail">Email of the profile.</param>
+        ///// <summary>Gets the profile by email.</summary>
+        ///// <param name="profileEmail">Email of the profile.</param>
+        ///// <returns></returns>
+        //public async Task<Profile> GetProfileByEmail(string profileEmail)
+        //{
+        //    var filter = Builders<Profile>
+        //                    .Filter.Eq(e => e.Email, profileEmail);
+
+        //    try
+        //    {
+        //        return await _context.Profiles
+        //            .Find(filter)
+        //            .FirstOrDefaultAsync();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw ex;
+        //    }
+        //}
+
+        /// <summary>Gets the profile by auth0Id.</summary>
+        /// <param name="auth0Id">Auth0Id of the profile.</param>
         /// <returns></returns>
-        public async Task<Profile> GetProfileByEmail(string profileEmail)
+        public async Task<Profile> GetProfileByAuth0Id(string auth0Id)
         {
             var filter = Builders<Profile>
-                            .Filter.Eq(e => e.Email, profileEmail);
+                            .Filter.Eq(e => e.Auth0Id, auth0Id);
 
             try
             {
@@ -74,7 +94,6 @@ namespace Avalon.Data
                 throw ex;
             }
         }
-
 
         /// <summary>Gets the profile by name.</summary>
         /// <param name="profileName">Name of the profile.</param>
@@ -134,7 +153,7 @@ namespace Avalon.Data
             try
             {
                 var query = _context.Profiles.AsQueryable()
-                    .Where(p => true && p.Email != currentUser.Email)
+                    .Where(p => true && p.Auth0Id != currentUser.Auth0Id)
                     .OrderByDescending(p => p.CreatedOn).Take(10);
 
                 return await Task.FromResult(query.ToList());
@@ -153,7 +172,7 @@ namespace Avalon.Data
             try
             {
                 var query = _context.Profiles.AsQueryable()
-                    .Where(p => true && p.Email != currentUser.Email)
+                    .Where(p => true && p.Auth0Id != currentUser.Auth0Id)
                     .OrderByDescending(p => p.UpdatedOn).Take(10);
 
                 return await Task.FromResult(query.ToList());
@@ -172,7 +191,7 @@ namespace Avalon.Data
             try
             {
                 var query = _context.Profiles.AsQueryable()
-                    .Where(p => true && p.Email != currentUser.Email)
+                    .Where(p => true && p.Auth0Id != currentUser.Auth0Id)
                     .OrderByDescending(p => p.LastActive).Take(10);
 
                 return await Task.FromResult(query.ToList());
@@ -197,7 +216,7 @@ namespace Avalon.Data
             {
                 //// Get all Bookmarked ProfileIds from original profile.
                 //var bookmarks = _context.Profiles.AsQueryable()
-                //    .Where(p => p.Email != currentUser.Email)
+                //    .Where(p => p.Auth0Id != currentUser.Auth0Id)
                 //    .Select(p => new {p.Bookmarks});
 
                 //var bookmarkedProfileIds = await Task.FromResult(bookmarks.ToList());
@@ -221,7 +240,7 @@ namespace Avalon.Data
         //    {
         //        // Get all Bookmarked ProfileIds from original profile.
         //        var bookmarks = _context.Profiles.AsQueryable()
-        //            .Where(p => p.Email == currentUser.Email)
+        //            .Where(p => p.Auth0Id == currentUser.Auth0Id)
         //            .Select(p => new { p.Bookmarks });
 
         //        var bookmarkedProfileIds = await Task.FromResult(bookmarks.ToList());
@@ -245,7 +264,7 @@ namespace Avalon.Data
         //    {
         //        // Get all Bookmarked ProfileIds from original profile.
         //        var bookmarks = _context.Profiles.AsQueryable()
-        //            .Where(p => p.Email == currentUser.Email)
+        //            .Where(p => p.Auth0Id == currentUser.Auth0Id)
         //            .Select(p => new { p.Bookmarks });
 
         //        var bookmarkedProfileIds = await Task.FromResult(bookmarks.ToList());
@@ -269,7 +288,7 @@ namespace Avalon.Data
         //    {
         //        // Get all Bookmarked ProfileIds from original profile.
         //        var bookmarks = _context.Profiles.AsQueryable()
-        //            .Where(p => p.Email == currentUser.Email)
+        //            .Where(p => p.Auth0Id == currentUser.Auth0Id)
         //            .Select(p => new { p.Bookmarks });
 
         //        var bookmarkedProfileIds = await Task.FromResult(bookmarks.ToList());
