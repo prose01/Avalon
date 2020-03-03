@@ -76,25 +76,6 @@ namespace Avalon.Data
             }
         }
 
-        ///// <summary>Gets the current profile by email.</summary>
-        ///// <param name="email">The email.</param>
-        ///// <returns></returns>
-        //public async Task<CurrentUser> GetCurrentProfileByEmail(string email)
-        //{
-        //    var filter = Builders<CurrentUser>.Filter.Eq("Email", email);
-
-        //    try
-        //    {
-        //        return await _context.CurrentUser
-        //            .Find(filter)
-        //            .FirstOrDefaultAsync();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw ex;
-        //    }
-        //}
-
         /// <summary>Gets the current profile by auth0Id.</summary>
         /// <param name="auth0Id">The Auth0Id.</param>
         /// <returns></returns>

@@ -55,26 +55,6 @@ namespace Avalon.Data
             }
         }
 
-        ///// <summary>Gets the profile by email.</summary>
-        ///// <param name="profileEmail">Email of the profile.</param>
-        ///// <returns></returns>
-        //public async Task<Profile> GetProfileByEmail(string profileEmail)
-        //{
-        //    var filter = Builders<Profile>
-        //                    .Filter.Eq(e => e.Email, profileEmail);
-
-        //    try
-        //    {
-        //        return await _context.Profiles
-        //            .Find(filter)
-        //            .FirstOrDefaultAsync();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw ex;
-        //    }
-        //}
-
         /// <summary>Gets the profile by auth0Id.</summary>
         /// <param name="auth0Id">Auth0Id of the profile.</param>
         /// <returns></returns>
