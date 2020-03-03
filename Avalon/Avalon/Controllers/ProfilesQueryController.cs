@@ -24,6 +24,23 @@ namespace Avalon.Controllers
         }
 
         /// <summary>
+        /// Deletes the specified profile identifiers.
+        /// </summary>
+        /// <param name="profileIds">The profile identifiers.</param>
+        [HttpDelete()]
+        public async Task<IActionResult> Delete([FromBody]string[] profileIds)
+        {
+            if (!ModelState.IsValid) return BadRequest();
+            if (profileIds == null || profileIds.Length < 1) return BadRequest();
+
+            var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            if (!currentUser.Admin) return BadRequest();
+
+            return Ok(_profilesQueryRepository.DeleteProfiles(profileIds));
+        }
+
+        /// <summary>
         /// Gets all Profiles.
         /// </summary>
         /// <returns></returns>

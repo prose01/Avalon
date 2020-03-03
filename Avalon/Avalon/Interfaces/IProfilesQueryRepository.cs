@@ -1,4 +1,5 @@
 ﻿using Avalon.Model;
+using MongoDB.Driver;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -6,6 +7,7 @@ namespace Avalon.Interfaces
 {
     public interface IProfilesQueryRepository
     {
+        Task<DeleteResult> DeleteProfiles(string[] profileIds);
         Task<IEnumerable<Profile>> GetAllProfiles(CurrentUser currentUser);
         Task<Profile> GetProfileById(string profileId);
         Task<Profile> GetProfileByAuth0Id(string auth0Id);

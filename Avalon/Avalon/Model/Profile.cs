@@ -14,6 +14,7 @@ namespace Avalon.Model
         public override ObjectId _id { get; set; }
         public override string Auth0Id { get; set; }
         public override string ProfileId { get; set; }
+        public override bool Admin { get; set; } = false;
         public override string Name { get; set; }
         public override DateTime CreatedOn { get; set; }
         public override DateTime UpdatedOn { get; set; }

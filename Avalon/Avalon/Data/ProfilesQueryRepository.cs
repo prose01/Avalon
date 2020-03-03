@@ -20,6 +20,24 @@ namespace Avalon.Data
 
         #region Profiles
 
+        /// <summary>Deletes the profiles.</summary>
+        /// <param name="profileIds">The profile identifiers.</param>
+        /// <returns></returns>
+        public async Task<DeleteResult> DeleteProfiles(string[] profileIds)
+        {
+            try
+            {
+                //return await _context.Profiles.DeleteManyAsync(
+                //    Builders<Profile>.Filter.Eq("ProfileId", profileIds));
+
+                return null;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         /// <summary>Gets all profiles.</summary>
         /// <param name="currentUser">The current user.</param>
         /// <returns></returns>

@@ -100,15 +100,16 @@ namespace Avalon.Controllers
             return Ok(_profileRepository.UpdateProfile(item));
         }
 
-        // DELETE api/profiles/23243423
         /// <summary>
-        /// Deletes the specified profile identifier.
+        /// Deletes the CurrentUser profile.
         /// </summary>
         /// <param name="profileId">The profile identifier.</param>
-        [HttpDelete("{profileId}")]
-        public void Delete(string profileId)
+        [HttpDelete("~/CurrentUser")]
+        public async Task<IActionResult> DeleteCurrentUser()
         {
-            _profileRepository.RemoveProfile(profileId);
+            var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            return Ok(_profileRepository.DeleteCurrentUser(currentUser.ProfileId));
         }
 
         /// <summary>Adds the profiles to currentUser bookmarks.</summary>

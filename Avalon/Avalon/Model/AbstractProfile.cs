@@ -12,6 +12,7 @@ namespace Avalon.Model
         public abstract ObjectId _id { get; set; }
         public abstract string Auth0Id { get; set; }
         public abstract string ProfileId { get; set; }
+        public abstract bool Admin { get; set; }
         public abstract string Name { get; set; }
 
         [DataType(DataType.DateTime)]

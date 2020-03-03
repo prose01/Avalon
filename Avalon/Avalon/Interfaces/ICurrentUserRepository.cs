@@ -7,7 +7,7 @@ namespace Avalon.Interfaces
     public interface ICurrentUserRepository
     {
         Task AddProfile(CurrentUser item);
-        Task<DeleteResult> RemoveProfile(string profileId);
+        Task<DeleteResult> DeleteCurrentUser(string profileId);
         Task<ReplaceOneResult> UpdateProfile(CurrentUser item);
         Task<CurrentUser> GetCurrentProfileByAuth0Id(string auth0Id);
         Task<CurrentUser> AddProfilesToBookmarks(CurrentUser currentUser, string[] profileIds);

@@ -39,7 +39,7 @@ namespace Avalon.Data
         /// <summary>Deletes the profile.</summary>
         /// <param name="profileId">The profile identifier.</param>
         /// <returns></returns>
-        public async Task<DeleteResult> RemoveProfile(string profileId)
+        public async Task<DeleteResult> DeleteCurrentUser(string profileId)
         {
             try
             {
