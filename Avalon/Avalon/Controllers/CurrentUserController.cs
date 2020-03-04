@@ -50,12 +50,17 @@ namespace Avalon.Controllers
 
             if (string.IsNullOrEmpty(auth0Id)) return BadRequest();
 
+            // Check if Name already exists.
+            if (_profilesQueryRepository.GetProfileByName(item.Name).Result != null) return BadRequest();
+
+            // Check if auth0Id already exists.
             if (_profilesQueryRepository.GetProfileByAuth0Id(auth0Id).Result != null) return BadRequest();
+
+            // Set admin default to false! Only other admins can give this privilege.
+            item.Admin = false;
 
             item.Auth0Id = auth0Id;
 
-            // Check if Name exists
-            if (_profilesQueryRepository.GetProfileByName(item.Name).Result != null) return BadRequest();
 
             return Ok(_profileRepository.AddProfile(item));
         }
@@ -96,6 +101,8 @@ namespace Avalon.Controllers
             if (currentUser.ProfileId != item.ProfileId) return BadRequest();
 
             item._id = currentUser._id; // _id is immutable and the type is unknow by BluePenguin.
+
+            item.Admin = currentUser.Admin; // No user is allowed to set themselves as Admin!
 
             return Ok(_profileRepository.UpdateProfile(item));
         }

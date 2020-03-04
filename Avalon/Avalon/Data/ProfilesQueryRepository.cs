@@ -18,6 +18,30 @@ namespace Avalon.Data
             _context = new ProfileContext(settings);
         }
 
+        #region Admin stuff
+
+        /// <summary>Set profile as admin.</summary>
+        /// <param name="item">The profile.</param>
+        /// <returns></returns>
+        public async Task<ReplaceOneResult> SetAsAdmin(Profile item)
+        {
+            try
+            {
+                item.UpdatedOn = DateTime.Now;
+
+                var filter = Builders<Profile>.Filter.Eq("ProfileId", item.ProfileId);
+
+                return await _context.Profiles
+                            .ReplaceOneAsync(filter, item);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        #endregion
+
         #region Profiles
 
         /// <summary>Deletes the profiles.</summary>

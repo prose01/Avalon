@@ -15,11 +15,13 @@ namespace Avalon.Controllers
     public class ProfilesQueryController : Controller
     {
         private readonly IProfilesQueryRepository _profilesQueryRepository;
+        private readonly ICurrentUserRepository _profileRepository;
         private readonly IHelperMethods _helper;
 
-        public ProfilesQueryController(IProfilesQueryRepository profilesQueryRepository, IHelperMethods helperMethods)
+        public ProfilesQueryController(IProfilesQueryRepository profilesQueryRepository, ICurrentUserRepository profileRepository, IHelperMethods helperMethods)
         {
             _profilesQueryRepository = profilesQueryRepository;
+            _profileRepository = profileRepository;
             _helper = helperMethods;
         }
 
@@ -38,6 +40,31 @@ namespace Avalon.Controllers
             if (!currentUser.Admin) return BadRequest();
 
             return Ok(_profilesQueryRepository.DeleteProfiles(profileIds));
+        }
+        
+        // GET api/profiles/5
+        /// <summary>
+        /// Gets the specified profile identifier.
+        /// </summary>
+        /// <param name="profileId">The profile identifier.</param>
+        /// <returns></returns>
+        [NoCache]
+        [HttpGet("~/SetAsAdmin/{profileId},{isAdmin}")]
+        public async Task<IActionResult> SetAsAdmin(string profileId, bool isAdmin)
+        {
+            var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            if (!currentUser.Admin) return BadRequest();
+
+            if (currentUser.ProfileId == profileId) return BadRequest();
+
+            var profile = await _profilesQueryRepository.GetProfileById(profileId) ?? null;
+
+            if (profile == null) return BadRequest();
+
+            profile.Admin = isAdmin;
+
+            return Ok(_profilesQueryRepository.SetAsAdmin(profile));
         }
 
         /// <summary>
