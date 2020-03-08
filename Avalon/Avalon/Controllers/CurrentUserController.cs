@@ -110,11 +110,12 @@ namespace Avalon.Controllers
         /// <summary>
         /// Deletes the CurrentUser profile.
         /// </summary>
-        /// <param name="profileId">The profile identifier.</param>
         [HttpDelete("~/CurrentUser")]
         public async Task<IActionResult> DeleteCurrentUser()
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            if(currentUser.Admin) return BadRequest(); // Amins cannot delete themseleves.
 
             return Ok(_profileRepository.DeleteCurrentUser(currentUser.ProfileId));
         }

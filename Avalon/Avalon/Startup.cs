@@ -128,7 +128,7 @@ namespace Avalon
             // Remember to remove Cors for production.
             app.UseCors(builder =>
                 builder.WithOrigins("http://localhost:4200")
-                    .WithMethods("GET", "POST", "PUT", "PATCH", "HEAD")
+                    .WithMethods("GET", "POST", "PUT", "PATCH", "DELETE", "HEAD")
                     .AllowAnyHeader()
                     .AllowCredentials()
             );
