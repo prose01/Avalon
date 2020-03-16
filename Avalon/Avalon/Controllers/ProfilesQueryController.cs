@@ -29,7 +29,8 @@ namespace Avalon.Controllers
         /// Deletes the specified profile identifiers.
         /// </summary>
         /// <param name="profileIds">The profile identifiers.</param>
-        [HttpDelete("~/DeleteProfiles")]
+        [NoCache]
+        [HttpPost("~/DeleteProfiles")]
         public async Task<IActionResult> DeleteProfiles([FromBody]string[] profileIds)
         {
             if (!ModelState.IsValid) return BadRequest();
