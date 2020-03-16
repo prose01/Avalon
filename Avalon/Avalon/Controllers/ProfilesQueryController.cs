@@ -40,6 +40,8 @@ namespace Avalon.Controllers
 
             if (!currentUser.Admin) return BadRequest();
 
+            // Delete from Auth0
+
             return Ok(_profilesQueryRepository.DeleteProfiles(profileIds));
         }
         
