@@ -1,28 +1,31 @@
 ﻿using Avalon.Infrastructure;
 using Avalon.Interfaces;
 using Avalon.Model;
-using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 //using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Avalon.Controllers
 {
     [Produces("application/json")]
     [Route("[controller]")]
-    [Authorize]
+    //[Authorize]
     [ApiController]
     public class CurrentUserController : Controller
     {
         private readonly ICurrentUserRepository _profileRepository;
         private readonly IProfilesQueryRepository _profilesQueryRepository;
         private readonly IHelperMethods _helper;
+        private readonly IImageUtil _imageUtil;
 
-        public CurrentUserController(ICurrentUserRepository profileRepository, IProfilesQueryRepository profilesQueryRepository, IHelperMethods helperMethods)
+        public CurrentUserController(ICurrentUserRepository profileRepository, IProfilesQueryRepository profilesQueryRepository, IHelperMethods helperMethods, IImageUtil imageUtil)
         {
             _profileRepository = profileRepository;
             _profilesQueryRepository = profilesQueryRepository;
             _helper = helperMethods;
+            _imageUtil = imageUtil;
         }
 
         /// <summary>
@@ -151,6 +154,18 @@ namespace Avalon.Controllers
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
             return Ok(_profileRepository.RemoveProfilesFromBookmarks(currentUser, profileIds));
+        }
+
+        [NoCache]
+        [HttpPost("~/UploadPhoto")]
+        public async Task<IActionResult> UploadPhoto([FromForm]IFormFile photo)
+        {
+            if (!ModelState.IsValid) return BadRequest();
+            if (photo.Length < 0) return BadRequest();
+
+            var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            return Ok(_imageUtil.UploadImageAsync(currentUser, photo));
         }
 
     }
