@@ -1,17 +1,18 @@
 ﻿using Avalon.Infrastructure;
 using Avalon.Interfaces;
 using Avalon.Model;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 //using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
-using System.IO;
+using System;
 using System.Threading.Tasks;
 
 namespace Avalon.Controllers
 {
     [Produces("application/json")]
     [Route("[controller]")]
-    //[Authorize]
+    [Authorize]
     [ApiController]
     public class CurrentUserController : Controller
     {
@@ -148,24 +149,38 @@ namespace Avalon.Controllers
         [HttpPost("~/RemoveProfilesFromBookmarks")]
         public async Task<IActionResult> RemoveProfilesFromBookmarks([FromBody]string[] profileIds)
         {
-            if (!ModelState.IsValid) return BadRequest();
-            if (profileIds == null || profileIds.Length < 1) return BadRequest();
+            if (!ModelState.IsValid) throw new ArgumentException($"ModelState is not valid {ModelState.IsValid}.", nameof(profileIds));
+            if (profileIds == null || profileIds.Length < 1) throw new ArgumentException($"ProfileIds is either null {profileIds} or length is < 1 {profileIds.Length}.", nameof(profileIds));
 
-            var currentUser = await _helper.GetCurrentUserProfile(User);
+            try
+            {
+                var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            return Ok(_profileRepository.RemoveProfilesFromBookmarks(currentUser, profileIds));
+                return Ok(_profileRepository.RemoveProfilesFromBookmarks(currentUser, profileIds));
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.ToString());
+            }
         }
 
         [NoCache]
-        [HttpPost("~/UploadPhoto")]
-        public async Task<IActionResult> UploadPhoto([FromForm]IFormFile photo)
+        [HttpPost("~/UploadImage")]
+        public async Task<IActionResult> UploadImage([FromForm]IFormFile image)
         {
-            if (!ModelState.IsValid) return BadRequest();
-            if (photo.Length < 0) return BadRequest();
+            if (!ModelState.IsValid) throw new ArgumentException($"ModelState is not valid {ModelState.IsValid}.", nameof(image));
+            if (image.Length < 0) throw new ArgumentException($"Image length is < 1 {image.Length}.", nameof(image));
 
-            var currentUser = await _helper.GetCurrentUserProfile(User);
+            try
+            {
+                var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            return Ok(_imageUtil.UploadImageAsync(currentUser, photo));
+                return Ok(_imageUtil.UploadImageAsync(currentUser, image));
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.ToString());
+            }
         }
 
     }
