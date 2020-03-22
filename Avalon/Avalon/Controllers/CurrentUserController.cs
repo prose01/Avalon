@@ -2,8 +2,10 @@
 using Avalon.Interfaces;
 using Avalon.Model;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 //using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Threading.Tasks;
 
 namespace Avalon.Controllers
@@ -15,12 +17,16 @@ namespace Avalon.Controllers
     public class CurrentUserController : Controller
     {
         private readonly ICurrentUserRepository _profileRepository;
+        private readonly IProfilesQueryRepository _profilesQueryRepository;
         private readonly IHelperMethods _helper;
+        private readonly IImageUtil _imageUtil;
 
-        public CurrentUserController(ICurrentUserRepository profileRepository, IHelperMethods helperMethods)
+        public CurrentUserController(ICurrentUserRepository profileRepository, IProfilesQueryRepository profilesQueryRepository, IHelperMethods helperMethods, IImageUtil imageUtil)
         {
             _profileRepository = profileRepository;
+            _profilesQueryRepository = profilesQueryRepository;
             _helper = helperMethods;
+            _imageUtil = imageUtil;
         }
 
         /// <summary>
@@ -43,34 +49,24 @@ namespace Avalon.Controllers
         {
             if (!ModelState.IsValid) return BadRequest();
 
-            var currentUser = await _helper.GetCurrentUserProfile(User); // New user don't exists!!!
+            // Check if Auth0Id exists
+            var auth0Id = _helper.GetCurrentUserAuth0Id(User);
 
-            if (currentUser.ProfileId != item.ProfileId) return BadRequest();   // Check if Name exists!!
+            if (string.IsNullOrEmpty(auth0Id)) return BadRequest();
+
+            // Check if Name already exists.
+            if (_profilesQueryRepository.GetProfileByName(item.Name).Result != null) return BadRequest();
+
+            // Check if auth0Id already exists.
+            if (_profilesQueryRepository.GetProfileByAuth0Id(auth0Id).Result != null) return BadRequest();
+
+            // Set admin default to false! Only other admins can give this privilege.
+            item.Admin = false;
+
+            item.Auth0Id = auth0Id;
+
 
             return Ok(_profileRepository.AddProfile(item));
-
-            //if (ModelState.IsValid)
-            //{
-            //    //...
-            //    return Ok();
-            //}
-            //return BadRequest();
-
-            //// Tell user the name is not valid!
-            //if (string.IsNullOrEmpty(item.Name))
-            //{
-            //    return new BadRequestObjectResult(ModelState);
-            //}
-
-            //var profile = _profileRepository.GetProfileByName(item.Name).Result ?? null;
-
-            //// Tell user that name already exits!
-            //if (profile != null)
-            //{
-            //    return new BadRequestObjectResult(ModelState);
-            //}
-
-            //return Ok(_profileRepository.AddProfile(item));
         }
 
         /// <summary>
@@ -110,18 +106,24 @@ namespace Avalon.Controllers
 
             item._id = currentUser._id; // _id is immutable and the type is unknow by BluePenguin.
 
+            item.Admin = currentUser.Admin; // No user is allowed to set themselves as Admin!
+
             return Ok(_profileRepository.UpdateProfile(item));
         }
 
-        // DELETE api/profiles/23243423
         /// <summary>
-        /// Deletes the specified profile identifier.
+        /// Deletes the CurrentUser profile.
         /// </summary>
-        /// <param name="profileId">The profile identifier.</param>
-        [HttpDelete("{profileId}")]
-        public void Delete(string profileId)
+        [HttpDelete("~/CurrentUser")]
+        public async Task<IActionResult> DeleteCurrentUser()
         {
-            _profileRepository.RemoveProfile(profileId);
+            var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            if(currentUser.Admin) return BadRequest(); // Amins cannot delete themseleves.
+
+            // Delete from Auth0
+
+            return Ok(_profileRepository.DeleteCurrentUser(currentUser.ProfileId));
         }
 
         /// <summary>Adds the profiles to currentUser bookmarks.</summary>
@@ -147,12 +149,38 @@ namespace Avalon.Controllers
         [HttpPost("~/RemoveProfilesFromBookmarks")]
         public async Task<IActionResult> RemoveProfilesFromBookmarks([FromBody]string[] profileIds)
         {
-            if (!ModelState.IsValid) return BadRequest();
-            if (profileIds == null || profileIds.Length < 1) return BadRequest();
+            if (!ModelState.IsValid) throw new ArgumentException($"ModelState is not valid {ModelState.IsValid}.", nameof(profileIds));
+            if (profileIds == null || profileIds.Length < 1) throw new ArgumentException($"ProfileIds is either null {profileIds} or length is < 1 {profileIds.Length}.", nameof(profileIds));
 
-            var currentUser = await _helper.GetCurrentUserProfile(User);
+            try
+            {
+                var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            return Ok(_profileRepository.RemoveProfilesFromBookmarks(currentUser, profileIds));
+                return Ok(_profileRepository.RemoveProfilesFromBookmarks(currentUser, profileIds));
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.ToString());
+            }
+        }
+
+        [NoCache]
+        [HttpPost("~/UploadImage")]
+        public async Task<IActionResult> UploadImage([FromForm]IFormFile image)
+        {
+            if (!ModelState.IsValid) throw new ArgumentException($"ModelState is not valid {ModelState.IsValid}.", nameof(image));
+            if (image.Length < 0) throw new ArgumentException($"Image length is < 1 {image.Length}.", nameof(image));
+
+            try
+            {
+                var currentUser = await _helper.GetCurrentUserProfile(User);
+
+                return Ok(_imageUtil.UploadImageAsync(currentUser, image));
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.ToString());
+            }
         }
 
     }

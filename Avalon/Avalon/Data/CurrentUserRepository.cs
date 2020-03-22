@@ -23,12 +23,12 @@ namespace Avalon.Data
         {
             try
             {
-                // TODO: create Id
                 item.ProfileId = Guid.NewGuid().ToString();
                 item.CreatedOn = DateTime.Now;
                 item.UpdatedOn = DateTime.Now;
+                item.LastActive = DateTime.Now;
 
-                //await _context.Profiles.InsertOneAsync(item);
+                //await _context.CurrentUser.InsertOneAsync(item);
             }
             catch (Exception ex)
             {
@@ -39,7 +39,7 @@ namespace Avalon.Data
         /// <summary>Deletes the profile.</summary>
         /// <param name="profileId">The profile identifier.</param>
         /// <returns></returns>
-        public async Task<DeleteResult> RemoveProfile(string profileId)
+        public async Task<DeleteResult> DeleteCurrentUser(string profileId)
         {
             try
             {
@@ -76,12 +76,12 @@ namespace Avalon.Data
             }
         }
 
-        /// <summary>Gets the current profile by email.</summary>
-        /// <param name="email">The email.</param>
+        /// <summary>Gets the current profile by auth0Id.</summary>
+        /// <param name="auth0Id">The Auth0Id.</param>
         /// <returns></returns>
-        public async Task<CurrentUser> GetCurrentProfileByEmail(string email)
+        public async Task<CurrentUser> GetCurrentProfileByAuth0Id(string auth0Id)
         {
-            var filter = Builders<CurrentUser>.Filter.Eq("Email", email);
+            var filter = Builders<CurrentUser>.Filter.Eq("Auth0Id", auth0Id);
 
             try
             {
@@ -120,7 +120,7 @@ namespace Avalon.Data
                     ReturnDocument = ReturnDocument.After
                 };
 
-                return  _context.CurrentUser.FindOneAndUpdate(filter, update, options);
+                return await _context.CurrentUser.FindOneAndUpdateAsync(filter, update, options);
             }
             catch (Exception ex)
             {
@@ -153,7 +153,7 @@ namespace Avalon.Data
                     ReturnDocument = ReturnDocument.After
                 };
 
-                return _context.CurrentUser.FindOneAndUpdate(filter, update, options);
+                return await _context.CurrentUser.FindOneAndUpdateAsync(filter, update, options);
             }
             catch (Exception ex)
             {

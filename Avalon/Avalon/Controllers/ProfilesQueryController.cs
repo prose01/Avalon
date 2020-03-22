@@ -15,12 +15,59 @@ namespace Avalon.Controllers
     public class ProfilesQueryController : Controller
     {
         private readonly IProfilesQueryRepository _profilesQueryRepository;
+        private readonly ICurrentUserRepository _profileRepository;
         private readonly IHelperMethods _helper;
 
-        public ProfilesQueryController(IProfilesQueryRepository profilesQueryRepository, IHelperMethods helperMethods)
+        public ProfilesQueryController(IProfilesQueryRepository profilesQueryRepository, ICurrentUserRepository profileRepository, IHelperMethods helperMethods)
         {
             _profilesQueryRepository = profilesQueryRepository;
+            _profileRepository = profileRepository;
             _helper = helperMethods;
+        }
+
+        /// <summary>
+        /// Deletes the specified profile identifiers.
+        /// </summary>
+        /// <param name="profileIds">The profile identifiers.</param>
+        [NoCache]
+        [HttpPost("~/DeleteProfiles")]
+        public async Task<IActionResult> DeleteProfiles([FromBody]string[] profileIds)
+        {
+            if (!ModelState.IsValid) return BadRequest();
+            if (profileIds == null || profileIds.Length < 1) return BadRequest();
+
+            var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            if (!currentUser.Admin) return BadRequest();
+
+            // Delete from Auth0
+
+            return Ok(_profilesQueryRepository.DeleteProfiles(profileIds));
+        }
+        
+        // GET api/profiles/5
+        /// <summary>
+        /// Gets the specified profile identifier.
+        /// </summary>
+        /// <param name="profileId">The profile identifier.</param>
+        /// <returns></returns>
+        [NoCache]
+        [HttpGet("~/SetAsAdmin/{profileId},{isAdmin}")]
+        public async Task<IActionResult> SetAsAdmin(string profileId, bool isAdmin)
+        {
+            var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            if (!currentUser.Admin) return BadRequest();
+
+            if (currentUser.ProfileId == profileId) return BadRequest();
+
+            var profile = await _profilesQueryRepository.GetProfileById(profileId) ?? null;
+
+            if (profile == null) return BadRequest();
+
+            profile.Admin = isAdmin;
+
+            return Ok(_profilesQueryRepository.SetAsAdmin(profile));
         }
 
         /// <summary>
@@ -59,8 +106,11 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpPost("~/GetProfileByFilter")]
-        public async Task<Profile> GetProfileByFilter([FromBody]ProfileFilter profileFilter)
+        public async Task<IEnumerable<Profile>> GetProfileByFilter([FromBody]ProfileFilter profileFilter)
         {
+            var currentUser = await _helper.GetCurrentUserProfile(User);
+            profileFilter.CurrentUserId = currentUser.ProfileId;
+
             return await _profilesQueryRepository.GetProfileByFilter(profileFilter) ?? null; // Should be null if no filter match.
         }
 
@@ -69,12 +119,25 @@ namespace Avalon.Controllers
         /// </summary>
         /// <returns></returns>
         [NoCache]
-        [HttpGet("~/GetLatestProfiles/")]
-        public async Task<IEnumerable<Profile>> GetLatestProfiles()
+        [HttpGet("~/GetLatestCreatedProfiles/")]
+        public async Task<IEnumerable<Profile>> GetLatestCreatedProfiles()
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
             return await _profilesQueryRepository.GetLatestCreatedProfiles(currentUser);
+        }
+
+        /// <summary>
+        /// Gets Latest Created Profiles.
+        /// </summary>
+        /// <returns></returns>
+        [NoCache]
+        [HttpGet("~/GetLastUpdatedProfiles/")]
+        public async Task<IEnumerable<Profile>> GetLastUpdatedProfiles()
+        {
+            var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            return await _profilesQueryRepository.GetLastUpdatedProfiles(currentUser);
         }
 
         /// <summary>
