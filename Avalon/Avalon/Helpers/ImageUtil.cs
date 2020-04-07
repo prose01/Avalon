@@ -3,6 +3,7 @@ using Avalon.Model;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -46,6 +47,63 @@ namespace Avalon.Helpers
                     await image.CopyToAsync(filestream);
                     filestream.Flush();
                 }
+
+                // TODO: Added reference to image to the currentUser.
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public async Task<List<byte[]>> GetImagesAsync(CurrentUser currentUser)
+        {
+            List<byte[]> images = new List<byte[]>();
+
+            try
+            {
+                byte[] result;
+
+                // TODO: Find a place for you files!
+                if (Directory.Exists($"C:/Peter Rose - Private/Photos/{currentUser.ProfileId}"))
+                {
+                    var files = Directory.GetFiles($"C:/Peter Rose - Private/Photos/{currentUser.ProfileId}/");
+
+                    foreach (var file in files)
+                    {
+                        using (FileStream stream = File.Open(file, FileMode.Open))
+                        {
+                            result = new byte[stream.Length];
+                            await stream.ReadAsync(result, 0, (int)stream.Length);
+                        }
+
+                        images.Add(result);
+                    }
+                }
+
+                return images;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public async Task<byte[]> GetImageAsync(CurrentUser currentUser)
+        {
+            byte[] result;
+
+            try
+            {
+                var file = $"C:/Peter Rose - Private/Photos/{currentUser.ProfileId}/urxksocb.png";
+
+                using (FileStream stream = File.Open(file, FileMode.Open))
+                {
+                    result = new byte[stream.Length];
+                    await stream.ReadAsync(result, 0, (int)stream.Length);
+                }
+
+                return result;
             }
             catch (Exception ex)
             {

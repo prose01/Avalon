@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 //using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Avalon.Controllers
@@ -164,6 +166,8 @@ namespace Avalon.Controllers
             }
         }
 
+        /// <summary>Upload images to the profile image folder.</summary>
+        /// <param name="image"></param>
         [NoCache]
         [HttpPost("~/UploadImage")]
         public async Task<IActionResult> UploadImage([FromForm]IFormFile image)
@@ -183,5 +187,83 @@ namespace Avalon.Controllers
             }
         }
 
+        /// <summary>Gets images from profile folder.</summary>
+        /// <returns></returns>
+        [NoCache]
+        [HttpGet("~/GetImages")]
+        public async Task<List<byte[]>> GetImages()
+        {
+            List<byte[]> images = new List<byte[]>();
+
+            try
+            {
+                byte[] result;
+                var currentUser = await _helper.GetCurrentUserProfile(User);
+
+                // TODO: Find a place for you files!
+                if (Directory.Exists($"C:/Peter Rose - Private/Photos/{currentUser.ProfileId}"))
+                {
+                    var files = Directory.GetFiles($"C:/Peter Rose - Private/Photos/{currentUser.ProfileId}/");
+
+                    foreach (var file in files)
+                    {
+                        using (FileStream stream = System.IO.File.Open(file, FileMode.Open))
+                        {
+                            result = new byte[stream.Length];
+                            await stream.ReadAsync(result, 0, (int)stream.Length);
+                        }
+
+                        images.Add(result);
+                    }
+                }
+
+                return images;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+        }
+
+        [NoCache]
+        [HttpPost("~/GetImage")]
+        public async Task<byte[]> GetImage()
+        {
+            try
+            {
+                var currentUser = await _helper.GetCurrentUserProfile(User);
+
+                return await _imageUtil.GetImageAsync(currentUser);
+
+                //var image = System.IO.File.OpenRead("C:/Peter Rose - Private/Photos/123/urxksocb.png");
+                //return File(image, "image/jpeg");
+            }
+            catch (Exception ex)
+            {
+                return null;
+                //return Problem(ex.ToString());
+            }
+        }
+
+        //[NoCache]
+        //[HttpGet("~/GetImages")]
+        //public async Task<List<byte[]>> GetImages()
+        //{
+        //    List<byte[]> imageBytes = new List<byte[]>();
+
+        //    var currentUser = await _helper.GetCurrentUserProfile(User);
+
+        //    var files = Directory.GetFiles($"C:/Peter Rose - Private/Photos/{currentUser.ProfileId}/");
+
+        //    foreach(var file in files)
+        //    {
+        //        byte[] bytes = System.IO.File.ReadAllBytes(file);
+        //        imageBytes.Add(bytes);
+
+        //    }
+
+        //    return imageBytes;
+        //}
     }
 }
