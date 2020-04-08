@@ -3,6 +3,7 @@ using Avalon.Interfaces;
 using Avalon.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -17,12 +18,14 @@ namespace Avalon.Controllers
         private readonly IProfilesQueryRepository _profilesQueryRepository;
         private readonly ICurrentUserRepository _profileRepository;
         private readonly IHelperMethods _helper;
+        private readonly IImageUtil _imageUtil;
 
-        public ProfilesQueryController(IProfilesQueryRepository profilesQueryRepository, ICurrentUserRepository profileRepository, IHelperMethods helperMethods)
+        public ProfilesQueryController(IProfilesQueryRepository profilesQueryRepository, ICurrentUserRepository profileRepository, IHelperMethods helperMethods, IImageUtil imageUtil)
         {
             _profilesQueryRepository = profilesQueryRepository;
             _profileRepository = profileRepository;
             _helper = helperMethods;
+            _imageUtil = imageUtil;
         }
 
         /// <summary>
@@ -98,6 +101,26 @@ namespace Avalon.Controllers
             if (currentUser.ProfileId == profileId) return null;
 
             return await _profilesQueryRepository.GetProfileById(profileId) ?? null;
+        }
+
+        /// <summary>Gets images from the specified profile folder.</summary>
+        /// <returns></returns>
+        [NoCache]
+        [HttpGet("~/GetProfileImages/{profileId}")]
+        public async Task<IActionResult> GetProfileImages(string profileId)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(profileId)) return BadRequest();
+
+                var images = await _imageUtil.GetImagesAsync(profileId);
+
+                return Ok(images);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
         /// <summary>

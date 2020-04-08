@@ -56,7 +56,7 @@ namespace Avalon.Helpers
             }
         }
 
-        public async Task<List<byte[]>> GetImagesAsync(CurrentUser currentUser)
+        public async Task<List<byte[]>> GetImagesAsync(string profileId)
         {
             List<byte[]> images = new List<byte[]>();
 
@@ -65,9 +65,9 @@ namespace Avalon.Helpers
                 byte[] result;
 
                 // TODO: Find a place for you files!
-                if (Directory.Exists($"C:/Peter Rose - Private/Photos/{currentUser.ProfileId}"))
+                if (Directory.Exists($"C:/Peter Rose - Private/Photos/123"))
                 {
-                    var files = Directory.GetFiles($"C:/Peter Rose - Private/Photos/{currentUser.ProfileId}/");
+                    var files = Directory.GetFiles($"C:/Peter Rose - Private/Photos/123/");
 
                     foreach (var file in files)
                     {
@@ -82,28 +82,6 @@ namespace Avalon.Helpers
                 }
 
                 return images;
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
-
-        public async Task<byte[]> GetImageAsync(CurrentUser currentUser)
-        {
-            byte[] result;
-
-            try
-            {
-                var file = $"C:/Peter Rose - Private/Photos/{currentUser.ProfileId}/urxksocb.png";
-
-                using (FileStream stream = File.Open(file, FileMode.Open))
-                {
-                    result = new byte[stream.Length];
-                    await stream.ReadAsync(result, 0, (int)stream.Length);
-                }
-
-                return result;
             }
             catch (Exception ex)
             {
