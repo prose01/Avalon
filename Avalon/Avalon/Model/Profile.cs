@@ -23,6 +23,7 @@ namespace Avalon.Model
         public override int? Height { get; set; }
         public override int? Weight { get; set; }
         public override string Description { get; set; }
+        public override List<ImageModel> Images { get; set; }
 
         //public override string[] Tags { get; set; }
 

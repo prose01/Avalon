@@ -1,6 +1,7 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Avalon.Model
@@ -35,6 +36,7 @@ namespace Avalon.Model
 
         [StringLength(2000, ErrorMessage = "Description length cannot be more than 2000.")]
         public abstract string Description { get; set; }
+        public abstract List<ImageModel> Images { get; set; }
 
         //public abstract string[] Tags { get; set; }
 

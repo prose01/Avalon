@@ -103,7 +103,7 @@ namespace Avalon.Controllers
             return await _profilesQueryRepository.GetProfileById(profileId) ?? null;
         }
 
-        /// <summary>Gets images from the specified profile folder.</summary>
+        /// <summary>Gets all images from specified profileId.</summary>
         /// <returns></returns>
         [NoCache]
         [HttpGet("~/GetProfileImages/{profileId}")]

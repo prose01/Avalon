@@ -7,7 +7,8 @@ namespace Avalon.Interfaces
 {
     public interface IImageUtil
     {
-        Task UploadImageAsync(CurrentUser currentUser, IFormFile photo);
+        Task AddImageToCurrentUser(CurrentUser currentUser, IFormFile photo, string title);
+        Task RemoveImageFromCurrentUser(CurrentUser currentUser, string imageId);
         Task<List<byte[]>> GetImagesAsync(string profileId);
     }
 }

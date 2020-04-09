@@ -11,17 +11,24 @@ namespace Avalon.Helpers
 {
     public class ImageUtil : IImageUtil
     {
+        private readonly ICurrentUserRepository _profileRepository;
         private readonly long _fileSizeLimit;
 
-        public ImageUtil(IConfiguration config)
+        public ImageUtil(IConfiguration config, ICurrentUserRepository profileRepository)
         {
             _fileSizeLimit = config.GetValue<long>("FileSizeLimit");
+            _profileRepository = profileRepository;
         }
 
         // TODO: Check this website for more info on this - https://docs.microsoft.com/en-us/aspnet/core/mvc/models/file-uploads?view=aspnetcore-3.1
 
 
-        public async Task UploadImageAsync(CurrentUser currentUser, IFormFile image)
+        /// <summary>Adds the image to current user.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <param name="image">The image.</param>
+        /// <param name="title">The title.</param>
+        /// <exception cref="Exception"></exception>
+        public async Task AddImageToCurrentUser(CurrentUser currentUser, IFormFile image, string title)
         {
             try
             {
@@ -31,24 +38,25 @@ namespace Avalon.Helpers
                     throw new Exception();
                 }
 
+                // TODO: Scan files for virus!!!!!
+
+                var randomFileName = Path.GetRandomFileName();
+                var fileName = randomFileName.Split('.');
+
+                // Save image reference to database.
+                await _profileRepository.AddImageToCurrentUser(currentUser, fileName[0], title);
+
                 // TODO: Find a place for you files!
                 if (!Directory.Exists($"C:/Peter Rose - Private/Photos/{currentUser.ProfileId}"))
                 {
                     Directory.CreateDirectory($"C:/Peter Rose - Private/Photos/{currentUser.ProfileId}");
                 }
 
-                // TODO: Scan files for virus!!!!!
-
-                var randomFileName = Path.GetRandomFileName();
-                var fileName = randomFileName.Split('.');
-
                 using (var filestream = File.Create($"C:/Peter Rose - Private/Photos/{currentUser.ProfileId}/{fileName[0]}.png"))
                 {
                     await image.CopyToAsync(filestream);
                     filestream.Flush();
                 }
-
-                // TODO: Added reference to image to the currentUser.
             }
             catch (Exception ex)
             {
@@ -56,6 +64,35 @@ namespace Avalon.Helpers
             }
         }
 
+        /// <summary>Removes the image from current user.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <param name="imageId">The image identifier.</param>
+        public async Task RemoveImageFromCurrentUser(CurrentUser currentUser, string imageId)
+        {
+            try
+            {
+                var imageModel = currentUser.Images.Find(i => i.Id == imageId);
+
+                if(imageModel != null)
+                {
+                    if (File.Exists($"C:/Peter Rose - Private/Photos/{currentUser.ProfileId}/{imageModel.FileName}.png"))
+                    {
+                        File.Delete($"C:/Peter Rose - Private/Photos/{currentUser.ProfileId}/{imageModel.FileName}.png");
+                    }
+
+                    // Remove image reference in database.
+                    await _profileRepository.RemoveImageFromCurrentUser(currentUser, imageId);
+                }               
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        /// <summary>Gets all images from specified profileId.</summary>
+        /// <param name="profileId">The profile identifier.</param>
+        /// <returns></returns>
         public async Task<List<byte[]>> GetImagesAsync(string profileId)
         {
             List<byte[]> images = new List<byte[]>();

@@ -19,14 +19,14 @@ namespace Avalon.Data
 
         /// <summary>Adds a new profile.</summary>
         /// <param name="item">The profile.</param>
-        public async Task AddProfile(CurrentUser item)
+        public async Task AddProfile(CurrentUser currentUser)
         {
             try
             {
-                item.ProfileId = Guid.NewGuid().ToString();
-                item.CreatedOn = DateTime.Now;
-                item.UpdatedOn = DateTime.Now;
-                item.LastActive = DateTime.Now;
+                currentUser.ProfileId = Guid.NewGuid().ToString();
+                currentUser.CreatedOn = DateTime.Now;
+                currentUser.UpdatedOn = DateTime.Now;
+                currentUser.LastActive = DateTime.Now;
 
                 //await _context.CurrentUser.InsertOneAsync(item);
             }
@@ -57,15 +57,15 @@ namespace Avalon.Data
         /// <summary>Updates the profile.</summary>
         /// <param name="item">The profile.</param>
         /// <returns></returns>
-        public async Task<ReplaceOneResult> UpdateProfile(CurrentUser item)
+        public async Task<ReplaceOneResult> UpdateProfile(CurrentUser currentUser)
         {
             try
             {
-                item.UpdatedOn = DateTime.Now;
+                currentUser.UpdatedOn = DateTime.Now;
 
                 return await _context.CurrentUser
-                            .ReplaceOneAsync(p => p.ProfileId.Equals(item.ProfileId)
-                                            , item
+                            .ReplaceOneAsync(p => p.ProfileId.Equals(currentUser.ProfileId)
+                                            , currentUser
                                             , new UpdateOptions { IsUpsert = true });
 
                 //return null;
@@ -147,6 +147,65 @@ namespace Avalon.Data
 
                 var update = Builders<CurrentUser>
                                 .Update.PullAll(e => e.Bookmarks, removeBookmarks);
+
+                var options = new FindOneAndUpdateOptions<CurrentUser>
+                {
+                    ReturnDocument = ReturnDocument.After
+                };
+
+                return await _context.CurrentUser.FindOneAndUpdateAsync(filter, update, options);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        /// <summary>Adds the image to profile.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <param name="fileName">Name of the file.</param>
+        /// <param name="title">The title.</param>
+        /// <returns></returns>
+        public async Task<CurrentUser> AddImageToCurrentUser(CurrentUser currentUser, string fileName, string title)
+        {
+            try
+            {
+                var imageModel = new ImageModel() { Id = Guid.NewGuid().ToString(), FileName = fileName, Title = title };
+
+                var filter = Builders<CurrentUser>
+                                .Filter.Eq(e => e.ProfileId, currentUser.ProfileId);
+
+                var update = Builders<CurrentUser>
+                                .Update.Push(e => e.Images, imageModel);
+
+                var options = new FindOneAndUpdateOptions<CurrentUser>
+                {
+                    ReturnDocument = ReturnDocument.After
+                };
+
+                return await _context.CurrentUser.FindOneAndUpdateAsync(filter, update, options);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        /// <summary>Removes the image from profile.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <param name="id">The image identifier.</param>
+        /// <returns></returns>
+        public async Task<CurrentUser> RemoveImageFromCurrentUser(CurrentUser currentUser, string id)
+        {
+            try
+            {
+                var images = currentUser.Images.Where(i => i.Id == id).ToList();
+
+                var filter = Builders<CurrentUser>
+                                .Filter.Eq(e => e.ProfileId, currentUser.ProfileId);
+
+                var update = Builders<CurrentUser>
+                                .Update.PullAll(e => e.Images, images);
 
                 var options = new FindOneAndUpdateOptions<CurrentUser>
                 {

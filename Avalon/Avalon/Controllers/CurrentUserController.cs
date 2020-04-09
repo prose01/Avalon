@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Avalon.Controllers
@@ -168,9 +169,12 @@ namespace Avalon.Controllers
 
         /// <summary>Upload images to the profile image folder.</summary>
         /// <param name="image"></param>
+        /// <param name="title"></param>
+        /// <exception cref="ArgumentException">ModelState is not valid {ModelState.IsValid}. - image</exception>
+        /// <exception cref="ArgumentException">Image length is < 1 {image.Length}. - image</exception>
         [NoCache]
         [HttpPost("~/UploadCurrentUserImage")]
-        public async Task<IActionResult> UploadCurrentUserImage([FromForm]IFormFile image)
+        public async Task<IActionResult> UploadCurrentUserImage([FromForm]IFormFile image, [FromForm]string title)
         {
             if (!ModelState.IsValid) throw new ArgumentException($"ModelState is not valid {ModelState.IsValid}.", nameof(image));
             if (image.Length < 0) throw new ArgumentException($"Image length is < 1 {image.Length}.", nameof(image));
@@ -179,7 +183,35 @@ namespace Avalon.Controllers
             {
                 var currentUser = await _helper.GetCurrentUserProfile(User);
 
-                return Ok(_imageUtil.UploadImageAsync(currentUser, image));
+                if(currentUser.Images.Count > 4) return BadRequest();
+
+                return Ok(_imageUtil.AddImageToCurrentUser(currentUser, image, title));
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.ToString());
+            }
+        }
+
+
+
+        /// <summary>Removes the image from current user.</summary>
+        /// <param name="imageId">The image identifier.</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException">ModelState is not valid {ModelState.IsValid}. - imageId</exception>
+        [NoCache]
+        [HttpPost("~/RemoveImageFromCurrentUser")]
+        public async Task<IActionResult> RemoveImageFromCurrentUser([FromBody]string imageId)
+        {
+            if (!ModelState.IsValid) throw new ArgumentException($"ModelState is not valid {ModelState.IsValid}.", nameof(imageId));
+
+            try
+            {
+                var currentUser = await _helper.GetCurrentUserProfile(User);
+
+                if (currentUser.Images.Any(i => i.Id != imageId)) return BadRequest();
+
+                return Ok(_imageUtil.RemoveImageFromCurrentUser(currentUser, imageId));
             }
             catch (Exception ex)
             {
