@@ -42,10 +42,7 @@ namespace Avalon.Helpers
 
                 var randomFileName = Path.GetRandomFileName();
                 var fileName = randomFileName.Split('.');
-
-                // Save image reference to database.
-                await _profileRepository.AddImageToCurrentUser(currentUser, fileName[0], title);
-
+                
                 // TODO: Find a place for you files!
                 if (!Directory.Exists($"C:/Peter Rose - Private/Photos/{currentUser.ProfileId}"))
                 {
@@ -57,6 +54,9 @@ namespace Avalon.Helpers
                     await image.CopyToAsync(filestream);
                     filestream.Flush();
                 }
+
+                // Save image reference to database. Most come after save to disk/filestream or it will save empty image because of async call.
+                await _profileRepository.AddImageToCurrentUser(currentUser, fileName[0], title);
             }
             catch (Exception ex)
             {

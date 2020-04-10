@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 //using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -23,9 +24,11 @@ namespace Avalon.Controllers
         private readonly IProfilesQueryRepository _profilesQueryRepository;
         private readonly IHelperMethods _helper;
         private readonly IImageUtil _imageUtil;
+        private readonly long _maxImageNumber;
 
-        public CurrentUserController(ICurrentUserRepository profileRepository, IProfilesQueryRepository profilesQueryRepository, IHelperMethods helperMethods, IImageUtil imageUtil)
+        public CurrentUserController(IConfiguration config, ICurrentUserRepository profileRepository, IProfilesQueryRepository profilesQueryRepository, IHelperMethods helperMethods, IImageUtil imageUtil)
         {
+            _maxImageNumber = config.GetValue<long>("MaxImageNumber");
             _profileRepository = profileRepository;
             _profilesQueryRepository = profilesQueryRepository;
             _helper = helperMethods;
@@ -183,7 +186,7 @@ namespace Avalon.Controllers
             {
                 var currentUser = await _helper.GetCurrentUserProfile(User);
 
-                if(currentUser.Images.Count > 4) return BadRequest();
+                if(currentUser.Images.Count >= _maxImageNumber) return BadRequest();
 
                 return Ok(_imageUtil.AddImageToCurrentUser(currentUser, image, title));
             }
