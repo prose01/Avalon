@@ -113,9 +113,7 @@ namespace Avalon.Controllers
             {
                 if (string.IsNullOrEmpty(profileId)) return BadRequest();
 
-                var images = await _imageUtil.GetImagesAsync(profileId);
-
-                return Ok(images);
+                return Ok(await _imageUtil.GetImagesAsync(profileId));
             }
             catch (Exception ex)
             {

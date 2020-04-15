@@ -212,13 +212,34 @@ namespace Avalon.Controllers
             {
                 var currentUser = await _helper.GetCurrentUserProfile(User);
 
-                if (currentUser.Images.Any(i => i.Id != imageId)) return BadRequest();
+                if (!currentUser.Images.Any(i => i.ImageId != imageId)) return BadRequest();
 
                 return Ok(_imageUtil.RemoveImageFromCurrentUser(currentUser, imageId));
             }
             catch (Exception ex)
             {
                 return Problem(ex.ToString());
+            }
+        }
+
+        /// <summary>Gets an images from CurrentUser by ImageId.</summary>
+        /// <param name="imageId">The image identifier.</param>
+        /// <returns></returns>
+        [NoCache]
+        [HttpGet("~/GetImagesById/{imageId}")]
+        public async Task<IActionResult> GetImageById(string imageId)
+        {
+            try
+            {
+                var currentUser = await _helper.GetCurrentUserProfile(User);
+
+                if (!currentUser.Images.Any(i => i.ImageId == imageId)) return BadRequest();
+
+                return Ok(await _imageUtil.GetImageById(currentUser, imageId));
+            }
+            catch (Exception ex)
+            {
+                throw ex;
             }
         }
     }

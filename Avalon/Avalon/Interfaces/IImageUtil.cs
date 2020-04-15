@@ -10,5 +10,6 @@ namespace Avalon.Interfaces
         Task AddImageToCurrentUser(CurrentUser currentUser, IFormFile photo, string title);
         Task RemoveImageFromCurrentUser(CurrentUser currentUser, string imageId);
         Task<List<byte[]>> GetImagesAsync(string profileId);
+        Task<byte[]> GetImageById(CurrentUser currentUser, string imageId);
     }
 }

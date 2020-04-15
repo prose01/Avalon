@@ -71,10 +71,11 @@ namespace Avalon.Helpers
         {
             try
             {
-                var imageModel = currentUser.Images.Find(i => i.Id == imageId);
+                var imageModel = currentUser.Images.Find(i => i.ImageId == imageId);
 
                 if(imageModel != null)
                 {
+                    // TODO: Find a place for you files!
                     if (File.Exists($"C:/Peter Rose - Private/Photos/{currentUser.ProfileId}/{imageModel.FileName}.png"))
                     {
                         File.Delete($"C:/Peter Rose - Private/Photos/{currentUser.ProfileId}/{imageModel.FileName}.png");
@@ -119,6 +120,41 @@ namespace Avalon.Helpers
                 }
 
                 return images;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        /// <summary>Gets an images from CurrentUser by ImageId.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <param name="imageId">The image identifier.</param>
+        /// <returns></returns>
+        public async Task<byte[]> GetImageById(CurrentUser currentUser, string imageId)
+        {
+            try
+            {
+                var imageModel = currentUser.Images.Find(i => i.ImageId == imageId);
+
+                if (imageModel != null)
+                {
+                    // TODO: Find a place for you files!
+                    if (File.Exists($"C:/Peter Rose - Private/Photos/{currentUser.ProfileId}/{imageModel.FileName}.png"))
+                    {
+                        byte[] result;
+
+                        using (FileStream stream = File.Open($"C:/Peter Rose - Private/Photos/{currentUser.ProfileId}/{imageModel.FileName}.png", FileMode.Open))
+                        {
+                            result = new byte[stream.Length];
+                            await stream.ReadAsync(result, 0, (int)stream.Length);
+                        }
+
+                        return result;
+                    }
+                }
+
+                return null; // TODO: Should return exception or error
             }
             catch (Exception ex)
             {

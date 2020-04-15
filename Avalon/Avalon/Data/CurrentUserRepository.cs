@@ -170,7 +170,7 @@ namespace Avalon.Data
         {
             try
             {
-                var imageModel = new ImageModel() { Id = Guid.NewGuid().ToString(), FileName = fileName, Title = title };
+                var imageModel = new ImageModel() { ImageId = Guid.NewGuid().ToString(), FileName = fileName, Title = title };
 
                 var filter = Builders<CurrentUser>
                                 .Filter.Eq(e => e.ProfileId, currentUser.ProfileId);
@@ -199,7 +199,7 @@ namespace Avalon.Data
         {
             try
             {
-                var images = currentUser.Images.Where(i => i.Id == id).ToList();
+                var images = currentUser.Images.Where(i => i.ImageId == id).ToList();
 
                 var filter = Builders<CurrentUser>
                                 .Filter.Eq(e => e.ProfileId, currentUser.ProfileId);
