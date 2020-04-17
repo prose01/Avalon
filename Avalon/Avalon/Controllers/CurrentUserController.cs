@@ -176,8 +176,8 @@ namespace Avalon.Controllers
         /// <exception cref="ArgumentException">ModelState is not valid {ModelState.IsValid}. - image</exception>
         /// <exception cref="ArgumentException">Image length is < 1 {image.Length}. - image</exception>
         [NoCache]
-        [HttpPost("~/UploadCurrentUserImage")]
-        public async Task<IActionResult> UploadCurrentUserImage([FromForm]IFormFile image, [FromForm]string title)
+        [HttpPost("~/UploadImage")]
+        public async Task<IActionResult> UploadImage([FromForm]IFormFile image, [FromForm]string title)
         {
             if (!ModelState.IsValid) throw new ArgumentException($"ModelState is not valid {ModelState.IsValid}.", nameof(image));
             if (image.Length < 0) throw new ArgumentException($"Image length is < 1 {image.Length}.", nameof(image));
@@ -198,23 +198,26 @@ namespace Avalon.Controllers
 
 
 
-        /// <summary>Removes the image from current user.</summary>
+        /// <summary>Deletes the image from current user.</summary>
         /// <param name="imageId">The image identifier.</param>
         /// <returns></returns>
         /// <exception cref="ArgumentException">ModelState is not valid {ModelState.IsValid}. - imageId</exception>
         [NoCache]
-        [HttpPost("~/RemoveImageFromCurrentUser")]
-        public async Task<IActionResult> RemoveImageFromCurrentUser([FromBody]string imageId)
+        [HttpPost("~/DeleteImage")]
+        public async Task<IActionResult> DeleteImage([FromBody]string[] imageIds)
         {
-            if (!ModelState.IsValid) throw new ArgumentException($"ModelState is not valid {ModelState.IsValid}.", nameof(imageId));
+            if (!ModelState.IsValid) throw new ArgumentException($"ModelState is not valid {ModelState.IsValid}.", nameof(imageIds));
 
             try
             {
                 var currentUser = await _helper.GetCurrentUserProfile(User);
 
-                if (!currentUser.Images.Any(i => i.ImageId != imageId)) return BadRequest();
+                foreach (var imageId in imageIds)
+                {
+                    if (!currentUser.Images.Any(i => i.ImageId != imageId)) return BadRequest();
+                }
 
-                return Ok(_imageUtil.RemoveImageFromCurrentUser(currentUser, imageId));
+                return Ok(_imageUtil.DeleteImagesFromCurrentUser(currentUser, imageIds));
             }
             catch (Exception ex)
             {

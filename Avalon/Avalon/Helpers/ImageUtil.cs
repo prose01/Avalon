@@ -64,26 +64,29 @@ namespace Avalon.Helpers
             }
         }
 
-        /// <summary>Removes the image from current user.</summary>
+        /// <summary>Deletes images from current user.</summary>
         /// <param name="currentUser">The current user.</param>
         /// <param name="imageId">The image identifier.</param>
-        public async Task RemoveImageFromCurrentUser(CurrentUser currentUser, string imageId)
+        public async Task DeleteImagesFromCurrentUser(CurrentUser currentUser, string[] imageIds)
         {
             try
             {
-                var imageModel = currentUser.Images.Find(i => i.ImageId == imageId);
-
-                if(imageModel != null)
+                foreach(var imageId in imageIds)
                 {
-                    // TODO: Find a place for you files!
-                    if (File.Exists($"C:/Peter Rose - Private/Photos/{currentUser.ProfileId}/{imageModel.FileName}.png"))
-                    {
-                        File.Delete($"C:/Peter Rose - Private/Photos/{currentUser.ProfileId}/{imageModel.FileName}.png");
-                    }
+                    var imageModel = currentUser.Images.Find(i => i.ImageId == imageId);
 
-                    // Remove image reference in database.
-                    await _profileRepository.RemoveImageFromCurrentUser(currentUser, imageId);
-                }               
+                    if (imageModel != null)
+                    {
+                        // TODO: Find a place for you files!
+                        if (File.Exists($"C:/Peter Rose - Private/Photos/{currentUser.ProfileId}/{imageModel.FileName}.png"))
+                        {
+                            //File.Delete($"C:/Peter Rose - Private/Photos/{currentUser.ProfileId}/{imageModel.FileName}.png");
+                        }
+
+                        // Remove image reference in database.
+                        //await _profileRepository.RemoveImageFromCurrentUser(currentUser, imageId);
+                    }
+                }                         
             }
             catch (Exception ex)
             {
