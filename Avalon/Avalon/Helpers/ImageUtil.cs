@@ -66,7 +66,7 @@ namespace Avalon.Helpers
 
         /// <summary>Deletes images from current user.</summary>
         /// <param name="currentUser">The current user.</param>
-        /// <param name="imageId">The image identifier.</param>
+        /// <param name="imageIds">The image identifier.</param>
         public async Task DeleteImagesFromCurrentUser(CurrentUser currentUser, string[] imageIds)
         {
             try
