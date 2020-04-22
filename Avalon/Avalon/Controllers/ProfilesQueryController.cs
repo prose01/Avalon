@@ -104,6 +104,7 @@ namespace Avalon.Controllers
         }
 
         /// <summary>Gets all images from specified profileId.</summary>
+        /// <param name="profileId">The profile identifier.</param>
         /// <returns></returns>
         [NoCache]
         [HttpGet("~/GetProfileImages/{profileId}")]
@@ -114,6 +115,24 @@ namespace Avalon.Controllers
                 if (string.IsNullOrEmpty(profileId)) return BadRequest();
 
                 return Ok(await _imageUtil.GetImagesAsync(profileId));
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        /// <summary>Gets an images from Profile by Image fileName.</summary>
+        /// <param name="profileId">The profile identifier.</param>
+        /// <param name="fileName">The image fileName.</param>
+        /// <returns></returns>
+        [NoCache]
+        [HttpGet("~/GetProfileImageByFileName/{profileId},{fileName}")]
+        public async Task<IActionResult> GetProfileImageByFileName(string profileId, string fileName)
+        {
+            try
+            {
+                return Ok(await _imageUtil.GetImageByFileName(profileId, fileName));
             }
             catch (Exception ex)
             {

@@ -42,7 +42,7 @@ namespace Avalon.Helpers
 
                 var randomFileName = Path.GetRandomFileName();
                 var fileName = randomFileName.Split('.');
-                
+
                 // TODO: Find a place for you files!
                 if (!Directory.Exists($"C:/Peter Rose - Private/Photos/{currentUser.ProfileId}"))
                 {
@@ -71,7 +71,7 @@ namespace Avalon.Helpers
         {
             try
             {
-                foreach(var imageId in imageIds)
+                foreach (var imageId in imageIds)
                 {
                     var imageModel = currentUser.Images.Find(i => i.ImageId == imageId);
 
@@ -80,13 +80,13 @@ namespace Avalon.Helpers
                         // TODO: Find a place for you files!
                         if (File.Exists($"C:/Peter Rose - Private/Photos/{currentUser.ProfileId}/{imageModel.FileName}.png"))
                         {
-                            //File.Delete($"C:/Peter Rose - Private/Photos/{currentUser.ProfileId}/{imageModel.FileName}.png");
+                            File.Delete($"C:/Peter Rose - Private/Photos/{currentUser.ProfileId}/{imageModel.FileName}.png");
                         }
 
                         // Remove image reference in database.
-                        //await _profileRepository.RemoveImageFromCurrentUser(currentUser, imageId);
+                        await _profileRepository.RemoveImageFromCurrentUser(currentUser, imageId);
                     }
-                }                         
+                }
             }
             catch (Exception ex)
             {
@@ -130,31 +130,26 @@ namespace Avalon.Helpers
             }
         }
 
-        /// <summary>Gets an images from CurrentUser by ImageId.</summary>
+        /// <summary>Gets an images from CurrentUser by Image fileName.</summary>
         /// <param name="currentUser">The current user.</param>
-        /// <param name="imageId">The image identifier.</param>
+        /// <param name="fileName">The image fileName.</param>
         /// <returns></returns>
-        public async Task<byte[]> GetImageById(CurrentUser currentUser, string imageId)
+        public async Task<byte[]> GetImageByFileName(string profileId, string fileName)
         {
             try
             {
-                var imageModel = currentUser.Images.Find(i => i.ImageId == imageId);
-
-                if (imageModel != null)
+                // TODO: Find a place for you files!
+                if (File.Exists($"C:/Peter Rose - Private/Photos/{profileId}/{fileName}.png"))
                 {
-                    // TODO: Find a place for you files!
-                    if (File.Exists($"C:/Peter Rose - Private/Photos/{currentUser.ProfileId}/{imageModel.FileName}.png"))
+                    byte[] result;
+
+                    using (FileStream stream = File.Open($"C:/Peter Rose - Private/Photos/{profileId}/{fileName}.png", FileMode.Open))
                     {
-                        byte[] result;
-
-                        using (FileStream stream = File.Open($"C:/Peter Rose - Private/Photos/{currentUser.ProfileId}/{imageModel.FileName}.png", FileMode.Open))
-                        {
-                            result = new byte[stream.Length];
-                            await stream.ReadAsync(result, 0, (int)stream.Length);
-                        }
-
-                        return result;
+                        result = new byte[stream.Length];
+                        await stream.ReadAsync(result, 0, (int)stream.Length);
                     }
+
+                    return result;
                 }
 
                 return null; // TODO: Should return exception or error
