@@ -16,14 +16,12 @@ namespace Avalon.Controllers
     public class ProfilesQueryController : Controller
     {
         private readonly IProfilesQueryRepository _profilesQueryRepository;
-        private readonly ICurrentUserRepository _profileRepository;
         private readonly IHelperMethods _helper;
         private readonly IImageUtil _imageUtil;
 
-        public ProfilesQueryController(IProfilesQueryRepository profilesQueryRepository, ICurrentUserRepository profileRepository, IHelperMethods helperMethods, IImageUtil imageUtil)
+        public ProfilesQueryController(IProfilesQueryRepository profilesQueryRepository, IHelperMethods helperMethods, IImageUtil imageUtil)
         {
             _profilesQueryRepository = profilesQueryRepository;
-            _profileRepository = profileRepository;
             _helper = helperMethods;
             _imageUtil = imageUtil;
         }
