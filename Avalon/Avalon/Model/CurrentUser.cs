@@ -7,7 +7,8 @@ namespace Avalon.Model
     public class CurrentUser : AbstractProfile
     {
         #region special properties
-        public List<string> Bookmarks { get; set; } // Remember to initiate the list when new user is created!!! 
+        public List<string> Bookmarks { get; set; } // TODO: Remember to initiate the list when new user is created!!! 
+        public List<string> ChatMemberslist { get; set; } // TODO: Remember to initiate the list when new user is created!!! 
 
         #endregion
 

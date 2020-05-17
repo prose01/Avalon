@@ -161,6 +161,72 @@ namespace Avalon.Data
             }
         }
 
+        /// <summary>Adds the profiles to currentUser ChatMemberslist.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <param name="profileIds">The profile ids.</param>
+        /// <returns></returns>
+        public async Task<CurrentUser> AddProfilesToChatMemberslist(CurrentUser currentUser, string[] profileIds)
+        {
+            try
+            {
+                //Filter out allready bookmarked profiles.
+                var newChatMembers = profileIds.Where(i => !currentUser.ChatMemberslist.Contains(i)).ToList();
+
+                if (newChatMembers.Count == 0)
+                    return null;
+
+                var filter = Builders<CurrentUser>
+                                .Filter.Eq(e => e.ProfileId, currentUser.ProfileId);
+
+                var update = Builders<CurrentUser>
+                                .Update.PushEach(e => e.ChatMemberslist, newChatMembers);
+
+                var options = new FindOneAndUpdateOptions<CurrentUser>
+                {
+                    ReturnDocument = ReturnDocument.After
+                };
+
+                return await _context.CurrentUser.FindOneAndUpdateAsync(filter, update, options);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        /// <summary>Removes the profiles from currentUser ChatMemberslist.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <param name="profileIds">The profile ids.</param>
+        /// <returns></returns>
+        public async Task<CurrentUser> RemoveProfilesFromChatMemberslist(CurrentUser currentUser, string[] profileIds)
+        {
+            try
+            {
+                //Filter out allready bookmarked profiles.
+                var removeChatMembers = profileIds.Where(i => currentUser.ChatMemberslist.Contains(i)).ToList();
+
+                if (removeChatMembers.Count == 0)
+                    return null;
+
+                var filter = Builders<CurrentUser>
+                                .Filter.Eq(e => e.ProfileId, currentUser.ProfileId);
+
+                var update = Builders<CurrentUser>
+                                .Update.PullAll(e => e.ChatMemberslist, removeChatMembers);
+
+                var options = new FindOneAndUpdateOptions<CurrentUser>
+                {
+                    ReturnDocument = ReturnDocument.After
+                };
+
+                return await _context.CurrentUser.FindOneAndUpdateAsync(filter, update, options);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         /// <summary>Adds the image to profile.</summary>
         /// <param name="currentUser">The current user.</param>
         /// <param name="fileName">Name of the file.</param>

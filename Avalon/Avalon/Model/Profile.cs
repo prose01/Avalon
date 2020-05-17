@@ -8,6 +8,7 @@ namespace Avalon.Model
     {
         #region special properties
         public List<string> Bookmarks { private get; set; }
+        public List<string> ChatMemberslist { get; set; } // TODO: Remember to initiate the list when new user is created!!! 
 
         #endregion
 

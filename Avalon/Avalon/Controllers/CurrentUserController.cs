@@ -132,7 +132,7 @@ namespace Avalon.Controllers
             return Ok(_profileRepository.DeleteCurrentUser(currentUser.ProfileId));
         }
 
-        /// <summary>Adds the profiles to currentUser bookmarks.</summary>
+        /// <summary>Adds the profiles to currentUser bookmarks and ChatMemberslist.</summary>
         /// <param name="profileIds">The profile ids.</param>
         /// <returns></returns>
         [NoCache]
@@ -144,11 +144,14 @@ namespace Avalon.Controllers
 
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            return Ok(_profileRepository.AddProfilesToBookmarks(currentUser, profileIds));
+            await _profileRepository.AddProfilesToBookmarks(currentUser, profileIds);
+            await _profileRepository.AddProfilesToChatMemberslist(currentUser, profileIds);
+
+            return Ok();
         }
 
 
-        /// <summary>Removes the profiles from currentUser bookmarks.</summary>
+        /// <summary>Removes the profiles from currentUser bookmarks and ChatMemberslist.</summary>
         /// <param name="profileIds">The profile ids.</param>
         /// <returns></returns>
         [NoCache]
@@ -162,7 +165,10 @@ namespace Avalon.Controllers
             {
                 var currentUser = await _helper.GetCurrentUserProfile(User);
 
-                return Ok(_profileRepository.RemoveProfilesFromBookmarks(currentUser, profileIds));
+                await _profileRepository.RemoveProfilesFromBookmarks(currentUser, profileIds);
+                await _profileRepository.RemoveProfilesFromChatMemberslist(currentUser, profileIds);
+
+                return Ok();
             }
             catch (Exception ex)
             {
