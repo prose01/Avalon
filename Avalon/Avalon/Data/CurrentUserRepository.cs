@@ -3,6 +3,7 @@ using Avalon.Model;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -169,17 +170,25 @@ namespace Avalon.Data
         {
             try
             {
-                //Filter out allready bookmarked profiles.
-                var newChatMembers = profileIds.Where(i => !currentUser.ChatMemberslist.Contains(i)).ToList();
+                //Filter out allready added ChatMembers.
 
-                if (newChatMembers.Count == 0)
+                var newChatMemberIds = profileIds.Where(i => !currentUser.ChatMemberslist.Any(n => n.ProfileId == i)).ToList();
+
+                if (newChatMemberIds.Count == 0)
                     return null;
 
                 var filter = Builders<CurrentUser>
                                 .Filter.Eq(e => e.ProfileId, currentUser.ProfileId);
 
+                List<ChatMember> newChatMembers = new List<ChatMember>();
+
+                foreach (var chatMemberId in newChatMemberIds)
+                {
+                    newChatMembers.Add(new ChatMember() { ProfileId = chatMemberId, Blocked = false });
+                }
+
                 var update = Builders<CurrentUser>
-                                .Update.PushEach(e => e.ChatMemberslist, newChatMembers);
+                                .Update.PushEach(e => e.ChatMemberslist, newChatMembers);      // TODO: Kig på $addToSet
 
                 var options = new FindOneAndUpdateOptions<CurrentUser>
                 {
@@ -202,14 +211,21 @@ namespace Avalon.Data
         {
             try
             {
-                //Filter out allready bookmarked profiles.
-                var removeChatMembers = profileIds.Where(i => currentUser.ChatMemberslist.Contains(i)).ToList();
+                //Filter out ChatMembers not on list.
+                var removeChatMemberIds = profileIds.Where(i => currentUser.ChatMemberslist.Any(n => n.ProfileId == i)).ToList();
 
-                if (removeChatMembers.Count == 0)
+                if (removeChatMemberIds.Count == 0)
                     return null;
 
                 var filter = Builders<CurrentUser>
                                 .Filter.Eq(e => e.ProfileId, currentUser.ProfileId);
+
+                List<ChatMember> removeChatMembers = new List<ChatMember>();
+
+                foreach (var chatMemberId in removeChatMemberIds)
+                {
+                    removeChatMembers.Add(new ChatMember() { ProfileId = chatMemberId, Blocked = false });
+                }
 
                 var update = Builders<CurrentUser>
                                 .Update.PullAll(e => e.ChatMemberslist, removeChatMembers);
