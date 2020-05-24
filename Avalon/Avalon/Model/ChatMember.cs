@@ -1,6 +1,4 @@
-﻿using MongoDB.Bson;
-
-namespace Avalon.Model
+﻿namespace Avalon.Model
 {
     public class ChatMember
     {

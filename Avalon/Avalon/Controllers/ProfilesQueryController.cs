@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Avalon.Controllers
@@ -99,6 +100,26 @@ namespace Avalon.Controllers
             if (currentUser.ProfileId == profileId) return null;
 
             return await _profilesQueryRepository.GetProfileById(profileId) ?? null;
+        }
+
+        //[NoCache]
+        //[HttpGet("~/GetProfilesById/{profileIds}")]
+        //public async Task<IEnumerable<Profile>> Get(string[] profileIds)
+        //{
+        //    var currentUser = await _helper.GetCurrentUserProfile(User);
+
+        //    if (profileIds.Contains(currentUser.ProfileId)) return null;
+
+        //    return await _profilesQueryRepository.GetProfilesById(profileIds) ?? null;
+        //}
+
+        [NoCache]
+        [HttpPost("~/GetChatMemberProfiles")]
+        public async Task<IEnumerable<Profile>> GetChatMemberProfiles()
+        {
+            var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            return await _profilesQueryRepository.GetChatMemberProfiles(currentUser) ?? null;
         }
 
         /// <summary>Gets all images from specified profileId.</summary>

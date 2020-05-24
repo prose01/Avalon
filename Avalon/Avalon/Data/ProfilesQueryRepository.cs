@@ -97,6 +97,23 @@ namespace Avalon.Data
             }
         }
 
+        /// <summary>Gets curretuser's chatmember profiles.</summary>
+        /// <param name="profileIds">The profile identifiers.</param>
+        /// <returns></returns>
+        public async Task<IEnumerable<Profile>> GetChatMemberProfiles(CurrentUser currentUser)
+        {
+            try
+            {
+                var chatMembers = currentUser.ChatMemberslist.Select(m => m.ProfileId);
+
+                return await _context.Profiles.Find(p => chatMembers.Contains(p.ProfileId)).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         /// <summary>Gets the profile by auth0Id.</summary>
         /// <param name="auth0Id">Auth0Id of the profile.</param>
         /// <returns></returns>

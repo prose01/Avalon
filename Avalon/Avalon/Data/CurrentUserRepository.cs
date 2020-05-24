@@ -171,7 +171,6 @@ namespace Avalon.Data
             try
             {
                 //Filter out allready added ChatMembers.
-
                 var newChatMemberIds = profileIds.Where(i => !currentUser.ChatMemberslist.Any(n => n.ProfileId == i)).ToList();
 
                 if (newChatMemberIds.Count == 0)
@@ -229,6 +228,34 @@ namespace Avalon.Data
 
                 var update = Builders<CurrentUser>
                                 .Update.PullAll(e => e.ChatMemberslist, removeChatMembers);
+
+                var options = new FindOneAndUpdateOptions<CurrentUser>
+                {
+                    ReturnDocument = ReturnDocument.After
+                };
+
+                return await _context.CurrentUser.FindOneAndUpdateAsync(filter, update, options);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public async Task<CurrentUser> BlockChatMembers(CurrentUser currentUser, List<ChatMember> chatMembers)
+        {
+            try
+            {
+                var updatableChatMembers = chatMembers.Where(i => currentUser.ChatMemberslist.Any(n => n.ProfileId == i.ProfileId)).ToList();
+
+                if (updatableChatMembers.Count == 0)
+                    return null;
+
+                var filter = Builders<CurrentUser>
+                                .Filter.Eq(e => e.ProfileId, currentUser.ProfileId);
+
+                var update = Builders<CurrentUser>
+                                .Update.PushEach(e => e.ChatMemberslist, updatableChatMembers);
 
                 var options = new FindOneAndUpdateOptions<CurrentUser>
                 {
