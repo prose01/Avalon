@@ -242,11 +242,15 @@ namespace Avalon.Data
             }
         }
 
-        public async Task<CurrentUser> BlockChatMembers(CurrentUser currentUser, List<ChatMember> chatMembers)
+        /// <summary>Blocks or unblocks chatmember profiles.</summary>
+        /// <param name="currentUser"></param>
+        /// <param name="profileIds">The profile identifiers.</param>
+        /// <returns></returns>
+        public async Task<CurrentUser> BlockChatMembers(CurrentUser currentUser, string[] profileIds)
         {
             try
             {
-                var updatableChatMembers = chatMembers.Where(i => currentUser.ChatMemberslist.Any(n => n.ProfileId == i.ProfileId)).ToList();
+                List<string> updatableChatMembers = profileIds.Where(i => currentUser.ChatMemberslist.Any(n => n.ProfileId == i)).ToList();
 
                 if (updatableChatMembers.Count == 0)
                     return null;
@@ -254,8 +258,20 @@ namespace Avalon.Data
                 var filter = Builders<CurrentUser>
                                 .Filter.Eq(e => e.ProfileId, currentUser.ProfileId);
 
+                List<ChatMember> updateChatMembers = new List<ChatMember>();
+
+                foreach (var member in currentUser.ChatMemberslist)
+                {
+                    if(profileIds.Any(x => member.ProfileId == x))
+                    {
+                        member.Blocked = !member.Blocked;
+                    }
+
+                    updateChatMembers.Add(member);
+                }
+
                 var update = Builders<CurrentUser>
-                                .Update.PushEach(e => e.ChatMemberslist, updatableChatMembers);
+                                .Update.Set(e => e.ChatMemberslist, updateChatMembers);
 
                 var options = new FindOneAndUpdateOptions<CurrentUser>
                 {

@@ -113,6 +113,8 @@ namespace Avalon.Controllers
         //    return await _profilesQueryRepository.GetProfilesById(profileIds) ?? null;
         //}
 
+        /// <summary>Gets the currentUser's chatMember profiles.</summary>
+        /// <returns></returns>
         [NoCache]
         [HttpPost("~/GetChatMemberProfiles")]
         public async Task<IEnumerable<Profile>> GetChatMemberProfiles()

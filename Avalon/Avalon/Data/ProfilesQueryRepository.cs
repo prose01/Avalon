@@ -97,8 +97,8 @@ namespace Avalon.Data
             }
         }
 
-        /// <summary>Gets curretuser's chatmember profiles.</summary>
-        /// <param name="profileIds">The profile identifiers.</param>
+        /// <summary>Gets curretUser's chatmember profiles.</summary>
+        /// <param name="currentUser"></param>
         /// <returns></returns>
         public async Task<IEnumerable<Profile>> GetChatMemberProfiles(CurrentUser currentUser)
         {

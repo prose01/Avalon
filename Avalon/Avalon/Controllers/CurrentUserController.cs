@@ -176,6 +176,23 @@ namespace Avalon.Controllers
             }
         }
 
+        /// <summary>Blocks or unblocks chatMembers.</summary>
+        /// <param name="profileIds">The profile ids.</param>
+        /// <returns></returns>
+        [NoCache]
+        [HttpPost("~/BlockChatMembers")]
+        public async Task<IActionResult> BlockChatMembers([FromBody] string[] profileIds)
+        {
+            if (!ModelState.IsValid) return BadRequest();
+            if (profileIds == null || profileIds.Length < 1) return BadRequest();
+
+            var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            await _profileRepository.BlockChatMembers(currentUser, profileIds);
+
+            return Ok();
+        }
+
         /// <summary>Upload images to the profile image folder.</summary>
         /// <param name="image"></param>
         /// <param name="title"></param>
