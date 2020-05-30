@@ -13,6 +13,8 @@ namespace Avalon.Model
 
         public List<ChatMember> ChatMemberslist { get; set; } // TODO: Remember to initiate the list when new user is created!!! 
 
+        public ProfileFilter ProfileFilter { get; set; }
+
         #endregion
 
         public override ObjectId _id { get; set; }

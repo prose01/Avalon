@@ -1,4 +1,6 @@
-﻿using System;
+﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
+using System;
 using System.Collections.Generic;
 
 namespace Avalon.Model
@@ -23,8 +25,10 @@ namespace Avalon.Model
 
         //public override string JobTitle { get; set; } = string.Empty;
 
+        [BsonRepresentation(BsonType.String)]
         public GenderType Gender { get; set; }
 
+        [BsonRepresentation(BsonType.String)]
         public BodyType Body { get; set; }
 
         //[BsonRepresentation(BsonType.String)]

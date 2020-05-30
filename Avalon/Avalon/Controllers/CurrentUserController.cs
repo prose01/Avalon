@@ -7,8 +7,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -51,28 +49,35 @@ namespace Avalon.Controllers
         /// </summary>
         /// <param name="profile"> The value.</param>
         [HttpPost("~/CurrentUser")]
-        public async Task<IActionResult> Post([FromBody]CurrentUser item)
+        public async Task<IActionResult> Post([FromBody] CurrentUser item)
         {
             if (!ModelState.IsValid) return BadRequest();
 
-            // Check if Auth0Id exists
-            var auth0Id = _helper.GetCurrentUserAuth0Id(User);
+            try
+            {
+                // Check if Auth0Id exists
+                var auth0Id = _helper.GetCurrentUserAuth0Id(User);
 
-            if (string.IsNullOrEmpty(auth0Id)) return BadRequest();
+                if (string.IsNullOrEmpty(auth0Id)) return BadRequest();
 
-            // Check if Name already exists.
-            if (_profilesQueryRepository.GetProfileByName(item.Name).Result != null) return BadRequest();
+                // Check if Name already exists.
+                if (_profilesQueryRepository.GetProfileByName(item.Name).Result != null) return BadRequest();
 
-            // Check if auth0Id already exists.
-            if (_profilesQueryRepository.GetProfileByAuth0Id(auth0Id).Result != null) return BadRequest();
+                // Check if auth0Id already exists.
+                if (_profilesQueryRepository.GetProfileByAuth0Id(auth0Id).Result != null) return BadRequest();
 
-            // Set admin default to false! Only other admins can give this privilege.
-            item.Admin = false;
+                // Set admin default to false! Only other admins can give this privilege.
+                item.Admin = false;
 
-            item.Auth0Id = auth0Id;
+                item.Auth0Id = auth0Id;
 
 
-            return Ok(_profileRepository.AddProfile(item));
+                return Ok(_profileRepository.AddProfile(item));
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.ToString());
+            }
         }
 
         /// <summary>
@@ -102,19 +107,26 @@ namespace Avalon.Controllers
         /// <param name="item">The profile</param>
         [NoCache]
         [HttpPut("~/CurrentUser")]
-        public async Task<IActionResult> Put([FromBody]CurrentUser item)
+        public async Task<IActionResult> Put([FromBody] CurrentUser item)
         {
             if (!ModelState.IsValid) return BadRequest();
 
-            var currentUser = await _helper.GetCurrentUserProfile(User);
+            try
+            {
+                var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            if (currentUser.ProfileId != item.ProfileId) return BadRequest();
+                if (currentUser.ProfileId != item.ProfileId) return BadRequest();
 
-            item._id = currentUser._id; // _id is immutable and the type is unknow by BluePenguin.
+                item._id = currentUser._id; // _id is immutable and the type is unknow by BluePenguin.
 
-            item.Admin = currentUser.Admin; // No user is allowed to set themselves as Admin!
+                item.Admin = currentUser.Admin; // No user is allowed to set themselves as Admin!
 
-            return Ok(_profileRepository.UpdateProfile(item));
+                return Ok(_profileRepository.UpdateProfile(item));
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.ToString());
+            }
         }
 
         /// <summary>
@@ -125,11 +137,42 @@ namespace Avalon.Controllers
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            if(currentUser.Admin) return BadRequest(); // Amins cannot delete themseleves.
+            if (currentUser.Admin) return BadRequest(); // Amins cannot delete themseleves.
 
             // Delete from Auth0
 
-            return Ok(_profileRepository.DeleteCurrentUser(currentUser.ProfileId));
+            try
+            {
+                return Ok(_profileRepository.DeleteCurrentUser(currentUser.ProfileId));
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.ToString());
+            }
+        }
+
+        /// <summary>Saves the profile filter to currentUser.</summary>
+        /// <param name="profileFilter">The profile filter.</param>
+        /// <returns></returns>
+        [NoCache]
+        [HttpPost("~/SaveProfileFilter")]
+        public async Task<IActionResult> SaveProfileFilter([FromBody]ProfileFilter profileFilter)
+        {
+            if (!ModelState.IsValid) return BadRequest();
+            if (profileFilter == null) return BadRequest();
+
+            try
+            {
+                var currentUser = await _helper.GetCurrentUserProfile(User);
+
+                //await _profileRepository.SaveProfileFilter(currentUser, profileFilter);
+
+                return Ok(_profileRepository.SaveProfileFilter(currentUser, profileFilter));
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.ToString());
+            }
         }
 
         /// <summary>Adds the profiles to currentUser bookmarks and ChatMemberslist.</summary>
@@ -137,17 +180,24 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpPost("~/AddProfilesToBookmarks")]
-        public async Task<IActionResult> AddProfilesToBookmarks([FromBody]string[] profileIds)
+        public async Task<IActionResult> AddProfilesToBookmarks([FromBody] string[] profileIds)
         {
             if (!ModelState.IsValid) return BadRequest();
             if (profileIds == null || profileIds.Length < 1) return BadRequest();
 
-            var currentUser = await _helper.GetCurrentUserProfile(User);
+            try
+            {
+                var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            await _profileRepository.AddProfilesToBookmarks(currentUser, profileIds);
-            await _profileRepository.AddProfilesToChatMemberslist(currentUser, profileIds);
+                await _profileRepository.AddProfilesToBookmarks(currentUser, profileIds);
+                await _profileRepository.AddProfilesToChatMemberslist(currentUser, profileIds);
 
-            return Ok();
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.ToString());
+            }
         }
 
 
@@ -156,7 +206,7 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpPost("~/RemoveProfilesFromBookmarks")]
-        public async Task<IActionResult> RemoveProfilesFromBookmarks([FromBody]string[] profileIds)
+        public async Task<IActionResult> RemoveProfilesFromBookmarks([FromBody] string[] profileIds)
         {
             if (!ModelState.IsValid) throw new ArgumentException($"ModelState is not valid {ModelState.IsValid}.", nameof(profileIds));
             if (profileIds == null || profileIds.Length < 1) throw new ArgumentException($"ProfileIds is either null {profileIds} or length is < 1 {profileIds.Length}.", nameof(profileIds));
@@ -181,16 +231,23 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpPost("~/BlockChatMembers")]
-        public async Task<IActionResult> BlockChatMembers([FromBody]string[] profileIds)
+        public async Task<IActionResult> BlockChatMembers([FromBody] string[] profileIds)
         {
             if (!ModelState.IsValid) return BadRequest();
             if (profileIds == null || profileIds.Length < 1) return BadRequest();
 
-            var currentUser = await _helper.GetCurrentUserProfile(User);
+            try
+            {
+                var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            await _profileRepository.BlockChatMembers(currentUser, profileIds);
+                await _profileRepository.BlockChatMembers(currentUser, profileIds);
 
-            return Ok();
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.ToString());
+            }
         }
 
         /// <summary>Upload images to the profile image folder.</summary>
@@ -200,7 +257,7 @@ namespace Avalon.Controllers
         /// <exception cref="ArgumentException">Image length is < 1 {image.Length}. - image</exception>
         [NoCache]
         [HttpPost("~/UploadImage")]
-        public async Task<IActionResult> UploadImage([FromForm]IFormFile image, [FromForm]string title)
+        public async Task<IActionResult> UploadImage([FromForm] IFormFile image, [FromForm] string title)
         {
             if (!ModelState.IsValid) throw new ArgumentException($"ModelState is not valid {ModelState.IsValid}.", nameof(image));
             if (image.Length < 0) throw new ArgumentException($"Image length is < 1 {image.Length}.", nameof(image));
@@ -209,7 +266,7 @@ namespace Avalon.Controllers
             {
                 var currentUser = await _helper.GetCurrentUserProfile(User);
 
-                if(currentUser.Images.Count >= _maxImageNumber) return BadRequest();
+                if (currentUser.Images.Count >= _maxImageNumber) return BadRequest();
 
                 return Ok(_imageUtil.AddImageToCurrentUser(currentUser, image, title));
             }
@@ -227,7 +284,7 @@ namespace Avalon.Controllers
         /// <exception cref="ArgumentException">ModelState is not valid {ModelState.IsValid}. - imageId</exception>
         [NoCache]
         [HttpPost("~/DeleteImage")]
-        public async Task<IActionResult> DeleteImage([FromBody]string[] imageIds)
+        public async Task<IActionResult> DeleteImage([FromBody] string[] imageIds)
         {
             if (!ModelState.IsValid) throw new ArgumentException($"ModelState is not valid {ModelState.IsValid}.", nameof(imageIds));
 

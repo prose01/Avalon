@@ -94,6 +94,33 @@ namespace Avalon.Data
             }
         }
 
+        /// <summary>Saves the profile filter to currentUser.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <param name="profileFilter">The profile filter.</param>
+        /// <returns></returns>
+        public async Task<CurrentUser> SaveProfileFilter(CurrentUser currentUser, ProfileFilter profileFilter)
+        {
+            try
+            {
+                var filter = Builders<CurrentUser>
+                                .Filter.Eq(e => e.ProfileId, currentUser.ProfileId);
+
+                var update = Builders<CurrentUser>
+                                .Update.Set(e => e.ProfileFilter, profileFilter);
+
+                var options = new FindOneAndUpdateOptions<CurrentUser>
+                {
+                    ReturnDocument = ReturnDocument.After
+                };
+
+                return await _context.CurrentUser.FindOneAndUpdateAsync(filter, update, options);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         /// <summary>Adds the profiles to currentUser bookmarks.</summary>
         /// <param name="currentUser">The current user.</param>
         /// <param name="profileIds">The profile ids.</param>
