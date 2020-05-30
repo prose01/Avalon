@@ -7,7 +7,8 @@ namespace Avalon.Interfaces
 {
     public interface IProfilesQueryRepository
     {
-        Task<ReplaceOneResult> SetAsAdmin(Profile item);
+        Task<Profile> SetAsAdmin(string profileId);
+        Task<Profile> RemoveAdmin(string profileId);
         Task<DeleteResult> DeleteProfiles(string[] profileIds);
         Task<IEnumerable<Profile>> GetAllProfiles(CurrentUser currentUser);
         Task<Profile> GetProfileById(string profileId);

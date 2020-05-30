@@ -46,30 +46,47 @@ namespace Avalon.Controllers
 
             return Ok(_profilesQueryRepository.DeleteProfiles(profileIds));
         }
-        
-        // GET api/profiles/5
+
         /// <summary>
-        /// Gets the specified profile identifier.
+        /// Sets the specified profile identifier as admin.
         /// </summary>
         /// <param name="profileId">The profile identifier.</param>
         /// <returns></returns>
         [NoCache]
-        [HttpGet("~/SetAsAdmin/{profileId},{isAdmin}")]
-        public async Task<IActionResult> SetAsAdmin(string profileId, bool isAdmin)
+        [HttpPost("~/SetAsAdmin")]
+        public async Task<IActionResult> SetAsAdmin([FromBody] Profile profile)
         {
+            if (!ModelState.IsValid) return BadRequest();
+            if (profile == null) return BadRequest();
+
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
             if (!currentUser.Admin) return BadRequest();
 
-            if (currentUser.ProfileId == profileId) return BadRequest();
+            if (currentUser.ProfileId == profile.ProfileId) return BadRequest();
 
-            var profile = await _profilesQueryRepository.GetProfileById(profileId) ?? null;
+            return Ok(_profilesQueryRepository.SetAsAdmin(profile.ProfileId));
+        }
 
+        /// <summary>
+        /// Removes the specified profile identifier as admin.
+        /// </summary>
+        /// <param name="profileId">The profile identifier.</param>
+        /// <returns></returns>
+        [NoCache]
+        [HttpPost("~/RemoveAdmin")]
+        public async Task<IActionResult> RemoveAdmin([FromBody] Profile profile)
+        {
+            if (!ModelState.IsValid) return BadRequest();
             if (profile == null) return BadRequest();
 
-            profile.Admin = isAdmin;
+            var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            return Ok(_profilesQueryRepository.SetAsAdmin(profile));
+            if (!currentUser.Admin) return BadRequest();
+
+            if (currentUser.ProfileId == profile.ProfileId) return BadRequest();
+
+            return Ok(_profilesQueryRepository.RemoveAdmin(profile.ProfileId));
         }
 
         /// <summary>

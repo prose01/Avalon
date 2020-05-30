@@ -68,8 +68,6 @@ namespace Avalon.Data
                             .ReplaceOneAsync(p => p.ProfileId.Equals(currentUser.ProfileId)
                                             , currentUser
                                             , new UpdateOptions { IsUpsert = true });
-
-                //return null;
             }
             catch (Exception ex)
             {
@@ -318,13 +316,13 @@ namespace Avalon.Data
 
         /// <summary>Removes the image from profile.</summary>
         /// <param name="currentUser">The current user.</param>
-        /// <param name="id">The image identifier.</param>
+        /// <param name="imageId">The image identifier.</param>
         /// <returns></returns>
-        public async Task<CurrentUser> RemoveImageFromCurrentUser(CurrentUser currentUser, string id)
+        public async Task<CurrentUser> RemoveImageFromCurrentUser(CurrentUser currentUser, string imageId)
         {
             try
             {
-                var images = currentUser.Images.Where(i => i.ImageId == id).ToList();
+                var images = currentUser.Images.Where(i => i.ImageId == imageId).ToList();
 
                 var filter = Builders<CurrentUser>
                                 .Filter.Eq(e => e.ProfileId, currentUser.ProfileId);

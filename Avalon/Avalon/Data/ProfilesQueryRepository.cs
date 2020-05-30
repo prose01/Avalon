@@ -23,16 +23,50 @@ namespace Avalon.Data
         /// <summary>Set profile as admin.</summary>
         /// <param name="item">The profile.</param>
         /// <returns></returns>
-        public async Task<ReplaceOneResult> SetAsAdmin(Profile item)
+        public async Task<Profile> SetAsAdmin(string profileId)
         {
             try
             {
-                item.UpdatedOn = DateTime.Now;
+                var filter = Builders<Profile>
+                                .Filter.Eq(e => e.ProfileId, profileId);
 
-                var filter = Builders<Profile>.Filter.Eq("ProfileId", item.ProfileId);
+                var update = Builders<Profile>
+                                .Update.Set(e => e.Admin, true)
+                                .Set(e => e.UpdatedOn, DateTime.Now);
 
-                return await _context.Profiles
-                            .ReplaceOneAsync(filter, item);
+                var options = new FindOneAndUpdateOptions<Profile>
+                {
+                    ReturnDocument = ReturnDocument.After
+                };
+
+                return await _context.Profiles.FindOneAndUpdateAsync(filter, update, options);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        /// <summary>Removes profile as admin.</summary>
+        /// <param name="item">The profile.</param>
+        /// <returns></returns>
+        public async Task<Profile> RemoveAdmin(string profileId)
+        {
+            try
+            {
+                var filter = Builders<Profile>
+                                .Filter.Eq(e => e.ProfileId, profileId);
+
+                var update = Builders<Profile>
+                                .Update.Set(e => e.Admin, false)
+                                .Set(e => e.UpdatedOn, DateTime.Now);
+
+                var options = new FindOneAndUpdateOptions<Profile>
+                {
+                    ReturnDocument = ReturnDocument.After
+                };
+
+                return await _context.Profiles.FindOneAndUpdateAsync(filter, update, options);
             }
             catch (Exception ex)
             {

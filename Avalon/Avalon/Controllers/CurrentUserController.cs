@@ -181,7 +181,7 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpPost("~/BlockChatMembers")]
-        public async Task<IActionResult> BlockChatMembers([FromBody] string[] profileIds)
+        public async Task<IActionResult> BlockChatMembers([FromBody]string[] profileIds)
         {
             if (!ModelState.IsValid) return BadRequest();
             if (profileIds == null || profileIds.Length < 1) return BadRequest();
