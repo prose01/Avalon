@@ -199,7 +199,7 @@ namespace Avalon.Data
             //Remove currentUser from the list.
             filters.Add(Builders<Profile>.Filter.Ne(x => x.ProfileId, profileFilter.CurrentUserId));
 
-            if (profileFilter.Name != null)
+            if (!string.IsNullOrEmpty(profileFilter.Name))
                 filters.Add(Builders<Profile>.Filter.Eq(x => x.Name, profileFilter.Name));
 
             if (profileFilter.Age != null)

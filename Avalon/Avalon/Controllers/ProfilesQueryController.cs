@@ -193,6 +193,19 @@ namespace Avalon.Controllers
         }
 
         /// <summary>
+        /// Gets the specified profiles based on the CurrentUser's filter.
+        /// </summary>
+        /// <returns></returns>
+        [NoCache]
+        [HttpGet("~/GetProfileByCurrentUsersFilter")]
+        public async Task<IEnumerable<Profile>> GetProfileByCurrentUsersFilter()
+        {
+            var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            return await _profilesQueryRepository.GetProfileByFilter(currentUser.ProfileFilter); 
+        }
+
+        /// <summary>
         /// Gets Latest Created Profiles.
         /// </summary>
         /// <returns></returns>
