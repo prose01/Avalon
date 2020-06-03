@@ -165,14 +165,23 @@ namespace Avalon.Controllers
             {
                 var currentUser = await _helper.GetCurrentUserProfile(User);
 
-                //await _profileRepository.SaveProfileFilter(currentUser, profileFilter);
-
                 return Ok(_profileRepository.SaveProfileFilter(currentUser, profileFilter));
             }
             catch (Exception ex)
             {
                 return Problem(ex.ToString());
             }
+        }
+
+        /// <summary>Load the profile filter from currentUser.</summary>
+        /// <returns></returns>
+        [NoCache]
+        [HttpGet("~/LoadProfileFilter")]
+        public async Task<ProfileFilter> LoadProfileFilter()
+        {
+            var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            return await _profileRepository.LoadProfileFilter(currentUser);
         }
 
         /// <summary>Adds the profiles to currentUser bookmarks and ChatMemberslist.</summary>

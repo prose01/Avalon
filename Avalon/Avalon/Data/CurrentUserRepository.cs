@@ -121,6 +121,25 @@ namespace Avalon.Data
             }
         }
 
+        /// <summary>Load the profile filter from currentUser.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <returns></returns>
+        public async Task<ProfileFilter> LoadProfileFilter(CurrentUser currentUser)
+        {
+            try
+            {
+                var query = from p in _context.CurrentUser.AsQueryable()
+                            where p.ProfileId == currentUser.ProfileId
+                            select p.ProfileFilter;
+
+                return await Task.FromResult(query.FirstOrDefault());
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         /// <summary>Adds the profiles to currentUser bookmarks.</summary>
         /// <param name="currentUser">The current user.</param>
         /// <param name="profileIds">The profile ids.</param>
