@@ -188,6 +188,9 @@ namespace Avalon.Data
             if (currentUser.SexualOrientation == SexualOrientationType.Heterosexual)
                 filters.Add(Builders<Profile>.Filter.Ne(x => x.Gender, currentUser.Gender));
 
+            if (currentUser.SexualOrientation == SexualOrientationType.Homosexual)
+                filters.Add(Builders<Profile>.Filter.Eq(x => x.Gender, currentUser.Gender));
+
             if (!string.IsNullOrEmpty(profileFilter.Name))
                 filters.Add(Builders<Profile>.Filter.Eq(x => x.Name, profileFilter.Name));
 
@@ -220,6 +223,9 @@ namespace Avalon.Data
 
             if (currentUser.SexualOrientation == SexualOrientationType.Heterosexual)
                 filters.Add(Builders<Profile>.Filter.Ne(x => x.Gender, currentUser.Gender));
+
+            if (currentUser.SexualOrientation == SexualOrientationType.Homosexual)
+                filters.Add(Builders<Profile>.Filter.Eq(x => x.Gender, currentUser.Gender));
 
             var combineFilters = Builders<Profile>.Filter.And(filters);
 

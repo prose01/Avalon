@@ -117,9 +117,15 @@ namespace Avalon.Controllers
 
                 if (currentUser.ProfileId != item.ProfileId) return BadRequest();
 
+                // Certain properties cannot be changed by the user.
                 item._id = currentUser._id; // _id is immutable and the type is unknow by BluePenguin.
-
                 item.Admin = currentUser.Admin; // No user is allowed to set themselves as Admin!
+                item.Name = currentUser.Name;
+                item.Bookmarks = currentUser.Bookmarks;
+                item.ChatMemberslist = currentUser.ChatMemberslist;
+                item.ProfileFilter = currentUser.ProfileFilter;
+                item.Images = currentUser.Images;
+                item.CreatedOn = currentUser.CreatedOn;
 
                 return Ok(_profileRepository.UpdateProfile(item));
             }

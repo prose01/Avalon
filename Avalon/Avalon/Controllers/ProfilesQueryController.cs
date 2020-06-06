@@ -162,7 +162,6 @@ namespace Avalon.Controllers
         public async Task<IEnumerable<Profile>> GetProfileByFilter([FromBody]ProfileFilter profileFilter)
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
-            //profileFilter.CurrentUserId = currentUser.ProfileId;
 
             return await _profilesQueryRepository.GetProfileByFilter(currentUser, profileFilter) ?? null; // Should be null if no filter match.
         }
