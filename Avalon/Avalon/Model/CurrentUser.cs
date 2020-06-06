@@ -36,6 +36,7 @@ namespace Avalon.Model
         //public override string JobTitle { get; set; } = string.Empty;
 
         public override GenderType Gender { get; set; }
+        public override SexualOrientationType SexualOrientation { get; set; }
 
         public override BodyType Body { get; set; }
 

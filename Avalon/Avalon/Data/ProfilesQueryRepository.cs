@@ -96,21 +96,6 @@ namespace Avalon.Data
             }
         }
 
-        /// <summary>Gets all profiles.</summary>
-        /// <param name="currentUser">The current user.</param>
-        /// <returns></returns>
-        public async Task<IEnumerable<Profile>> GetAllProfiles(CurrentUser currentUser)
-        {
-            try
-            {
-                return await _context.Profiles.Find(p => true && p.Auth0Id != currentUser.Auth0Id).ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
-
         /// <summary>Gets the profile by identifier.</summary>
         /// <param name="profileId">The profile identifier.</param>
         /// <returns></returns>
@@ -192,12 +177,16 @@ namespace Avalon.Data
         /// <summary>Gets the profile by filter.</summary>
         /// <param name="filter">The filter.</param>
         /// <returns></returns>
-        public async Task<IEnumerable<Profile>> GetProfileByFilter(ProfileFilter profileFilter)
+        public async Task<IEnumerable<Profile>> GetProfileByFilter(CurrentUser currentUser, ProfileFilter profileFilter)
         {
             List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>();
 
             //Remove currentUser from the list.
-            filters.Add(Builders<Profile>.Filter.Ne(x => x.ProfileId, profileFilter.CurrentUserId));
+            filters.Add(Builders<Profile>.Filter.Ne(x => x.ProfileId, currentUser.ProfileId));
+            filters.Add(Builders<Profile>.Filter.Eq(x => x.SexualOrientation, currentUser.SexualOrientation));
+
+            if (currentUser.SexualOrientation == SexualOrientationType.Heterosexual)
+                filters.Add(Builders<Profile>.Filter.Ne(x => x.Gender, currentUser.Gender));
 
             if (!string.IsNullOrEmpty(profileFilter.Name))
                 filters.Add(Builders<Profile>.Filter.Eq(x => x.Name, profileFilter.Name));
@@ -210,7 +199,7 @@ namespace Avalon.Data
             try
             {
                 return _context.Profiles
-                    .Find(combineFilters).ToList();
+                    .Find(combineFilters).ToList().OrderByDescending(p => p.CreatedOn);
             }
             catch (Exception ex)
             {
@@ -223,51 +212,21 @@ namespace Avalon.Data
         /// <returns></returns>
         public async Task<IEnumerable<Profile>> GetLatestCreatedProfiles(CurrentUser currentUser)
         {
+            List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>();
+
+            //Remove currentUser from the list.
+            filters.Add(Builders<Profile>.Filter.Ne(x => x.ProfileId, currentUser.ProfileId));
+            filters.Add(Builders<Profile>.Filter.Eq(x => x.SexualOrientation, currentUser.SexualOrientation));
+
+            if (currentUser.SexualOrientation == SexualOrientationType.Heterosexual)
+                filters.Add(Builders<Profile>.Filter.Ne(x => x.Gender, currentUser.Gender));
+
+            var combineFilters = Builders<Profile>.Filter.And(filters);
+
             try
             {
-                var query = _context.Profiles.AsQueryable()
-                    .Where(p => true && p.Auth0Id != currentUser.Auth0Id)
-                    .OrderByDescending(p => p.CreatedOn).Take(10);
-
-                return await Task.FromResult(query.ToList());
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
-
-        /// <summary>Gets the last updated profiles.</summary>
-        /// <param name="currentUser">The current user.</param>
-        /// <returns></returns>
-        public async Task<IEnumerable<Profile>> GetLastUpdatedProfiles(CurrentUser currentUser)
-        {
-            try
-            {
-                var query = _context.Profiles.AsQueryable()
-                    .Where(p => true && p.Auth0Id != currentUser.Auth0Id)
-                    .OrderByDescending(p => p.UpdatedOn).Take(10);
-
-                return await Task.FromResult(query.ToList());
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
-
-        /// <summary>Gets the last active profiles.</summary>
-        /// <param name="currentUser">The current user.</param>
-        /// <returns></returns>
-        public async Task<IEnumerable<Profile>> GetLastActiveProfiles(CurrentUser currentUser)
-        {
-            try
-            {
-                var query = _context.Profiles.AsQueryable()
-                    .Where(p => true && p.Auth0Id != currentUser.Auth0Id)
-                    .OrderByDescending(p => p.LastActive).Take(10);
-
-                return await Task.FromResult(query.ToList());
+                return _context.Profiles
+                    .Find(combineFilters).ToList().OrderByDescending(p => p.CreatedOn);
             }
             catch (Exception ex)
             {
@@ -287,13 +246,6 @@ namespace Avalon.Data
         {
             try
             {
-                //// Get all Bookmarked ProfileIds from original profile.
-                //var bookmarks = _context.Profiles.AsQueryable()
-                //    .Where(p => p.Auth0Id != currentUser.Auth0Id)
-                //    .Select(p => new {p.Bookmarks});
-
-                //var bookmarkedProfileIds = await Task.FromResult(bookmarks.ToList());
-
                 // Get all other Profiles from ProfileIds
                 var query = _context.Profiles.Find(p => currentUser.Bookmarks.Contains(p.ProfileId));  // Check for null/ingen bookmarks
 
@@ -304,80 +256,6 @@ namespace Avalon.Data
                 throw ex;
             }
         }
-
-        // Bør nok reduceres til kun GetBookmarkedProfiles da filtreringen kan ske i frontend. 
-
-        //public async Task<IEnumerable<AbstractProfile>> GetBookmarkedLatestCreatedProfiles(AbstractProfile currentUser)
-        //{
-        //    try
-        //    {
-        //        // Get all Bookmarked ProfileIds from original profile.
-        //        var bookmarks = _context.Profiles.AsQueryable()
-        //            .Where(p => p.Auth0Id == currentUser.Auth0Id)
-        //            .Select(p => new { p.Bookmarks });
-
-        //        var bookmarkedProfileIds = await Task.FromResult(bookmarks.ToList());
-
-        //        // Get all other Profiles from ProfileIds ordered by create
-        //        var query = _context.Profiles.AsQueryable()
-        //            .Where(p => bookmarkedProfileIds.First().Bookmarks.Contains(p.ProfileId))
-        //            .OrderByDescending(p => p.CreatedOn).Take(2);
-
-        //        return await Task.FromResult(query.ToList());
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw ex;
-        //    }
-        //}
-
-        //public async Task<IEnumerable<AbstractProfile>> GetBookmarkedLastUpdatedProfiles(AbstractProfile currentUser)
-        //{
-        //    try
-        //    {
-        //        // Get all Bookmarked ProfileIds from original profile.
-        //        var bookmarks = _context.Profiles.AsQueryable()
-        //            .Where(p => p.Auth0Id == currentUser.Auth0Id)
-        //            .Select(p => new { p.Bookmarks });
-
-        //        var bookmarkedProfileIds = await Task.FromResult(bookmarks.ToList());
-
-        //        // Get all other Profiles from ProfileIds ordered by update
-        //        var query = _context.Profiles.AsQueryable()
-        //            .Where(p => bookmarkedProfileIds.First().Bookmarks.Contains(p.ProfileId))
-        //            .OrderByDescending(p => p.UpdatedOn).Take(2);
-
-        //        return await Task.FromResult(query.ToList());
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw ex;
-        //    }
-        //}
-
-        //public async Task<IEnumerable<AbstractProfile>> GetBookmarkedLastActiveProfiles(AbstractProfile currentUser)
-        //{
-        //    try
-        //    {
-        //        // Get all Bookmarked ProfileIds from original profile.
-        //        var bookmarks = _context.Profiles.AsQueryable()
-        //            .Where(p => p.Auth0Id == currentUser.Auth0Id)
-        //            .Select(p => new { p.Bookmarks });
-
-        //        var bookmarkedProfileIds = await Task.FromResult(bookmarks.ToList());
-
-        //        // Get all other Profiles from ProfileIds ordered by active
-        //        var query = _context.Profiles.AsQueryable()
-        //            .Where(p => bookmarkedProfileIds.First().Bookmarks.Contains(p.ProfileId))
-        //            .OrderByDescending(p => p.LastActive).Take(2);
-
-        //        return await Task.FromResult(query.ToList());
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw ex;
-        //    }
-        //}
 
         #endregion
     }

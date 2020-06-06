@@ -8,7 +8,7 @@ namespace Avalon.Model
     public class ProfileFilter
     {
         #region special properties
-        public string CurrentUserId { get; set; }
+        //public string CurrentUserId { get; set; }
 
         #endregion
 
@@ -27,6 +27,7 @@ namespace Avalon.Model
 
         [BsonRepresentation(BsonType.String)]
         public GenderType Gender { get; set; }
+        public SexualOrientationType SexualOrientation { get; set; }
 
         [BsonRepresentation(BsonType.String)]
         public BodyType Body { get; set; }

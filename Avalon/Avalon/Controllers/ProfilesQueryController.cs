@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Avalon.Controllers
@@ -89,19 +88,6 @@ namespace Avalon.Controllers
             return Ok(_profilesQueryRepository.RemoveAdmin(profile.ProfileId));
         }
 
-        /// <summary>
-        /// Gets all Profiles.
-        /// </summary>
-        /// <returns></returns>
-        [NoCache]
-        [HttpGet("~/GetAllProfiles/")]
-        public async Task<IEnumerable<Profile>> GetAllProfiles()
-        {
-            var currentUser = await _helper.GetCurrentUserProfile(User);
-
-            return await _profilesQueryRepository.GetAllProfiles(currentUser);
-        }
-
         // GET api/profiles/5
         /// <summary>
         /// Gets the specified profile identifier.
@@ -118,17 +104,6 @@ namespace Avalon.Controllers
 
             return await _profilesQueryRepository.GetProfileById(profileId) ?? null;
         }
-
-        //[NoCache]
-        //[HttpGet("~/GetProfilesById/{profileIds}")]
-        //public async Task<IEnumerable<Profile>> Get(string[] profileIds)
-        //{
-        //    var currentUser = await _helper.GetCurrentUserProfile(User);
-
-        //    if (profileIds.Contains(currentUser.ProfileId)) return null;
-
-        //    return await _profilesQueryRepository.GetProfilesById(profileIds) ?? null;
-        //}
 
         /// <summary>Gets the currentUser's chatMember profiles.</summary>
         /// <returns></returns>
@@ -187,9 +162,9 @@ namespace Avalon.Controllers
         public async Task<IEnumerable<Profile>> GetProfileByFilter([FromBody]ProfileFilter profileFilter)
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
-            profileFilter.CurrentUserId = currentUser.ProfileId;
+            //profileFilter.CurrentUserId = currentUser.ProfileId;
 
-            return await _profilesQueryRepository.GetProfileByFilter(profileFilter) ?? null; // Should be null if no filter match.
+            return await _profilesQueryRepository.GetProfileByFilter(currentUser, profileFilter) ?? null; // Should be null if no filter match.
         }
 
         /// <summary>
@@ -202,7 +177,7 @@ namespace Avalon.Controllers
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            return await _profilesQueryRepository.GetProfileByFilter(currentUser.ProfileFilter); 
+            return await _profilesQueryRepository.GetProfileByFilter(currentUser, currentUser.ProfileFilter); 
         }
 
         /// <summary>
@@ -216,32 +191,6 @@ namespace Avalon.Controllers
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
             return await _profilesQueryRepository.GetLatestCreatedProfiles(currentUser);
-        }
-
-        /// <summary>
-        /// Gets Latest Created Profiles.
-        /// </summary>
-        /// <returns></returns>
-        [NoCache]
-        [HttpGet("~/GetLastUpdatedProfiles/")]
-        public async Task<IEnumerable<Profile>> GetLastUpdatedProfiles()
-        {
-            var currentUser = await _helper.GetCurrentUserProfile(User);
-
-            return await _profilesQueryRepository.GetLastUpdatedProfiles(currentUser);
-        }
-
-        /// <summary>
-        /// Gets Last Active Profiles.
-        /// </summary>
-        /// <returns></returns>
-        [NoCache]
-        [HttpGet("~/GetLastActiveProfiles/")]
-        public async Task<IEnumerable<Profile>> GetLastActiveProfiles()
-        {
-            var currentUser = await _helper.GetCurrentUserProfile(User);
-
-            return await _profilesQueryRepository.GetLastActiveProfiles(currentUser);
         }
 
         /// <summary>

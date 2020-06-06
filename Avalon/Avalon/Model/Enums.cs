@@ -78,6 +78,14 @@ namespace Avalon.Model
     {
     }
 
+    public enum SexualOrientationType
+    {
+        Heterosexual,
+        Homosexual,
+        Bisexual,
+        Asexual
+    }
+
     public enum SmokingHabitsType
     {
         [EnumMember(Value = "Non Smoker")]

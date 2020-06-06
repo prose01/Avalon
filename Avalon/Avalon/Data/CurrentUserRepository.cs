@@ -29,7 +29,7 @@ namespace Avalon.Data
                 currentUser.UpdatedOn = DateTime.Now;
                 currentUser.LastActive = DateTime.Now;
 
-                //await _context.CurrentUser.InsertOneAsync(item);
+                await _context.CurrentUser.InsertOneAsync(currentUser);
             }
             catch (Exception ex)
             {

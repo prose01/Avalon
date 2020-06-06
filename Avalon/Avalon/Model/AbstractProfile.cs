@@ -47,6 +47,9 @@ namespace Avalon.Model
         public abstract GenderType Gender { get; set; }
 
         [BsonRepresentation(BsonType.String)]
+        public abstract SexualOrientationType SexualOrientation { get; set; }
+
+        [BsonRepresentation(BsonType.String)]
         public abstract BodyType Body { get; set; }
 
         //[BsonRepresentation(BsonType.String)]
