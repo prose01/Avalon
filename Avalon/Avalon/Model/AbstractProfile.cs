@@ -28,10 +28,10 @@ namespace Avalon.Model
         [Range(0, 120)]
         public abstract int? Age { get; set; }
 
-        [Range(0, 220)]
+        [Range(0, 250)]
         public abstract int? Height { get; set; }
 
-        [Range(0, 200)]
+        [Range(0, 300)]  // Might not
         public abstract int? Weight { get; set; }
 
         [StringLength(2000, ErrorMessage = "Description length cannot be more than 2000.")]
@@ -55,14 +55,17 @@ namespace Avalon.Model
         //[BsonRepresentation(BsonType.String)]
         //public abstract SmokingHabitsType SmokingHabits { get; set; }
 
-        //[BsonRepresentation(BsonType.String)]
+        //[BsonRepresentation(BsonType.String)]  // Maybe not
         //public abstract AllergiesType Allergies { get; set; }
 
         //[BsonRepresentation(BsonType.String)]
         //public abstract bool HasChildren { get; set; }
 
         //[BsonRepresentation(BsonType.String)]
-        //public abstract WantChildrenType WantChildren { get; set; }
+        //public abstract bool WantChildren { get; set; }
+
+        //[BsonRepresentation(BsonType.String)]
+        //public abstract bool HasPets { get; set; }
 
         //[BsonRepresentation(BsonType.String)]
         //public abstract LocationType LivesIn { get; set; }
@@ -85,8 +88,11 @@ namespace Avalon.Model
         //[BsonRepresentation(BsonType.String)]
         //public abstract EmploymentLevelType EmploymentLevel { get; set; }
 
-        //[BsonRepresentation(BsonType.String)]
+        //[BsonRepresentation(BsonType.String)] //Maybe not
         //public abstract PoliticalOrientationType PoliticalOrientation { get; set; }
+
+        //[BsonRepresentation(BsonType.String)] //Maybe not
+        //public abstract ReligiousOrientationType ReligiousOrientation { get; set; }
 
         //[BsonRepresentation(BsonType.String)]
         //public abstract SportType Sport { get; set; }

@@ -2,7 +2,7 @@
 
 namespace Avalon.Model
 {
-    public enum AllergiesType
+    public enum AllergiesType  // Boolean
     {
         Yes,
         No
@@ -10,15 +10,25 @@ namespace Avalon.Model
 
     public enum ClotheStyleType
     {
+        NotChosen,
+        Casual,
+        Dressy,
+        Dandy,
+        Stylish,
+        Formal,
+        Other
+
     }
 
     public enum BodyType
     {
-        Atletic,
+        NotChosen,
+        Atlethic,
         Chubby,
         Normal,
         Robust,
-        Slim
+        Slim,
+        Other
     }
 
     public enum BodyArtType
@@ -47,16 +57,25 @@ namespace Avalon.Model
 
     public enum EducationLevelType
     {
+        Bachelor,
+        Master,
+        Phd,
+        Other
     }
 
     public enum EducationStatusType
     {
         Graduated,
-        Student
+        Student,
+        Other
     }
 
     public enum EducationType
     {
+        School,
+        Highschool,
+        University,
+        Other
     }
     public enum EmploymentLevelType
     {
@@ -68,13 +87,25 @@ namespace Avalon.Model
 
     public enum EmploymentStatusType
     {
+        Unemployed,
+        Employed,
+        SelfEmployed,
+        Other
     }
 
     public enum LocationType
     {
+        City,
+        Suburb,
+        Countryside,
+        Other
     }
 
     public enum PoliticalOrientationType
+    {
+    }
+
+    public enum ReligiousOrientationType
     {
     }
 
@@ -90,7 +121,7 @@ namespace Avalon.Model
     {
         [EnumMember(Value = "Non Smoker")]
         NonSmoker,
-        Occationally,
+        OccasionalSmoker,
         Smoker
     }
 
@@ -98,9 +129,11 @@ namespace Avalon.Model
     {
     }
 
-    public enum WantChildrenType
+    public enum MaritalStatusType
     {
-        Yes,
-        No
+        Single,
+        Married,
+        Divorced,
+        Other
     }
 }
