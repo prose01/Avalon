@@ -80,13 +80,25 @@ namespace Avalon.Data
         /// <returns></returns>
         public async Task<CurrentUser> GetCurrentProfileByAuth0Id(string auth0Id)
         {
-            var filter = Builders<CurrentUser>.Filter.Eq("Auth0Id", auth0Id);
-
             try
             {
-                return await _context.CurrentUser
-                    .Find(filter)
-                    .FirstOrDefaultAsync();
+                //var currentUser = await _context.CurrentUser
+                //    .Find(filter)
+                //    .FirstOrDefaultAsync();
+
+                var filter = Builders<CurrentUser>.Filter.Eq("Auth0Id", auth0Id);
+
+                var update = Builders<CurrentUser>
+                                .Update.Set(e => e.LastActive, DateTime.Now);
+
+                var options = new FindOneAndUpdateOptions<CurrentUser>
+                {
+                    ReturnDocument = ReturnDocument.After
+                };
+
+                return await _context.CurrentUser.FindOneAndUpdateAsync(filter, update, options);
+
+
             }
             catch (Exception ex)
             {
