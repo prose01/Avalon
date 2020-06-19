@@ -43,44 +43,41 @@ namespace Avalon.Model
         //public abstract string JobTitle { get; set; }
 
         [BsonRepresentation(BsonType.String)]
-        [EnumDataType(typeof(GenderType))]
+        //[EnumDataType(typeof(GenderType))]
         public abstract GenderType Gender { get; set; }
 
         [BsonRepresentation(BsonType.String)]
-        public abstract SexualOrientationType SexualOrientation { get; set; }
+        public abstract SexualOrientationType SexualOrientation { get; set; } // TODO: Should this be encrypted?
 
         [BsonRepresentation(BsonType.String)]
         public abstract BodyType Body { get; set; }
 
-        //[BsonRepresentation(BsonType.String)]
-        //public abstract SmokingHabitsType SmokingHabits { get; set; }
+        [BsonRepresentation(BsonType.String)]
+        public abstract SmokingHabitsType SmokingHabits { get; set; }
 
         //[BsonRepresentation(BsonType.String)]  // Maybe not
         //public abstract AllergiesType Allergies { get; set; }
 
-        //[BsonRepresentation(BsonType.String)]
-        //public abstract bool HasChildren { get; set; }
+        public abstract bool HasChildren { get; set; }
 
-        //[BsonRepresentation(BsonType.String)]
-        //public abstract bool WantChildren { get; set; }
+        public abstract bool WantChildren { get; set; }
 
-        //[BsonRepresentation(BsonType.String)]
-        //public abstract bool HasPets { get; set; }
+        public abstract bool HasPets { get; set; }
 
-        //[BsonRepresentation(BsonType.String)]
-        //public abstract LocationType LivesIn { get; set; }
+        [BsonRepresentation(BsonType.String)]
+        public abstract LocationType LivesIn { get; set; }
 
-        //[BsonRepresentation(BsonType.String)]
-        //public abstract EducationType EducationArea { get; set; }
+        [BsonRepresentation(BsonType.String)]
+        public abstract EducationType Education { get; set; }
 
-        //[BsonRepresentation(BsonType.String)]
-        //public abstract EducationStatusType EducationStatus { get; set; }
+        [BsonRepresentation(BsonType.String)]
+        public abstract EducationStatusType EducationStatus { get; set; }
 
-        //[BsonRepresentation(BsonType.String)]
-        //public abstract EducationLevelType EducationLevel { get; set; }
+        [BsonRepresentation(BsonType.String)]
+        public abstract EducationLevelType EducationLevel { get; set; }
 
-        //[BsonRepresentation(BsonType.String)]
-        //public abstract EmploymentStatusType EmploymentStatus { get; set; }
+        [BsonRepresentation(BsonType.String)]
+        public abstract EmploymentStatusType EmploymentStatus { get; set; }
 
         //[BsonRepresentation(BsonType.String)]
         //public abstract EmploymentAreaType EmploymentArea { get; set; }
@@ -94,16 +91,16 @@ namespace Avalon.Model
         //[BsonRepresentation(BsonType.String)] //Maybe not
         //public abstract ReligiousOrientationType ReligiousOrientation { get; set; }
 
-        //[BsonRepresentation(BsonType.String)]
-        //public abstract SportType Sport { get; set; }
+        [BsonRepresentation(BsonType.String)]
+        public abstract SportsActivityType SportsActivity { get; set; }
 
-        //[BsonRepresentation(BsonType.String)]
-        //public abstract EatingHabitsType EatingHabits { get; set; }
+        [BsonRepresentation(BsonType.String)]
+        public abstract EatingHabitsType EatingHabits { get; set; }
 
-        //[BsonRepresentation(BsonType.String)]
-        //public abstract ClotheStyleType ClotheStyle { get; set; }
+        [BsonRepresentation(BsonType.String)]
+        public abstract ClotheStyleType ClotheStyle { get; set; }
 
-        //[BsonRepresentation(BsonType.String)]
-        //public abstract BodyArtType BodyArt { get; set; }
+        [BsonRepresentation(BsonType.String)]
+        public abstract BodyArtType BodyArt { get; set; }
     }
 }

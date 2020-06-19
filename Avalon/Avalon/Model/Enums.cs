@@ -2,11 +2,11 @@
 
 namespace Avalon.Model
 {
-    public enum AllergiesType  // Boolean
-    {
-        Yes,
-        No
-    }
+    //public enum AllergiesType  // Boolean
+    //{
+    //    Yes,
+    //    No
+    //}
 
     public enum ClotheStyleType
     {
@@ -17,7 +17,6 @@ namespace Avalon.Model
         Stylish,
         Formal,
         Other
-
     }
 
     public enum BodyType
@@ -33,6 +32,7 @@ namespace Avalon.Model
 
     public enum BodyArtType
     {
+        NotChosen,
         Piercing,
         Tatoo,
         Other
@@ -46,17 +46,20 @@ namespace Avalon.Model
 
     public enum EatingHabitsType
     {
+        NotChosen,
         Healthy,
         Gastronomic,
         Normal,
         Kosher,
         Organic,
         Traditional,
-        Vegetarian
+        Vegetarian,
+        Other
     }
 
     public enum EducationLevelType
     {
+        NotChosen,
         Bachelor,
         Master,
         Phd,
@@ -65,6 +68,7 @@ namespace Avalon.Model
 
     public enum EducationStatusType
     {
+        NotChosen,
         Graduated,
         Student,
         Other
@@ -72,21 +76,27 @@ namespace Avalon.Model
 
     public enum EducationType
     {
+        NotChosen,
         School,
         Highschool,
         University,
         Other
     }
-    public enum EmploymentLevelType
-    {
-    }
+    //public enum EmploymentLevelType
+    //{
+    //    NotChosen,
+    //    Other
+    //}
 
-    public enum EmploymentAreaType
-    {
-    }
+    //public enum EmploymentAreaType
+    //{
+    //    NotChosen,
+    //    Other
+    //}
 
     public enum EmploymentStatusType
     {
+        NotChosen,
         Unemployed,
         Employed,
         SelfEmployed,
@@ -95,19 +105,20 @@ namespace Avalon.Model
 
     public enum LocationType
     {
+        NotChosen,
         City,
         Suburb,
         Countryside,
         Other
     }
 
-    public enum PoliticalOrientationType
-    {
-    }
+    //public enum PoliticalOrientationType
+    //{
+    //}
 
-    public enum ReligiousOrientationType
-    {
-    }
+    //public enum ReligiousOrientationType
+    //{
+    //}
 
     public enum SexualOrientationType
     {
@@ -119,20 +130,29 @@ namespace Avalon.Model
 
     public enum SmokingHabitsType
     {
-        [EnumMember(Value = "Non Smoker")]
+        NotChosen,
         NonSmoker,
         OccasionalSmoker,
-        Smoker
+        Smoker,
+        Other
     }
 
-    public enum SportType
+    public enum SportsActivityType
     {
+        NotChosen,
+        Regularly,
+        SomeRegularity,
+        Seldom,
+        Never,
+        Other
     }
 
     public enum MaritalStatusType
     {
+        NotChosen,
         Single,
         Married,
+        Separated,
         Divorced,
         Other
     }
