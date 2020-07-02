@@ -9,6 +9,7 @@ namespace Avalon.Interfaces
     {
         Task<Profile> SetAsAdmin(string profileId);
         Task<Profile> RemoveAdmin(string profileId);
+        Task<DeleteResult> DeleteProfile(string profileId);
         Task<DeleteResult> DeleteProfiles(string[] profileIds);
         Task<Profile> GetProfileById(string profileId);
         Task<IEnumerable<Profile>> GetChatMemberProfiles(CurrentUser currentUser);

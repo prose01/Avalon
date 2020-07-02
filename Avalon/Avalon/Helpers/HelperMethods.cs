@@ -1,8 +1,12 @@
 ﻿using Avalon.Interfaces;
 using Avalon.Model;
 using Microsoft.Extensions.Options;
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Security.Claims;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Avalon.Helpers
@@ -10,12 +14,21 @@ namespace Avalon.Helpers
     public class HelperMethods : IHelperMethods
     {
         private readonly ICurrentUserRepository _profileRepository;
+        private readonly IProfilesQueryRepository _profilesQueryRepository;
         private readonly string _nameidentifier;
+        private readonly string _auth0ApiIdentifier;
+        private readonly IHttpClientFactory _clientFactory;
+        private readonly HttpClient _client;
 
-        public HelperMethods(IOptions<Settings> settings, ICurrentUserRepository profileRepository)
+        public HelperMethods(IOptions<Settings> settings, IHttpClientFactory clientFactory, ICurrentUserRepository profileRepository, IProfilesQueryRepository profilesQueryRepository)
         {
+            _nameidentifier = settings.Value.Auth0Id;
+            _auth0ApiIdentifier = settings.Value.Auth0ApiIdentifier;
+            _clientFactory = clientFactory;
             _profileRepository = profileRepository;
-            _nameidentifier = settings.Value.auth0Id;
+            _profilesQueryRepository = profilesQueryRepository;
+
+            _client = _clientFactory.CreateClient();
         }
 
         /// <summary>Gets the current user profile.</summary>
@@ -34,6 +47,27 @@ namespace Avalon.Helpers
         public string GetCurrentUserAuth0Id(ClaimsPrincipal user)
         {
             return user.Claims.FirstOrDefault(c => c.Type == _nameidentifier)?.Value;
+        }
+
+        public async Task<IEnumerable<string>> DeleteProfile(string profileId)
+        {
+            try
+            {
+                var profile = await _profilesQueryRepository.GetProfileById(profileId);
+
+                var response = await _client.DeleteAsync(_auth0ApiIdentifier + "User/" + profile.Auth0Id);  // https://bluepenguin.eu.auth0.com/api/v2/User/auth0|5ef5f71683dfba001446bbe4
+
+                response.EnsureSuccessStatusCode();
+
+                using var responseStream = await response.Content.ReadAsStreamAsync();
+
+                return await JsonSerializer.DeserializeAsync
+                    <IEnumerable<string>>(responseStream);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
     }
 }

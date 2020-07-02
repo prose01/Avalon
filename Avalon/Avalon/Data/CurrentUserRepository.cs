@@ -75,7 +75,7 @@ namespace Avalon.Data
             }
         }
 
-        /// <summary>Gets the current profile by auth0Id.</summary>
+        /// <summary>Gets the current profile by Auth0Id.</summary>
         /// <param name="auth0Id">The Auth0Id.</param>
         /// <returns></returns>
         public async Task<CurrentUser> GetCurrentProfileByAuth0Id(string auth0Id)

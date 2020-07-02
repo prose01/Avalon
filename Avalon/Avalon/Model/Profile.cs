@@ -13,6 +13,8 @@ namespace Avalon.Model
 
         public List<ChatMember> ChatMemberslist { get; set; } // TODO: Remember to initiate the list when new user is created!!! 
 
+        public ProfileFilter ProfileFilter { get; set; }
+
         #endregion
 
         public override ObjectId _id { get; set; }
@@ -43,11 +45,11 @@ namespace Avalon.Model
         //[BsonRepresentation(BsonType.String)]  // Maybe not
         //public abstract AllergiesType Allergies { get; set; }
 
-        public override bool HasChildren { get; set; }
+        public override HasChildrenType HasChildren { get; set; }
 
-        public override bool WantChildren { get; set; }
+        public override WantChildrenType WantChildren { get; set; }
 
-        public override bool HasPets { get; set; }
+        public override HasPetsType HasPets { get; set; }
 
         public override LocationType LivesIn { get; set; }
 

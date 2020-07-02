@@ -4,6 +4,7 @@
     {
         public string ConnectionString;
         public string Database;
-        public string auth0Id;
+        public string Auth0Id;
+        public string Auth0ApiIdentifier;
     }
 }

@@ -58,11 +58,11 @@ namespace Avalon.Model
         //[BsonRepresentation(BsonType.String)]  // Maybe not
         //public abstract AllergiesType Allergies { get; set; }
 
-        public abstract bool HasChildren { get; set; }
+        public abstract HasChildrenType HasChildren { get; set; }
 
-        public abstract bool WantChildren { get; set; }
+        public abstract WantChildrenType WantChildren { get; set; }
 
-        public abstract bool HasPets { get; set; }
+        public abstract HasPetsType HasPets { get; set; }
 
         [BsonRepresentation(BsonType.String)]
         public abstract LocationType LivesIn { get; set; }

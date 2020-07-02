@@ -25,59 +25,48 @@ namespace Avalon.Model
 
         //public override string JobTitle { get; set; } = string.Empty;
 
-        [BsonRepresentation(BsonType.String)]
         public GenderType Gender { get; set; }
         public SexualOrientationType SexualOrientation { get; set; }
-
-        [BsonRepresentation(BsonType.String)]
         public BodyType Body { get; set; }
+        public SmokingHabitsType SmokingHabits { get; set; }
+
+        //[BsonRepresentation(BsonType.String)]  // Maybe not
+        //public abstract AllergiesType Allergies { get; set; }
+
+        public HasChildrenType HasChildren { get; set; }
+
+        public WantChildrenType WantChildren { get; set; }
+
+        public HasPetsType HasPets { get; set; }
+
+        public LocationType LivesIn { get; set; }
+
+        public EducationType Education { get; set; }
+
+        public EducationStatusType EducationStatus { get; set; }
+
+        public EducationLevelType EducationLevel { get; set; }
+
+        public EmploymentStatusType EmploymentStatus { get; set; }
 
         //[BsonRepresentation(BsonType.String)]
-        //public override SmokingHabitsType SmokingHabits { get; set; }
+        //public abstract EmploymentAreaType EmploymentArea { get; set; }
 
         //[BsonRepresentation(BsonType.String)]
-        //public override AllergiesType Allergies { get; set; }
+        //public abstract EmploymentLevelType EmploymentLevel { get; set; }
 
-        //[BsonRepresentation(BsonType.String)]
-        //public override bool HasChildren { get; set; }
+        //[BsonRepresentation(BsonType.String)] //Maybe not
+        //public abstract PoliticalOrientationType PoliticalOrientation { get; set; }
 
-        //[BsonRepresentation(BsonType.String)]
-        //public override WantChildrenType WantChildren { get; set; }
+        //[BsonRepresentation(BsonType.String)] //Maybe not
+        //public abstract ReligiousOrientationType ReligiousOrientation { get; set; }
 
-        //[BsonRepresentation(BsonType.String)]
-        //public override LocationType LivesIn { get; set; }
+        public SportsActivityType SportsActivity { get; set; }
 
-        //[BsonRepresentation(BsonType.String)]
-        //public override EducationType EducationArea { get; set; }
+        public EatingHabitsType EatingHabits { get; set; }
 
-        //[BsonRepresentation(BsonType.String)]
-        //public override EducationStatusType EducationStatus { get; set; }
+        public ClotheStyleType ClotheStyle { get; set; }
 
-        //[BsonRepresentation(BsonType.String)]
-        //public override EducationLevelType EducationLevel { get; set; }
-
-        //[BsonRepresentation(BsonType.String)]
-        //public override EmploymentStatusType EmploymentStatus { get; set; }
-
-        //[BsonRepresentation(BsonType.String)]
-        //public override EmploymentAreaType EmploymentArea { get; set; }
-
-        //[BsonRepresentation(BsonType.String)]
-        //public override EmploymentLevelType EmploymentLevel { get; set; }
-
-        //[BsonRepresentation(BsonType.String)]
-        //public override PoliticalOrientationType PoliticalOrientation { get; set; }
-
-        //[BsonRepresentation(BsonType.String)]
-        //public override SportType Sport { get; set; }
-
-        //[BsonRepresentation(BsonType.String)]
-        //public override EatingHabitsType EatingHabits { get; set; }
-
-        //[BsonRepresentation(BsonType.String)]
-        //public override ClotheStyleType ClotheStyle { get; set; }
-
-        //[BsonRepresentation(BsonType.String)]
-        //public override BodyArtType BodyArt { get; set; }
+        public BodyArtType BodyArt { get; set; }
     }
 }

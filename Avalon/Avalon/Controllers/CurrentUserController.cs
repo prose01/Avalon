@@ -63,7 +63,7 @@ namespace Avalon.Controllers
                 // Check if Name already exists.
                 if (_profilesQueryRepository.GetProfileByName(item.Name).Result != null) return BadRequest();
 
-                // Check if auth0Id already exists.
+                // Check if Auth0Id already exists.
                 if (_profilesQueryRepository.GetProfileByAuth0Id(auth0Id).Result != null) return BadRequest();
 
                 // Set admin default to false! Only other admins can give this privilege.
@@ -120,7 +120,7 @@ namespace Avalon.Controllers
                 // Certain properties cannot be changed by the user.
                 item._id = currentUser._id; // _id is immutable and the type is unknow by BluePenguin.
                 item.Admin = currentUser.Admin; // No user is allowed to set themselves as Admin!
-                item.Name = currentUser.Name;
+                item.Name = currentUser.Name; // You cannot change your name after create.
                 item.Bookmarks = currentUser.Bookmarks;
                 item.ChatMemberslist = currentUser.ChatMemberslist;
                 item.ProfileFilter = currentUser.ProfileFilter;

@@ -41,9 +41,21 @@ namespace Avalon.Controllers
 
             if (!currentUser.Admin) return BadRequest();
 
-            // Delete from Auth0
+            try
+            {
+                // Delete from Auth0
+                foreach (var profileId in profileIds)
+                {
+                    await _helper.DeleteProfile(profileId);
+                    //await _profilesQueryRepository.DeleteProfile(profileId);
+                }
 
-            return Ok(_profilesQueryRepository.DeleteProfiles(profileIds));
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
         /// <summary>
@@ -175,6 +187,8 @@ namespace Avalon.Controllers
         public async Task<IEnumerable<Profile>> GetProfileByCurrentUsersFilter()
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            if (currentUser.ProfileFilter == null) return null;     //TODO: Find på noget bedre end null.
 
             return await _profilesQueryRepository.GetProfileByFilter(currentUser, currentUser.ProfileFilter); 
         }

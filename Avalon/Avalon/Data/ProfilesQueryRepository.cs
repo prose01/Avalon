@@ -78,6 +78,24 @@ namespace Avalon.Data
 
         #region Profiles
 
+        /// <summary>Delete the profile.</summary>
+        /// <param name="profileIds">The profile identifier.</param>
+        /// <returns></returns>
+        public async Task<DeleteResult> DeleteProfile(string profileId)
+        {
+            try
+            {
+                //return await _context.Profiles.DeleteOneAsync(
+                //    Builders<Profile>.Filter.Eq("ProfileId", profileId));
+
+                return null;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         /// <summary>Deletes the profiles.</summary>
         /// <param name="profileIds">The profile identifiers.</param>
         /// <returns></returns>
@@ -133,7 +151,7 @@ namespace Avalon.Data
             }
         }
 
-        /// <summary>Gets the profile by auth0Id.</summary>
+        /// <summary>Gets the profile by Auth0Id.</summary>
         /// <param name="auth0Id">Auth0Id of the profile.</param>
         /// <returns></returns>
         public async Task<Profile> GetProfileByAuth0Id(string auth0Id)
