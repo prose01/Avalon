@@ -110,11 +110,10 @@ namespace Avalon
                 options.Database = Configuration.GetSection("MongoConnection:Database").Value;
                 options.Auth0Id = Configuration.GetSection("Auth0:Claims-nameidentifier").Value;
                 options.Auth0ApiIdentifier = Configuration.GetSection("Auth0:ApiIdentifier").Value;
+                options.Auth0TokenAddress = Configuration.GetSection("Auth0:TokenAddress").Value;
             });
 
             services.AddTransient<ICurrentUserRepository, CurrentUserRepository>();
-
-            services.AddHttpClient();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline

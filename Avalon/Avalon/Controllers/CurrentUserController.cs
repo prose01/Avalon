@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -71,6 +72,11 @@ namespace Avalon.Controllers
 
                 item.Auth0Id = auth0Id;
 
+                // Initiate empty lists and other default 
+                item.Bookmarks = new List<string>(); 
+                item.ChatMemberslist = new List<ChatMember>();
+                item.ProfileFilter = new ProfileFilter();
+                item.Images = new List<ImageModel>();
 
                 return Ok(_profileRepository.AddProfile(item));
             }

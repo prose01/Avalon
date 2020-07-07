@@ -1,12 +1,13 @@
 ﻿using Avalon.Interfaces;
 using Avalon.Model;
 using Microsoft.Extensions.Options;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Security.Claims;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Avalon.Helpers
@@ -17,18 +18,15 @@ namespace Avalon.Helpers
         private readonly IProfilesQueryRepository _profilesQueryRepository;
         private readonly string _nameidentifier;
         private readonly string _auth0ApiIdentifier;
-        private readonly IHttpClientFactory _clientFactory;
-        private readonly HttpClient _client;
+        private readonly string _auth0TokenAddress;
 
-        public HelperMethods(IOptions<Settings> settings, IHttpClientFactory clientFactory, ICurrentUserRepository profileRepository, IProfilesQueryRepository profilesQueryRepository)
+        public HelperMethods(IOptions<Settings> settings, ICurrentUserRepository profileRepository, IProfilesQueryRepository profilesQueryRepository)
         {
             _nameidentifier = settings.Value.Auth0Id;
             _auth0ApiIdentifier = settings.Value.Auth0ApiIdentifier;
-            _clientFactory = clientFactory;
+            _auth0TokenAddress = settings.Value.Auth0TokenAddress;
             _profileRepository = profileRepository;
             _profilesQueryRepository = profilesQueryRepository;
-
-            _client = _clientFactory.CreateClient();
         }
 
         /// <summary>Gets the current user profile.</summary>
@@ -55,19 +53,59 @@ namespace Avalon.Helpers
             {
                 var profile = await _profilesQueryRepository.GetProfileById(profileId);
 
-                var response = await _client.DeleteAsync(_auth0ApiIdentifier + "User/" + profile.Auth0Id);  // https://bluepenguin.eu.auth0.com/api/v2/User/auth0|5ef5f71683dfba001446bbe4
+                var token = GetAuth0Token();
 
-                response.EnsureSuccessStatusCode();
+                try
+                {
+                    var client = new RestClient(_auth0ApiIdentifier + "clients");
+                    client.ThrowOnAnyError = true;
+                    var request = new RestRequest(Method.GET);
+                    request.AddHeader("content-type", "application/json");
+                    request.AddHeader("authorization", "Bearer " + token);
+                    IRestResponse response = await client.ExecuteAsync(request, CancellationToken.None);
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
 
-                using var responseStream = await response.Content.ReadAsStreamAsync();
+                return null;
 
-                return await JsonSerializer.DeserializeAsync
-                    <IEnumerable<string>>(responseStream);
+
+
+                //var response = await _client.GetAsync(_auth0ApiIdentifier + "User/" + profile.Auth0Id);  // https://bluepenguin.eu.auth0.com/api/v2/User/auth0|5ef5f71683dfba001446bbe4
+
+                //response.EnsureSuccessStatusCode();
+
+                //using var responseStream = await response.Content.ReadAsStreamAsync();
+
+                //return await JsonSerializer.DeserializeAsync
+                //    <IEnumerable<string>>(responseStream);
             }
             catch (Exception ex)
             {
                 throw ex;
             }
+        }
+
+
+        private string GetAuth0Token()
+        {
+            try
+            {
+                var client = new RestClient(_auth0TokenAddress);
+                client.ThrowOnAnyError = true;
+                var request = new RestRequest(Method.POST);
+                request.AddHeader("content-type", "application/json");
+                request.AddParameter("application/json", "{\"client_id\":\"ZKHIqFGxgm9OBc5Bxn1226pT9kXHLknW\",\"client_secret\":\"OpIPkn9Y4Ctoh9UuUbUpGzHybTNVEFevel0yQneY6X5ITKyaRwJEMbHYB3mNofkN\",\"audience\":\"https://bluepenguin.eu.auth0.com/api/v2/\",\"grant_type\":\"client_credentials\"}", ParameterType.RequestBody);
+                IRestResponse response = client.Execute(request);
+
+                return JsonSerializer.Deserialize<AccessToken>(response.Content).access_token;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }    
         }
     }
 }
