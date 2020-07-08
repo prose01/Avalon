@@ -175,7 +175,7 @@ namespace Avalon.Data
         public async Task<Profile> GetProfileByName(string profileName)
         {
             var filter = Builders<Profile>
-                            .Filter.Eq(e => e.Name, profileName);
+                            .Filter.Eq(e => e.Name, profileName); // TODO: Make Name case insensitivity
 
             try
             {
@@ -208,7 +208,7 @@ namespace Avalon.Data
                 filters.Add(Builders<Profile>.Filter.Eq(x => x.Gender, currentUser.Gender));
 
             if (!string.IsNullOrEmpty(profileFilter.Name))
-                filters.Add(Builders<Profile>.Filter.Eq(x => x.Name, profileFilter.Name));
+                filters.Add(Builders<Profile>.Filter.Eq(x => x.Name, profileFilter.Name));  // TODO: Make Name case insensitivity
 
             if (profileFilter.Age != null)
                 filters.Add(Builders<Profile>.Filter.In(x => x.Age, profileFilter.Age));
