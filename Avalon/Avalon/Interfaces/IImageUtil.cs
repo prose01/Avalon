@@ -11,5 +11,7 @@ namespace Avalon.Interfaces
         Task DeleteImagesFromCurrentUser(CurrentUser currentUser, string[] imageIds);
         Task<List<byte[]>> GetImagesAsync(string profileId);
         Task<byte[]> GetImageByFileName(string profileId, string fileName);
+        void DeleteAllImagesForProfile(CurrentUser currentUser, string profileId);
+        void DeleteAllImagesForCurrentUser(CurrentUser currentUser);
     }
 }

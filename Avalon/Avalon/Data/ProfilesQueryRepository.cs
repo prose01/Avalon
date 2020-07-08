@@ -78,17 +78,15 @@ namespace Avalon.Data
 
         #region Profiles
 
-        /// <summary>Delete the profile.</summary>
+        /// <summary>Delete the profile. There is no going back!</summary>
         /// <param name="profileIds">The profile identifier.</param>
         /// <returns></returns>
         public async Task<DeleteResult> DeleteProfile(string profileId)
         {
             try
             {
-                //return await _context.Profiles.DeleteOneAsync(
-                //    Builders<Profile>.Filter.Eq("ProfileId", profileId));
-
-                return null;
+                return await _context.Profiles.DeleteOneAsync(
+                    Builders<Profile>.Filter.Eq("ProfileId", profileId));
             }
             catch (Exception ex)
             {
@@ -96,23 +94,23 @@ namespace Avalon.Data
             }
         }
 
-        /// <summary>Deletes the profiles.</summary>
-        /// <param name="profileIds">The profile identifiers.</param>
-        /// <returns></returns>
-        public async Task<DeleteResult> DeleteProfiles(string[] profileIds)
-        {
-            try
-            {
-                //return await _context.Profiles.DeleteManyAsync(
-                //    Builders<Profile>.Filter.Eq("ProfileId", profileIds));
+        /////// <summary>Deletes the profiles.</summary>
+        /////// <param name="profileIds">The profile identifiers.</param>
+        /////// <returns></returns>
+        ////public async Task<DeleteResult> DeleteProfiles(string[] profileIds)
+        ////{
+        ////    try
+        ////    {
+        ////        //return await _context.Profiles.DeleteManyAsync(
+        ////        //    Builders<Profile>.Filter.Eq("ProfileId", profileIds));
 
-                return null;
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
+        ////        return null;
+        ////    }
+        ////    catch (Exception ex)
+        ////    {
+        ////        throw ex;
+        ////    }
+        ////}
 
         /// <summary>Gets the profile by identifier.</summary>
         /// <param name="profileId">The profile identifier.</param>

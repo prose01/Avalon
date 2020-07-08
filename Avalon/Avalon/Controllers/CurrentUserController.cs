@@ -151,11 +151,13 @@ namespace Avalon.Controllers
 
             if (currentUser.Admin) return BadRequest(); // Amins cannot delete themseleves.
 
-            // Delete from Auth0
-
             try
             {
-                return Ok(_profileRepository.DeleteCurrentUser(currentUser.ProfileId));
+                await _helper.DeleteProfile(currentUser.ProfileId);
+                await _profileRepository.DeleteCurrentUser(currentUser.ProfileId);
+                _imageUtil.DeleteAllImagesForCurrentUser(currentUser);
+
+                return Ok();
             }
             catch (Exception ex)
             {

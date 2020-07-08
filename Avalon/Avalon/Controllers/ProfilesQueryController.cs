@@ -43,11 +43,11 @@ namespace Avalon.Controllers
 
             try
             {
-                // Delete from Auth0
                 foreach (var profileId in profileIds)
                 {
                     await _helper.DeleteProfile(profileId);
-                    //await _profilesQueryRepository.DeleteProfile(profileId);
+                    await _profilesQueryRepository.DeleteProfile(profileId);
+                    _imageUtil.DeleteAllImagesForProfile(currentUser, profileId);
                 }
 
                 return Ok();

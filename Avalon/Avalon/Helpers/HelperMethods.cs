@@ -3,7 +3,6 @@ using Avalon.Model;
 using Microsoft.Extensions.Options;
 using RestSharp;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Text.Json;
@@ -47,7 +46,9 @@ namespace Avalon.Helpers
             return user.Claims.FirstOrDefault(c => c.Type == _nameidentifier)?.Value;
         }
 
-        public async Task<IEnumerable<string>> DeleteProfile(string profileId)
+        /// <summary>Deletes the profile from Auth0. There is no going back!</summary>
+        /// <param name="profileId">The profile identifier.</param>
+        public async Task DeleteProfile(string profileId)
         {
             try
             {
@@ -57,9 +58,9 @@ namespace Avalon.Helpers
 
                 try
                 {
-                    var client = new RestClient(_auth0ApiIdentifier + "clients");
+                    var client = new RestClient(_auth0ApiIdentifier + "users/" + profile.Auth0Id);
                     client.ThrowOnAnyError = true;
-                    var request = new RestRequest(Method.GET);
+                    var request = new RestRequest(Method.DELETE);
                     request.AddHeader("content-type", "application/json");
                     request.AddHeader("authorization", "Bearer " + token);
                     IRestResponse response = await client.ExecuteAsync(request, CancellationToken.None);
@@ -68,19 +69,6 @@ namespace Avalon.Helpers
                 {
                     throw ex;
                 }
-
-                return null;
-
-
-
-                //var response = await _client.GetAsync(_auth0ApiIdentifier + "User/" + profile.Auth0Id);  // https://bluepenguin.eu.auth0.com/api/v2/User/auth0|5ef5f71683dfba001446bbe4
-
-                //response.EnsureSuccessStatusCode();
-
-                //using var responseStream = await response.Content.ReadAsStreamAsync();
-
-                //return await JsonSerializer.DeserializeAsync
-                //    <IEnumerable<string>>(responseStream);
             }
             catch (Exception ex)
             {
@@ -88,7 +76,8 @@ namespace Avalon.Helpers
             }
         }
 
-
+        /// <summary>Gets the auth0 token.</summary>
+        /// <returns></returns>
         private string GetAuth0Token()
         {
             try

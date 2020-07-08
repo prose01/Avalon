@@ -11,6 +11,6 @@ namespace Avalon.Interfaces
 
         string GetCurrentUserAuth0Id(ClaimsPrincipal user);
 
-        Task<IEnumerable<string>> DeleteProfile(string profileId);
+        Task DeleteProfile(string profileId);
     }
 }

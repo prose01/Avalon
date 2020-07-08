@@ -159,5 +159,45 @@ namespace Avalon.Helpers
                 throw ex;
             }
         }
+
+        /// <summary>Deletes all images for profile. There is no going back!</summary>
+        /// <param name="currentUser">The CurrentUser.</param>
+        /// <param name="profileId">The profile identifier.</param>
+        /// <exception cref="Exception">You don't have admin rights to delete other people's images.</exception>
+        public void DeleteAllImagesForProfile(CurrentUser currentUser, string profileId)
+        {
+            if (!currentUser.Admin) throw new Exception("You don't have admin rights to delete other people's images.");
+
+            try
+            {
+                // TODO: Find a place for you files!
+                if (Directory.Exists($"C:/Peter Rose - Private/Photos/{profileId}"))
+                {
+                    Directory.Delete($"C:/Peter Rose - Private/Photos/{profileId}", true);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        /// <summary>Deletes all images for CurrentUser. There is no going back!</summary>
+        /// <param name="currentUser">The CurrentUser.</param>
+        public void DeleteAllImagesForCurrentUser(CurrentUser currentUser)
+        {
+            try
+            {
+                // TODO: Find a place for you files!
+                if (Directory.Exists($"C:/Peter Rose - Private/Photos/{currentUser.ProfileId}"))
+                {
+                    Directory.Delete($"C:/Peter Rose - Private/Photos/{currentUser.ProfileId}", true);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
     }
 }
