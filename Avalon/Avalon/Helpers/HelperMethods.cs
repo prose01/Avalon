@@ -56,19 +56,12 @@ namespace Avalon.Helpers
 
                 var token = GetAuth0Token();
 
-                try
-                {
-                    var client = new RestClient(_auth0ApiIdentifier + "users/" + profile.Auth0Id);
-                    client.ThrowOnAnyError = true;
-                    var request = new RestRequest(Method.DELETE);
-                    request.AddHeader("content-type", "application/json");
-                    request.AddHeader("authorization", "Bearer " + token);
-                    IRestResponse response = await client.ExecuteAsync(request, CancellationToken.None);
-                }
-                catch (Exception ex)
-                {
-                    throw ex;
-                }
+                var client = new RestClient(_auth0ApiIdentifier + "users/" + profile.Auth0Id);
+                client.ThrowOnAnyError = true;
+                var request = new RestRequest(Method.DELETE);
+                request.AddHeader("content-type", "application/json");
+                request.AddHeader("authorization", "Bearer " + token);
+                IRestResponse response = await client.ExecuteAsync(request, CancellationToken.None);
             }
             catch (Exception ex)
             {
@@ -94,7 +87,7 @@ namespace Avalon.Helpers
             catch (Exception ex)
             {
                 throw ex;
-            }    
+            }
         }
     }
 }

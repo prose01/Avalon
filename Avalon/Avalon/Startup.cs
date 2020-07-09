@@ -36,10 +36,10 @@ namespace Avalon
             services.AddCors(options =>
             {
                 options.AddPolicy("CorsPolicy",
-                    builder => builder
-                        .AllowAnyOrigin()
-                        .AllowAnyMethod()
-                        .AllowAnyHeader()
+                    builder => builder.WithOrigins("http://localhost:4200")
+                                .WithMethods("GET", "POST", "PUT", "PATCH", "DELETE", "HEAD")
+                                .AllowAnyHeader()
+                                .AllowCredentials()
                     );
             });
 
@@ -129,12 +129,7 @@ namespace Avalon
             
             // Shows UseCors with CorsPolicyBuilder.
             // Remember to remove Cors for production.
-            app.UseCors(builder =>
-                builder.WithOrigins("http://localhost:4200")
-                    .WithMethods("GET", "POST", "PUT", "PATCH", "DELETE", "HEAD")
-                    .AllowAnyHeader()
-                    .AllowCredentials()
-            );
+            app.UseCors("CorsPolicy");
             
             // Enable Authentication
             app.UseAuthentication();
@@ -144,7 +139,7 @@ namespace Avalon
 
             // Add endpoints 
             app.UseEndpoints(endpoints => {
-                endpoints.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapControllers();
             });
 
             // Enable middleware to serve generated Swagger as a JSON endpoint.
