@@ -75,7 +75,7 @@ namespace Avalon.Controllers
                 // Initiate empty lists and other default 
                 item.Bookmarks = new List<string>(); 
                 item.ChatMemberslist = new List<ChatMember>();
-                item.ProfileFilter = new ProfileFilter();
+                item.ProfileFilter = this.CreateBasicProfileFilter(item);
                 item.Images = new List<ImageModel>();
 
                 return Ok(_profileRepository.AddProfile(item));
@@ -348,5 +348,38 @@ namespace Avalon.Controllers
                 throw ex;
             }
         }
+
+        #region Helper methods
+
+        /// <summary>Creates the basic profile filter.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <returns></returns>
+        private ProfileFilter CreateBasicProfileFilter(CurrentUser currentUser)
+        {
+            var filter = new ProfileFilter();
+
+            switch (currentUser.SexualOrientation)
+            {
+                case SexualOrientationType.Heterosexual:
+                    filter.SexualOrientation = SexualOrientationType.Heterosexual;
+                    break;
+                case SexualOrientationType.Homosexual:
+                    filter.SexualOrientation = SexualOrientationType.Homosexual;
+                    break;
+                case SexualOrientationType.Bisexual:
+                    filter.SexualOrientation = SexualOrientationType.Bisexual;
+                    break;
+                case SexualOrientationType.Asexual:
+                    filter.SexualOrientation = SexualOrientationType.Asexual;
+                    break;
+                default:
+                    filter.SexualOrientation = SexualOrientationType.Heterosexual;
+                    break;
+            }
+
+            return filter;
+        }
+
+        #endregion
     }
 }

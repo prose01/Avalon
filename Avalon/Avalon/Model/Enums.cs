@@ -1,6 +1,4 @@
-﻿using System.Runtime.Serialization;
-
-namespace Avalon.Model
+﻿namespace Avalon.Model
 {
     //public enum AllergiesType  // Boolean
     //{
