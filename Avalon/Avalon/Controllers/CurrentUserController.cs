@@ -2,13 +2,11 @@
 using Avalon.Interfaces;
 using Avalon.Model;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 //using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Avalon.Controllers
@@ -22,16 +20,14 @@ namespace Avalon.Controllers
         private readonly ICurrentUserRepository _profileRepository;
         private readonly IProfilesQueryRepository _profilesQueryRepository;
         private readonly IHelperMethods _helper;
-        private readonly IImageUtil _imageUtil;
         private readonly long _maxImageNumber;
 
-        public CurrentUserController(IConfiguration config, ICurrentUserRepository profileRepository, IProfilesQueryRepository profilesQueryRepository, IHelperMethods helperMethods, IImageUtil imageUtil)
+        public CurrentUserController(IConfiguration config, ICurrentUserRepository profileRepository, IProfilesQueryRepository profilesQueryRepository, IHelperMethods helperMethods)
         {
             _maxImageNumber = config.GetValue<long>("MaxImageNumber");
             _profileRepository = profileRepository;
             _profilesQueryRepository = profilesQueryRepository;
             _helper = helperMethods;
-            _imageUtil = imageUtil;
         }
 
         /// <summary>
@@ -133,6 +129,8 @@ namespace Avalon.Controllers
                 item.Images = currentUser.Images;
                 item.CreatedOn = currentUser.CreatedOn;
 
+                // TODO: Update ProfileFilter with sexualOrientation and Gender when CurrentUser is updated!
+
                 return Ok(_profileRepository.UpdateProfile(item));
             }
             catch (Exception ex)
@@ -153,9 +151,9 @@ namespace Avalon.Controllers
 
             try
             {
-                await _helper.DeleteProfile(currentUser.ProfileId);
+                //await _helper.DeleteProfile(currentUser.ProfileId);
                 await _profileRepository.DeleteCurrentUser(currentUser.ProfileId);
-                _imageUtil.DeleteAllImagesForCurrentUser(currentUser);
+                //_imageUtil.DeleteAllImagesForCurrentUser(currentUser);  // Call Artemis
 
                 return Ok();
             }
@@ -273,81 +271,81 @@ namespace Avalon.Controllers
             }
         }
 
-        /// <summary>Upload images to the profile image folder.</summary>
-        /// <param name="image"></param>
-        /// <param name="title"></param>
-        /// <exception cref="ArgumentException">ModelState is not valid {ModelState.IsValid}. - image</exception>
-        /// <exception cref="ArgumentException">Image length is < 1 {image.Length}. - image</exception>
-        [NoCache]
-        [HttpPost("~/UploadImage")]
-        public async Task<IActionResult> UploadImage([FromForm] IFormFile image, [FromForm] string title)
-        {
-            if (!ModelState.IsValid) throw new ArgumentException($"ModelState is not valid {ModelState.IsValid}.", nameof(image));
-            if (image.Length < 0) throw new ArgumentException($"Image length is < 1 {image.Length}.", nameof(image));
+        ///// <summary>Upload images to the profile image folder.</summary>
+        ///// <param name="image"></param>
+        ///// <param name="title"></param>
+        ///// <exception cref="ArgumentException">ModelState is not valid {ModelState.IsValid}. - image</exception>
+        ///// <exception cref="ArgumentException">Image length is < 1 {image.Length}. - image</exception>
+        //[NoCache]
+        //[HttpPost("~/UploadImage")]
+        //public async Task<IActionResult> UploadImage([FromForm] IFormFile image, [FromForm] string title)
+        //{
+        //    if (!ModelState.IsValid) throw new ArgumentException($"ModelState is not valid {ModelState.IsValid}.", nameof(image));
+        //    if (image.Length < 0) throw new ArgumentException($"Image length is < 1 {image.Length}.", nameof(image));
 
-            try
-            {
-                var currentUser = await _helper.GetCurrentUserProfile(User);
+        //    try
+        //    {
+        //        var currentUser = await _helper.GetCurrentUserProfile(User);
 
-                if (currentUser.Images.Count >= _maxImageNumber) return BadRequest();
+        //        if (currentUser.Images.Count >= _maxImageNumber) return BadRequest();
 
-                return Ok(_imageUtil.AddImageToCurrentUser(currentUser, image, title));
-            }
-            catch (Exception ex)
-            {
-                return Problem(ex.ToString());
-            }
-        }
+        //        return Ok(_imageUtil.AddImageToCurrentUser(currentUser, image, title));
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return Problem(ex.ToString());
+        //    }
+        //}
 
 
 
-        /// <summary>Deletes the image from current user.</summary>
-        /// <param name="imageId">The image identifier.</param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentException">ModelState is not valid {ModelState.IsValid}. - imageId</exception>
-        [NoCache]
-        [HttpPost("~/DeleteImage")]
-        public async Task<IActionResult> DeleteImage([FromBody] string[] imageIds)
-        {
-            if (!ModelState.IsValid) throw new ArgumentException($"ModelState is not valid {ModelState.IsValid}.", nameof(imageIds));
+        ///// <summary>Deletes the image from current user.</summary>
+        ///// <param name="imageId">The image identifier.</param>
+        ///// <returns></returns>
+        ///// <exception cref="ArgumentException">ModelState is not valid {ModelState.IsValid}. - imageId</exception>
+        //[NoCache]
+        //[HttpPost("~/DeleteImage")]
+        //public async Task<IActionResult> DeleteImage([FromBody] string[] imageIds)
+        //{
+        //    if (!ModelState.IsValid) throw new ArgumentException($"ModelState is not valid {ModelState.IsValid}.", nameof(imageIds));
 
-            try
-            {
-                var currentUser = await _helper.GetCurrentUserProfile(User);
+        //    try
+        //    {
+        //        var currentUser = await _helper.GetCurrentUserProfile(User);
 
-                foreach (var imageId in imageIds)
-                {
-                    if (!currentUser.Images.Any(i => i.ImageId != imageId)) return BadRequest();
-                }
+        //        foreach (var imageId in imageIds)
+        //        {
+        //            if (!currentUser.Images.Any(i => i.ImageId != imageId)) return BadRequest();
+        //        }
 
-                return Ok(_imageUtil.DeleteImagesFromCurrentUser(currentUser, imageIds));
-            }
-            catch (Exception ex)
-            {
-                return Problem(ex.ToString());
-            }
-        }
+        //        return Ok(_imageUtil.DeleteImagesFromCurrentUser(currentUser, imageIds));
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return Problem(ex.ToString());
+        //    }
+        //}
 
-        /// <summary>Gets an images from CurrentUser by Image fileName.</summary>
-        /// <param name="fileName">The image fileName.</param>
-        /// <returns></returns>
-        [NoCache]
-        [HttpGet("~/GetImageByFileName/{fileName}")]
-        public async Task<IActionResult> GetImageByFileName(string fileName)
-        {
-            try
-            {
-                var currentUser = await _helper.GetCurrentUserProfile(User);
+        ///// <summary>Gets an images from CurrentUser by Image fileName.</summary>
+        ///// <param name="fileName">The image fileName.</param>
+        ///// <returns></returns>
+        //[NoCache]
+        //[HttpGet("~/GetImageByFileName/{fileName}")]
+        //public async Task<IActionResult> GetImageByFileName(string fileName)
+        //{
+        //    try
+        //    {
+        //        var currentUser = await _helper.GetCurrentUserProfile(User);
 
-                if (!currentUser.Images.Any(i => i.FileName == fileName)) return BadRequest();
+        //        if (!currentUser.Images.Any(i => i.FileName == fileName)) return BadRequest();
 
-                return Ok(await _imageUtil.GetImageByFileName(currentUser.ProfileId, fileName));
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
+        //        return Ok(await _imageUtil.GetImageByFileName(currentUser.ProfileId, fileName));
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw ex;
+        //    }
+        //}
 
         #region Helper methods
 
@@ -362,9 +360,11 @@ namespace Avalon.Controllers
             {
                 case SexualOrientationType.Heterosexual:
                     filter.SexualOrientation = SexualOrientationType.Heterosexual;
+                    filter.Gender = currentUser.Gender == GenderType.Male ? GenderType.Female : GenderType.Male;
                     break;
                 case SexualOrientationType.Homosexual:
                     filter.SexualOrientation = SexualOrientationType.Homosexual;
+                    filter.Gender = currentUser.Gender;
                     break;
                 case SexualOrientationType.Bisexual:
                     filter.SexualOrientation = SexualOrientationType.Bisexual;
@@ -374,6 +374,7 @@ namespace Avalon.Controllers
                     break;
                 default:
                     filter.SexualOrientation = SexualOrientationType.Heterosexual;
+                    filter.Gender = currentUser.Gender == GenderType.Male ? GenderType.Female : GenderType.Male;
                     break;
             }
 

@@ -17,13 +17,11 @@ namespace Avalon.Controllers
     {
         private readonly IProfilesQueryRepository _profilesQueryRepository;
         private readonly IHelperMethods _helper;
-        private readonly IImageUtil _imageUtil;
 
-        public ProfilesQueryController(IProfilesQueryRepository profilesQueryRepository, IHelperMethods helperMethods, IImageUtil imageUtil)
+        public ProfilesQueryController(IProfilesQueryRepository profilesQueryRepository, IHelperMethods helperMethods)
         {
             _profilesQueryRepository = profilesQueryRepository;
             _helper = helperMethods;
-            _imageUtil = imageUtil;
         }
 
         /// <summary>
@@ -47,7 +45,7 @@ namespace Avalon.Controllers
                 {
                     await _helper.DeleteProfile(profileId);
                     await _profilesQueryRepository.DeleteProfile(profileId);
-                    _imageUtil.DeleteAllImagesForProfile(currentUser, profileId);
+                    //_imageUtil.DeleteAllImagesForProfile(currentUser, profileId); // Call Artemis
                 }
 
                 return Ok();
@@ -128,42 +126,42 @@ namespace Avalon.Controllers
             return await _profilesQueryRepository.GetChatMemberProfiles(currentUser) ?? null;
         }
 
-        /// <summary>Gets all images from specified profileId.</summary>
-        /// <param name="profileId">The profile identifier.</param>
-        /// <returns></returns>
-        [NoCache]
-        [HttpGet("~/GetProfileImages/{profileId}")]
-        public async Task<IActionResult> GetProfileImages(string profileId)
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(profileId)) return BadRequest();
+        ///// <summary>Gets all images from specified profileId.</summary>
+        ///// <param name="profileId">The profile identifier.</param>
+        ///// <returns></returns>
+        //[NoCache]
+        //[HttpGet("~/GetProfileImages/{profileId}")]
+        //public async Task<IActionResult> GetProfileImages(string profileId)
+        //{
+        //    try
+        //    {
+        //        if (string.IsNullOrEmpty(profileId)) return BadRequest();
 
-                return Ok(await _imageUtil.GetImagesAsync(profileId));
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
+        //        return Ok(await _imageUtil.GetImagesAsync(profileId));
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw ex;
+        //    }
+        //}
 
-        /// <summary>Gets an images from Profile by Image fileName.</summary>
-        /// <param name="profileId">The profile identifier.</param>
-        /// <param name="fileName">The image fileName.</param>
-        /// <returns></returns>
-        [NoCache]
-        [HttpGet("~/GetProfileImageByFileName/{profileId},{fileName}")]
-        public async Task<IActionResult> GetProfileImageByFileName(string profileId, string fileName)
-        {
-            try
-            {
-                return Ok(await _imageUtil.GetImageByFileName(profileId, fileName));
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
+        ///// <summary>Gets an images from Profile by Image fileName.</summary>
+        ///// <param name="profileId">The profile identifier.</param>
+        ///// <param name="fileName">The image fileName.</param>
+        ///// <returns></returns>
+        //[NoCache]
+        //[HttpGet("~/GetProfileImageByFileName/{profileId},{fileName}")]
+        //public async Task<IActionResult> GetProfileImageByFileName(string profileId, string fileName)
+        //{
+        //    try
+        //    {
+        //        return Ok(await _imageUtil.GetImageByFileName(profileId, fileName));
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw ex;
+        //    }
+        //}
 
         /// <summary>
         /// Gets the specified profile based on a filter. Eg. { Body: 'something' }
