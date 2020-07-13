@@ -70,7 +70,6 @@ namespace Avalon
 
             // Add our helper method(s)
             services.AddSingleton<IHelperMethods, HelperMethods>();
-            //services.AddSingleton<IImageUtil, ImageUtil>();
 
             // Register the Swagger generator, defining one or more Swagger documents
             services.AddSwaggerGen(c =>

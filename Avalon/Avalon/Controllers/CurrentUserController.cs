@@ -20,11 +20,9 @@ namespace Avalon.Controllers
         private readonly ICurrentUserRepository _profileRepository;
         private readonly IProfilesQueryRepository _profilesQueryRepository;
         private readonly IHelperMethods _helper;
-        private readonly long _maxImageNumber;
 
         public CurrentUserController(IConfiguration config, ICurrentUserRepository profileRepository, IProfilesQueryRepository profilesQueryRepository, IHelperMethods helperMethods)
         {
-            _maxImageNumber = config.GetValue<long>("MaxImageNumber");
             _profileRepository = profileRepository;
             _profilesQueryRepository = profilesQueryRepository;
             _helper = helperMethods;
@@ -270,82 +268,6 @@ namespace Avalon.Controllers
                 return Problem(ex.ToString());
             }
         }
-
-        ///// <summary>Upload images to the profile image folder.</summary>
-        ///// <param name="image"></param>
-        ///// <param name="title"></param>
-        ///// <exception cref="ArgumentException">ModelState is not valid {ModelState.IsValid}. - image</exception>
-        ///// <exception cref="ArgumentException">Image length is < 1 {image.Length}. - image</exception>
-        //[NoCache]
-        //[HttpPost("~/UploadImage")]
-        //public async Task<IActionResult> UploadImage([FromForm] IFormFile image, [FromForm] string title)
-        //{
-        //    if (!ModelState.IsValid) throw new ArgumentException($"ModelState is not valid {ModelState.IsValid}.", nameof(image));
-        //    if (image.Length < 0) throw new ArgumentException($"Image length is < 1 {image.Length}.", nameof(image));
-
-        //    try
-        //    {
-        //        var currentUser = await _helper.GetCurrentUserProfile(User);
-
-        //        if (currentUser.Images.Count >= _maxImageNumber) return BadRequest();
-
-        //        return Ok(_imageUtil.AddImageToCurrentUser(currentUser, image, title));
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return Problem(ex.ToString());
-        //    }
-        //}
-
-
-
-        ///// <summary>Deletes the image from current user.</summary>
-        ///// <param name="imageId">The image identifier.</param>
-        ///// <returns></returns>
-        ///// <exception cref="ArgumentException">ModelState is not valid {ModelState.IsValid}. - imageId</exception>
-        //[NoCache]
-        //[HttpPost("~/DeleteImage")]
-        //public async Task<IActionResult> DeleteImage([FromBody] string[] imageIds)
-        //{
-        //    if (!ModelState.IsValid) throw new ArgumentException($"ModelState is not valid {ModelState.IsValid}.", nameof(imageIds));
-
-        //    try
-        //    {
-        //        var currentUser = await _helper.GetCurrentUserProfile(User);
-
-        //        foreach (var imageId in imageIds)
-        //        {
-        //            if (!currentUser.Images.Any(i => i.ImageId != imageId)) return BadRequest();
-        //        }
-
-        //        return Ok(_imageUtil.DeleteImagesFromCurrentUser(currentUser, imageIds));
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return Problem(ex.ToString());
-        //    }
-        //}
-
-        ///// <summary>Gets an images from CurrentUser by Image fileName.</summary>
-        ///// <param name="fileName">The image fileName.</param>
-        ///// <returns></returns>
-        //[NoCache]
-        //[HttpGet("~/GetImageByFileName/{fileName}")]
-        //public async Task<IActionResult> GetImageByFileName(string fileName)
-        //{
-        //    try
-        //    {
-        //        var currentUser = await _helper.GetCurrentUserProfile(User);
-
-        //        if (!currentUser.Images.Any(i => i.FileName == fileName)) return BadRequest();
-
-        //        return Ok(await _imageUtil.GetImageByFileName(currentUser.ProfileId, fileName));
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw ex;
-        //    }
-        //}
 
         #region Helper methods
 
