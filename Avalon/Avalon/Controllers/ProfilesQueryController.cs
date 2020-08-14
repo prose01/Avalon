@@ -32,12 +32,11 @@ namespace Avalon.Controllers
         [HttpPost("~/DeleteProfiles")]
         public async Task<IActionResult> DeleteProfiles([FromBody]string[] profileIds)
         {
-            if (!ModelState.IsValid) return BadRequest();
-            if (profileIds == null || profileIds.Length < 1) return BadRequest();
+            if (profileIds == null || profileIds.Length < 1) throw new ArgumentException($"ProfileIds is either null {profileIds} or length is < 1 {profileIds.Length}.", nameof(profileIds));
 
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            if (!currentUser.Admin) return BadRequest();
+            if (!currentUser.Admin) throw new ArgumentException($"Current user does not have admin status.");
 
             try
             {
@@ -65,14 +64,13 @@ namespace Avalon.Controllers
         [HttpPost("~/SetAsAdmin")]
         public async Task<IActionResult> SetAsAdmin([FromBody] Profile profile)
         {
-            if (!ModelState.IsValid) return BadRequest();
-            if (profile == null) return BadRequest();
+            if (profile == null) throw new ArgumentException($"Profile is null.", nameof(profile));
 
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            if (!currentUser.Admin) return BadRequest();
+            if (!currentUser.Admin) throw new ArgumentException($"Current user does not have admin status.");
 
-            if (currentUser.ProfileId == profile.ProfileId) return BadRequest();
+            if (currentUser.ProfileId == profile.ProfileId) throw new ArgumentException($"Current user cannot set admin status to itself.", nameof(profile));
 
             return Ok(_profilesQueryRepository.SetAsAdmin(profile.ProfileId));
         }
@@ -86,14 +84,13 @@ namespace Avalon.Controllers
         [HttpPost("~/RemoveAdmin")]
         public async Task<IActionResult> RemoveAdmin([FromBody] Profile profile)
         {
-            if (!ModelState.IsValid) return BadRequest();
-            if (profile == null) return BadRequest();
+            if (profile == null) throw new ArgumentException($"Profile is null.", nameof(profile));
 
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            if (!currentUser.Admin) return BadRequest();
+            if (!currentUser.Admin) throw new ArgumentException($"Current user does not have admin status.");
 
-            if (currentUser.ProfileId == profile.ProfileId) return BadRequest();
+            if (currentUser.ProfileId == profile.ProfileId) throw new ArgumentException($"Current user cannot remove admin status from itself.", nameof(profile));
 
             return Ok(_profilesQueryRepository.RemoveAdmin(profile.ProfileId));
         }
@@ -106,13 +103,20 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpGet("~/GetProfileById/{profileId}")]
-        public async Task<Profile> Get(string profileId)
+        public async Task<ActionResult<Profile>> Get(string profileId)
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            if (currentUser.ProfileId == profileId) return null;
+            if (currentUser.ProfileId == profileId) throw new ArgumentException($"ProfileId is similar to current user profileId.", nameof(profileId));
 
-            return await _profilesQueryRepository.GetProfileById(profileId) ?? null;
+            var profile = await _profilesQueryRepository.GetProfileById(profileId);
+
+            if (profile == null)
+            {
+                return NotFound();
+            }
+
+            return profile;
         }
 
         /// <summary>Gets the currentUser's chatMember profiles.</summary>
@@ -123,7 +127,7 @@ namespace Avalon.Controllers
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            return await _profilesQueryRepository.GetChatMemberProfiles(currentUser) ?? null;
+            return await _profilesQueryRepository.GetChatMemberProfiles(currentUser) ?? throw new ArgumentException($"There are no ChatMembers for current user.");
         }
 
         /// <summary>
@@ -136,7 +140,7 @@ namespace Avalon.Controllers
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            return await _profilesQueryRepository.GetProfileByFilter(currentUser, profileFilter) ?? null; // Should be null if no filter match.
+            return await _profilesQueryRepository.GetProfileByFilter(currentUser, profileFilter) ?? throw new ArgumentException($"Current users profileFilter cannot find any matching profiles.", nameof(profileFilter));
         }
 
         /// <summary>
@@ -149,7 +153,7 @@ namespace Avalon.Controllers
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            if (currentUser.ProfileFilter == null) return null;     //TODO: Find på noget bedre end null.
+            if (currentUser.ProfileFilter == null) throw new ArgumentException($"Current users profileFilter is null.");
 
             return await _profilesQueryRepository.GetProfileByFilter(currentUser, currentUser.ProfileFilter); 
         }

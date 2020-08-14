@@ -123,9 +123,16 @@ namespace Avalon
 
             if (env.IsDevelopment())
             {
+                //app.UseStatusCodePages();     https://stackoverflow.com/questions/51719195/asp-net-core-useexceptionhandler-not-working-post-request
+                //app.UseDatabaseErrorPage();   https://docs.microsoft.com/en-us/aspnet/core/fundamentals/error-handling?view=aspnetcore-3.1
                 app.UseDeveloperExceptionPage();
+                //app.UseExceptionHandler("/error-local-development");
             }
-            
+            //else
+            //{
+            //    app.UseExceptionHandler("/error");
+            //}
+
             // Shows UseCors with CorsPolicyBuilder.
             // Remember to remove Cors for production.
             app.UseCors("CorsPolicy");

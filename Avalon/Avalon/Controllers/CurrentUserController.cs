@@ -4,7 +4,6 @@ using Avalon.Model;
 using Microsoft.AspNetCore.Authorization;
 //using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -21,7 +20,7 @@ namespace Avalon.Controllers
         private readonly IProfilesQueryRepository _profilesQueryRepository;
         private readonly IHelperMethods _helper;
 
-        public CurrentUserController(IConfiguration config, ICurrentUserRepository profileRepository, IProfilesQueryRepository profilesQueryRepository, IHelperMethods helperMethods)
+        public CurrentUserController(ICurrentUserRepository profileRepository, IProfilesQueryRepository profilesQueryRepository, IHelperMethods helperMethods)
         {
             _profileRepository = profileRepository;
             _profilesQueryRepository = profilesQueryRepository;
@@ -46,7 +45,7 @@ namespace Avalon.Controllers
         [HttpPost("~/CurrentUser")]
         public async Task<IActionResult> Post([FromBody] CurrentUser item)
         {
-            if (!ModelState.IsValid) return BadRequest();
+            //if (!ModelState.IsValid) return BadRequest(); unnecessary
 
             try
             {
@@ -81,7 +80,7 @@ namespace Avalon.Controllers
         }
 
         /// <summary>
-        /// Patches the specified profile identifier. Does not work!!!
+        /// Patches the specified profile identifier. Does not work!!!      https://docs.microsoft.com/en-us/aspnet/core/web-api/jsonpatch?view=aspnetcore-3.1
         /// </summary>
         /// <param name="patch">The patch.</param>
         //[HttpPatch("~/CurrentUser/")]
@@ -109,7 +108,7 @@ namespace Avalon.Controllers
         [HttpPut("~/CurrentUser")]
         public async Task<IActionResult> Put([FromBody] CurrentUser item)
         {
-            if (!ModelState.IsValid) return BadRequest();
+            //if (!ModelState.IsValid) return BadRequest(); unnecessary
 
             try
             {
@@ -168,7 +167,7 @@ namespace Avalon.Controllers
         [HttpPost("~/SaveProfileFilter")]
         public async Task<IActionResult> SaveProfileFilter([FromBody]ProfileFilter profileFilter)
         {
-            if (!ModelState.IsValid) return BadRequest();
+            //if (!ModelState.IsValid) return BadRequest(); unnecessary
             if (profileFilter == null) return BadRequest();
 
             try
@@ -201,7 +200,7 @@ namespace Avalon.Controllers
         [HttpPost("~/AddProfilesToBookmarks")]
         public async Task<IActionResult> AddProfilesToBookmarks([FromBody] string[] profileIds)
         {
-            if (!ModelState.IsValid) return BadRequest();
+            //if (!ModelState.IsValid) return BadRequest(); unnecessary
             if (profileIds == null || profileIds.Length < 1) return BadRequest();
 
             try
@@ -227,7 +226,7 @@ namespace Avalon.Controllers
         [HttpPost("~/RemoveProfilesFromBookmarks")]
         public async Task<IActionResult> RemoveProfilesFromBookmarks([FromBody] string[] profileIds)
         {
-            if (!ModelState.IsValid) throw new ArgumentException($"ModelState is not valid {ModelState.IsValid}.", nameof(profileIds));
+            //if (!ModelState.IsValid) throw new ArgumentException($"ModelState is not valid {ModelState.IsValid}.", nameof(profileIds)); unnecessary
             if (profileIds == null || profileIds.Length < 1) throw new ArgumentException($"ProfileIds is either null {profileIds} or length is < 1 {profileIds.Length}.", nameof(profileIds));
 
             try
@@ -252,7 +251,7 @@ namespace Avalon.Controllers
         [HttpPost("~/BlockChatMembers")]
         public async Task<IActionResult> BlockChatMembers([FromBody] string[] profileIds)
         {
-            if (!ModelState.IsValid) return BadRequest();
+            //if (!ModelState.IsValid) return BadRequest(); unnecessary
             if (profileIds == null || profileIds.Length < 1) return BadRequest();
 
             try
