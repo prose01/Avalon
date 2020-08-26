@@ -126,7 +126,15 @@ namespace Avalon.Controllers
                 item.Images = currentUser.Images;
                 item.CreatedOn = currentUser.CreatedOn;
 
-                // TODO: Update ProfileFilter with sexualOrientation and Gender when CurrentUser is updated!
+                // Update ProfileFilter with sexualOrientation and Gender when CurrentUser is updated.
+                if(currentUser.SexualOrientation != item.SexualOrientation)
+                {
+                    var BasicProfileFilter = this.CreateBasicProfileFilter(item);
+                    item.ProfileFilter.SexualOrientation = BasicProfileFilter.SexualOrientation;
+
+                    if(BasicProfileFilter.SexualOrientation == SexualOrientationType.Heterosexual)
+                        item.ProfileFilter.Gender = BasicProfileFilter.Gender;
+                }
 
                 return Ok(_profileRepository.UpdateProfile(item));
             }
@@ -148,7 +156,7 @@ namespace Avalon.Controllers
 
             try
             {
-                //await _helper.DeleteProfile(currentUser.ProfileId);
+                //await _helper.DeleteProfileFromAuth0(currentUser.ProfileId);
                 await _profileRepository.DeleteCurrentUser(currentUser.ProfileId);
                 //_imageUtil.DeleteAllImagesForCurrentUser(currentUser);  // Call Artemis
 

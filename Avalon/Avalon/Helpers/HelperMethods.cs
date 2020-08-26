@@ -48,7 +48,7 @@ namespace Avalon.Helpers
 
         /// <summary>Deletes the profile from Auth0. There is no going back!</summary>
         /// <param name="profileId">The profile identifier.</param>
-        public async Task DeleteProfile(string profileId)
+        public async Task DeleteProfileFromAuth0(string profileId)
         {
             try
             {
