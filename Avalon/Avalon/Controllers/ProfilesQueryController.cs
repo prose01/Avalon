@@ -42,9 +42,8 @@ namespace Avalon.Controllers
             {
                 foreach (var profileId in profileIds)
                 {
-                    await _helper.DeleteProfileFromAuth0(profileId);
-                    await _profilesQueryRepository.DeleteProfile(profileId);
-                    //_imageUtil.DeleteAllImagesForProfile(currentUser, profileId); // Call Artemis
+                    //await _helper.DeleteProfileFromAuth0(profileId);
+                    //await _profilesQueryRepository.DeleteProfile(profileId);
                 }
 
                 return Ok();

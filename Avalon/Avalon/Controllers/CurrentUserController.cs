@@ -152,13 +152,12 @@ namespace Avalon.Controllers
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            if (currentUser.Admin) return BadRequest(); // Amins cannot delete themseleves.
+            if (currentUser.Admin) return BadRequest(); // Admins cannot delete themseleves.
 
             try
             {
                 //await _helper.DeleteProfileFromAuth0(currentUser.ProfileId);
-                await _profileRepository.DeleteCurrentUser(currentUser.ProfileId);
-                //_imageUtil.DeleteAllImagesForCurrentUser(currentUser);  // Call Artemis
+                //await _profileRepository.DeleteCurrentUser(currentUser.ProfileId);
 
                 return Ok();
             }
