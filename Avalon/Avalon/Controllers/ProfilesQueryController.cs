@@ -132,69 +132,84 @@ namespace Avalon.Controllers
         /// <summary>
         /// Gets the specified profile based on a filter. Eg. { Body: 'something' }
         /// </summary>
+        /// <param name="orderByType">The OrderByDescending column type.</param>
         /// <returns></returns>
         [NoCache]
         [HttpPost("~/GetProfileByFilter")]
-        public async Task<IEnumerable<Profile>> GetProfileByFilter([FromBody]ProfileFilter profileFilter)
+        public async Task<IEnumerable<Profile>> GetProfileByFilter([FromBody]ProfileFilter profileFilter, OrderByType orderByType)
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            return await _profilesQueryRepository.GetProfileByFilter(currentUser, profileFilter) ?? throw new ArgumentException($"Current users profileFilter cannot find any matching profiles.", nameof(profileFilter));
+            return await _profilesQueryRepository.GetProfileByFilter(currentUser, profileFilter, orderByType) ?? throw new ArgumentException($"Current users profileFilter cannot find any matching profiles.", nameof(profileFilter));
         }
 
         /// <summary>
         /// Gets the specified profiles based on the CurrentUser's filter.
         /// </summary>
+        /// <param name="orderByType">The OrderByDescending column type.</param>
         /// <returns></returns>
         [NoCache]
-        [HttpGet("~/GetProfileByCurrentUsersFilter")]
-        public async Task<IEnumerable<Profile>> GetProfileByCurrentUsersFilter()
+        [HttpGet("~/GetProfileByCurrentUsersFilter/{orderByType}")]
+        public async Task<IEnumerable<Profile>> GetProfileByCurrentUsersFilter(OrderByType orderByType)
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
             if (currentUser.ProfileFilter == null) throw new ArgumentException($"Current users profileFilter is null.");
 
-            return await _profilesQueryRepository.GetProfileByFilter(currentUser, currentUser.ProfileFilter); 
+            return await _profilesQueryRepository.GetProfileByFilter(currentUser, currentUser.ProfileFilter, orderByType);
         }
 
         /// <summary>
-        /// Gets Latest Created Profiles.
+        /// Gets Latest Profiles OrderBy.
         /// </summary>
         /// <returns></returns>
         [NoCache]
-        [HttpGet("~/GetLatestCreatedProfiles/")]
-        public async Task<IEnumerable<Profile>> GetLatestCreatedProfiles()
+        [HttpGet("~/GetLatestProfiles/{orderByType}")]
+        public async Task<IEnumerable<Profile>> GetLatestProfiles(OrderByType orderByType)
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            return await _profilesQueryRepository.GetLatestCreatedProfiles(currentUser);
+            return await _profilesQueryRepository.GetLatestProfiles(currentUser, orderByType);
         }
 
-        /// <summary>
-        /// Gets Last Updated Profiles.
-        /// </summary>
-        /// <returns></returns>
-        [NoCache]
-        [HttpGet("~/GetLastUpdatedProfiles/")]
-        public async Task<IEnumerable<Profile>> GetLastUpdatedProfiles()
-        {
-            var currentUser = await _helper.GetCurrentUserProfile(User);
+        ///// <summary>
+        ///// Gets Latest Created Profiles.
+        ///// </summary>
+        ///// <returns></returns>
+        //[NoCache]
+        //[HttpGet("~/GetLatestCreatedProfiles/")]
+        //public async Task<IEnumerable<Profile>> GetLatestCreatedProfiles()
+        //{
+        //    var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            return await _profilesQueryRepository.GetLastUpdatedProfiles(currentUser);
-        }
+        //    return await _profilesQueryRepository.GetLatestCreatedProfiles(currentUser);
+        //}
 
-        /// <summary>
-        /// Gets Last Active Profiles.
-        /// </summary>
-        /// <returns></returns>
-        [NoCache]
-        [HttpGet("~/GetLastActiveProfiles/")]
-        public async Task<IEnumerable<Profile>> GetLastActiveProfiles()
-        {
-            var currentUser = await _helper.GetCurrentUserProfile(User);
+        ///// <summary>
+        ///// Gets Last Updated Profiles.
+        ///// </summary>
+        ///// <returns></returns>
+        //[NoCache]
+        //[HttpGet("~/GetLastUpdatedProfiles/")]
+        //public async Task<IEnumerable<Profile>> GetLastUpdatedProfiles()
+        //{
+        //    var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            return await _profilesQueryRepository.GetLastActiveProfiles(currentUser);
-        }
+        //    return await _profilesQueryRepository.GetLastUpdatedProfiles(currentUser);
+        //}
+
+        ///// <summary>
+        ///// Gets Last Active Profiles.
+        ///// </summary>
+        ///// <returns></returns>
+        //[NoCache]
+        //[HttpGet("~/GetLastActiveProfiles/")]
+        //public async Task<IEnumerable<Profile>> GetLastActiveProfiles()
+        //{
+        //    var currentUser = await _helper.GetCurrentUserProfile(User);
+
+        //    return await _profilesQueryRepository.GetLastActiveProfiles(currentUser);
+        //}
 
         /// <summary>
         /// Gets Bookmarked Profiles.

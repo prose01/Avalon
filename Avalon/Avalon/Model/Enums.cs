@@ -178,4 +178,13 @@
         Divorced,
         Other
     }
+
+
+    // Enum types used for other stuff than Profiles.
+    public enum OrderByType
+    {
+        CreatedOn,
+        UpdatedOn,
+        LastActive
+    }
 }

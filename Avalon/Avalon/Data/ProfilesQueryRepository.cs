@@ -192,8 +192,9 @@ namespace Avalon.Data
         // Search for anything in filter - eg. { Body: 'something' }
         /// <summary>Gets the profile by filter.</summary>
         /// <param name="filter">The filter.</param>
+        /// <param name="orderByType">The OrderByDescending column type.</param>
         /// <returns></returns>
-        public async Task<IEnumerable<Profile>> GetProfileByFilter(CurrentUser currentUser, ProfileFilter profileFilter)
+        public async Task<IEnumerable<Profile>> GetProfileByFilter(CurrentUser currentUser, ProfileFilter profileFilter, OrderByType orderByType)
         {
             List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>();
 
@@ -217,8 +218,21 @@ namespace Avalon.Data
 
             try
             {
-                return _context.Profiles
-                    .Find(combineFilters).ToList().OrderByDescending(p => p.CreatedOn);
+                switch (orderByType)
+                {
+                    case OrderByType.CreatedOn:
+                        return _context.Profiles
+                                .Find(combineFilters).ToList().OrderByDescending(p => p.CreatedOn);
+                    case OrderByType.UpdatedOn:
+                        return _context.Profiles
+                                .Find(combineFilters).ToList().OrderByDescending(p => p.UpdatedOn);
+                    case OrderByType.LastActive:
+                        return _context.Profiles
+                                .Find(combineFilters).ToList().OrderByDescending(p => p.UpdatedOn);
+                    default:
+                        return _context.Profiles
+                                .Find(combineFilters).ToList().OrderByDescending(p => p.CreatedOn);
+                }
             }
             catch (Exception ex)
             {
@@ -226,10 +240,11 @@ namespace Avalon.Data
             }
         }
 
-        /// <summary>Gets the latest created profiles.</summary>
+        /// <summary>Gets the latest profiles.</summary>
         /// <param name="currentUser">The current user.</param>
+        /// <param name="orderByType">The OrderByDescending column type.</param>
         /// <returns></returns>
-        public async Task<IEnumerable<Profile>> GetLatestCreatedProfiles(CurrentUser currentUser)
+        public async Task<IEnumerable<Profile>> GetLatestProfiles(CurrentUser currentUser, OrderByType orderByType)
         {
             List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>();
 
@@ -247,8 +262,21 @@ namespace Avalon.Data
 
             try
             {
-                return _context.Profiles
-                    .Find(combineFilters).ToList().OrderByDescending(p => p.CreatedOn);
+                switch (orderByType)
+                {
+                    case OrderByType.CreatedOn:
+                        return _context.Profiles
+                                .Find(combineFilters).ToList().OrderByDescending(p => p.CreatedOn);
+                    case OrderByType.UpdatedOn:
+                        return _context.Profiles
+                                .Find(combineFilters).ToList().OrderByDescending(p => p.UpdatedOn);
+                    case OrderByType.LastActive:
+                        return _context.Profiles
+                                .Find(combineFilters).ToList().OrderByDescending(p => p.UpdatedOn);
+                    default:
+                        return _context.Profiles
+                                .Find(combineFilters).ToList().OrderByDescending(p => p.CreatedOn);
+                }
             }
             catch (Exception ex)
             {
@@ -256,65 +284,95 @@ namespace Avalon.Data
             }
         }
 
-        /// <summary>Gets the last updated profiles.</summary>
-        /// <param name="currentUser">The current user.</param>
-        /// <returns></returns>
-        public async Task<IEnumerable<Profile>> GetLastUpdatedProfiles(CurrentUser currentUser)
-        {
-            List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>();
+        ///// <summary>Gets the latest created profiles.</summary>
+        ///// <param name="currentUser">The current user.</param>
+        ///// <returns></returns>
+        //public async Task<IEnumerable<Profile>> GetLatestCreatedProfiles(CurrentUser currentUser)
+        //{
+        //    List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>();
 
-            //Remove currentUser from the list.
-            filters.Add(Builders<Profile>.Filter.Ne(x => x.ProfileId, currentUser.ProfileId));
-            filters.Add(Builders<Profile>.Filter.Eq(x => x.SexualOrientation, currentUser.SexualOrientation));
+        //    //Remove currentUser from the list.
+        //    filters.Add(Builders<Profile>.Filter.Ne(x => x.ProfileId, currentUser.ProfileId));
+        //    filters.Add(Builders<Profile>.Filter.Eq(x => x.SexualOrientation, currentUser.SexualOrientation));
 
-            if (currentUser.SexualOrientation == SexualOrientationType.Heterosexual)
-                filters.Add(Builders<Profile>.Filter.Ne(x => x.Gender, currentUser.Gender));
+        //    if (currentUser.SexualOrientation == SexualOrientationType.Heterosexual)
+        //        filters.Add(Builders<Profile>.Filter.Ne(x => x.Gender, currentUser.Gender));
 
-            if (currentUser.SexualOrientation == SexualOrientationType.Homosexual)
-                filters.Add(Builders<Profile>.Filter.Eq(x => x.Gender, currentUser.Gender));
+        //    if (currentUser.SexualOrientation == SexualOrientationType.Homosexual)
+        //        filters.Add(Builders<Profile>.Filter.Eq(x => x.Gender, currentUser.Gender));
 
-            var combineFilters = Builders<Profile>.Filter.And(filters);
+        //    var combineFilters = Builders<Profile>.Filter.And(filters);
 
-            try
-            {
-                return _context.Profiles
-                    .Find(combineFilters).ToList().OrderByDescending(p => p.UpdatedOn);
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
+        //    try
+        //    {
+        //        return _context.Profiles
+        //            .Find(combineFilters).ToList().OrderByDescending(p => p.CreatedOn);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw ex;
+        //    }
+        //}
 
-        /// <summary>Gets the last active profiles.</summary>
-        /// <param name="currentUser">The current user.</param>
-        /// <returns></returns>
-        public async Task<IEnumerable<Profile>> GetLastActiveProfiles(CurrentUser currentUser)
-        {
-            List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>();
+        ///// <summary>Gets the last updated profiles.</summary>
+        ///// <param name="currentUser">The current user.</param>
+        ///// <returns></returns>
+        //public async Task<IEnumerable<Profile>> GetLastUpdatedProfiles(CurrentUser currentUser)
+        //{
+        //    List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>();
 
-            //Remove currentUser from the list.
-            filters.Add(Builders<Profile>.Filter.Ne(x => x.ProfileId, currentUser.ProfileId));
-            filters.Add(Builders<Profile>.Filter.Eq(x => x.SexualOrientation, currentUser.SexualOrientation));
+        //    //Remove currentUser from the list.
+        //    filters.Add(Builders<Profile>.Filter.Ne(x => x.ProfileId, currentUser.ProfileId));
+        //    filters.Add(Builders<Profile>.Filter.Eq(x => x.SexualOrientation, currentUser.SexualOrientation));
 
-            if (currentUser.SexualOrientation == SexualOrientationType.Heterosexual)
-                filters.Add(Builders<Profile>.Filter.Ne(x => x.Gender, currentUser.Gender));
+        //    if (currentUser.SexualOrientation == SexualOrientationType.Heterosexual)
+        //        filters.Add(Builders<Profile>.Filter.Ne(x => x.Gender, currentUser.Gender));
 
-            if (currentUser.SexualOrientation == SexualOrientationType.Homosexual)
-                filters.Add(Builders<Profile>.Filter.Eq(x => x.Gender, currentUser.Gender));
+        //    if (currentUser.SexualOrientation == SexualOrientationType.Homosexual)
+        //        filters.Add(Builders<Profile>.Filter.Eq(x => x.Gender, currentUser.Gender));
 
-            var combineFilters = Builders<Profile>.Filter.And(filters);
+        //    var combineFilters = Builders<Profile>.Filter.And(filters);
 
-            try
-            {
-                return _context.Profiles
-                    .Find(combineFilters).ToList().OrderByDescending(p => p.LastActive);
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
+        //    try
+        //    {
+        //        return _context.Profiles
+        //            .Find(combineFilters).ToList().OrderByDescending(p => p.UpdatedOn);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw ex;
+        //    }
+        //}
+
+        ///// <summary>Gets the last active profiles.</summary>
+        ///// <param name="currentUser">The current user.</param>
+        ///// <returns></returns>
+        //public async Task<IEnumerable<Profile>> GetLastActiveProfiles(CurrentUser currentUser)
+        //{
+        //    List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>();
+
+        //    //Remove currentUser from the list.
+        //    filters.Add(Builders<Profile>.Filter.Ne(x => x.ProfileId, currentUser.ProfileId));
+        //    filters.Add(Builders<Profile>.Filter.Eq(x => x.SexualOrientation, currentUser.SexualOrientation));
+
+        //    if (currentUser.SexualOrientation == SexualOrientationType.Heterosexual)
+        //        filters.Add(Builders<Profile>.Filter.Ne(x => x.Gender, currentUser.Gender));
+
+        //    if (currentUser.SexualOrientation == SexualOrientationType.Homosexual)
+        //        filters.Add(Builders<Profile>.Filter.Eq(x => x.Gender, currentUser.Gender));
+
+        //    var combineFilters = Builders<Profile>.Filter.And(filters);
+
+        //    try
+        //    {
+        //        return _context.Profiles
+        //            .Find(combineFilters).ToList().OrderByDescending(p => p.LastActive);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw ex;
+        //    }
+        //}
 
         #endregion
 
