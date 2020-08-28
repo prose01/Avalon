@@ -17,6 +17,8 @@ namespace Avalon.Interfaces
         Task<Profile> GetProfileByName(string profileName);
         Task<IEnumerable<Profile>> GetProfileByFilter(CurrentUser currentUser, ProfileFilter profileFilter);
         Task<IEnumerable<Profile>> GetLatestCreatedProfiles(CurrentUser profile);
+        Task<IEnumerable<Profile>> GetLastUpdatedProfiles(CurrentUser profile);
+        Task<IEnumerable<Profile>> GetLastActiveProfiles(CurrentUser profile);
         Task<IEnumerable<Profile>> GetBookmarkedProfiles(CurrentUser profile);
     }
 }

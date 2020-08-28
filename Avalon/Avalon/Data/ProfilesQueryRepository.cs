@@ -256,6 +256,66 @@ namespace Avalon.Data
             }
         }
 
+        /// <summary>Gets the last updated profiles.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <returns></returns>
+        public async Task<IEnumerable<Profile>> GetLastUpdatedProfiles(CurrentUser currentUser)
+        {
+            List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>();
+
+            //Remove currentUser from the list.
+            filters.Add(Builders<Profile>.Filter.Ne(x => x.ProfileId, currentUser.ProfileId));
+            filters.Add(Builders<Profile>.Filter.Eq(x => x.SexualOrientation, currentUser.SexualOrientation));
+
+            if (currentUser.SexualOrientation == SexualOrientationType.Heterosexual)
+                filters.Add(Builders<Profile>.Filter.Ne(x => x.Gender, currentUser.Gender));
+
+            if (currentUser.SexualOrientation == SexualOrientationType.Homosexual)
+                filters.Add(Builders<Profile>.Filter.Eq(x => x.Gender, currentUser.Gender));
+
+            var combineFilters = Builders<Profile>.Filter.And(filters);
+
+            try
+            {
+                return _context.Profiles
+                    .Find(combineFilters).ToList().OrderByDescending(p => p.UpdatedOn);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        /// <summary>Gets the last active profiles.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <returns></returns>
+        public async Task<IEnumerable<Profile>> GetLastActiveProfiles(CurrentUser currentUser)
+        {
+            List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>();
+
+            //Remove currentUser from the list.
+            filters.Add(Builders<Profile>.Filter.Ne(x => x.ProfileId, currentUser.ProfileId));
+            filters.Add(Builders<Profile>.Filter.Eq(x => x.SexualOrientation, currentUser.SexualOrientation));
+
+            if (currentUser.SexualOrientation == SexualOrientationType.Heterosexual)
+                filters.Add(Builders<Profile>.Filter.Ne(x => x.Gender, currentUser.Gender));
+
+            if (currentUser.SexualOrientation == SexualOrientationType.Homosexual)
+                filters.Add(Builders<Profile>.Filter.Eq(x => x.Gender, currentUser.Gender));
+
+            var combineFilters = Builders<Profile>.Filter.And(filters);
+
+            try
+            {
+                return _context.Profiles
+                    .Find(combineFilters).ToList().OrderByDescending(p => p.LastActive);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         #endregion
 
         #region Bookmarked 
