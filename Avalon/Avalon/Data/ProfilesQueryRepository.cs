@@ -398,5 +398,23 @@ namespace Avalon.Data
         }
 
         #endregion
+
+        #region Maintenance
+
+        /// <summary>Gets 10 old profiles that are more than 30 days since last active.</summary>
+        /// <returns></returns>
+        public async Task<IEnumerable<Profile>> GetOldProfiles()
+        {
+            try
+            {
+                return await _context.Profiles.Find(p => p.LastActive < DateTime.Now.AddDays(-30)).Limit(10).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        #endregion
     }
 }

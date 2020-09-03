@@ -11,7 +11,7 @@ namespace Avalon.Controllers
 {
     [Produces("application/json")]
     [Route("[controller]")]
-    [Authorize]
+    //[Authorize]
     [ApiController]
     public class ProfilesQueryController : Controller
     {
@@ -223,5 +223,36 @@ namespace Avalon.Controllers
 
             return await _profilesQueryRepository.GetBookmarkedProfiles(currentUser);
         }
+
+
+
+
+        #region Maintenance
+
+        /// <summary>Deletes 10 old profiles that are more than 30 days since last active.</summary>
+        /// <returns></returns>
+        [NoCache]
+        [HttpDelete("~/DeleteOldProfiles")]
+        public async Task<IActionResult> DeleteOldProfiles()
+        {
+            try
+            {
+                var oldProfiles = await _profilesQueryRepository.GetOldProfiles();
+
+                foreach (var profile in oldProfiles)
+                {
+                    //await _helper.DeleteProfileFromAuth0(profile.ProfileId);
+                    //await _profilesQueryRepository.DeleteProfile(profile.ProfileId);
+                }
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        #endregion
     }
 }
