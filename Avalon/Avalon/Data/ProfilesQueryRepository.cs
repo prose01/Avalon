@@ -117,11 +117,11 @@ namespace Avalon.Data
         /// <returns></returns>
         public async Task<Profile> GetProfileById(string profileId)
         {
-            var filter = Builders<Profile>
-                            .Filter.Eq(e => e.ProfileId, profileId);
-
             try
             {
+                var filter = Builders<Profile>
+                                .Filter.Eq(e => e.ProfileId, profileId);
+
                 return await _context.Profiles
                     .Find(filter)
                     .FirstOrDefaultAsync();
@@ -154,11 +154,10 @@ namespace Avalon.Data
         /// <returns></returns>
         public async Task<Profile> GetProfileByAuth0Id(string auth0Id)
         {
-            var filter = Builders<Profile>
-                            .Filter.Eq(e => e.Auth0Id, auth0Id);
-
             try
             {
+                var filter = Builders<Profile>
+                                .Filter.Eq(e => e.Auth0Id, auth0Id); 
                 return await _context.Profiles
                     .Find(filter)
                     .FirstOrDefaultAsync();
@@ -174,11 +173,11 @@ namespace Avalon.Data
         /// <returns></returns>
         public async Task<Profile> GetProfileByName(string profileName)
         {
-            var filter = Builders<Profile>
-                            .Filter.Eq(e => e.Name, profileName); // TODO: Make Name case insensitivity
-
             try
             {
+                var filter = Builders<Profile>
+                                .Filter.Eq(e => e.Name, profileName); // TODO: Make Name case insensitivity
+
                 return await _context.Profiles
                     .Find(filter)
                     .FirstOrDefaultAsync();
@@ -196,28 +195,28 @@ namespace Avalon.Data
         /// <returns></returns>
         public async Task<IEnumerable<Profile>> GetProfileByFilter(CurrentUser currentUser, ProfileFilter profileFilter, OrderByType orderByType)
         {
-            List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>();
-
-            //Remove currentUser from the list.
-            filters.Add(Builders<Profile>.Filter.Ne(x => x.ProfileId, currentUser.ProfileId));
-            filters.Add(Builders<Profile>.Filter.Eq(x => x.SexualOrientation, currentUser.SexualOrientation));
-
-            if (currentUser.SexualOrientation == SexualOrientationType.Heterosexual)
-                filters.Add(Builders<Profile>.Filter.Ne(x => x.Gender, currentUser.Gender));
-
-            if (currentUser.SexualOrientation == SexualOrientationType.Homosexual)
-                filters.Add(Builders<Profile>.Filter.Eq(x => x.Gender, currentUser.Gender));
-
-            if (!string.IsNullOrEmpty(profileFilter.Name))
-                filters.Add(Builders<Profile>.Filter.Eq(x => x.Name, profileFilter.Name));  // TODO: Make Name case insensitivity
-
-            if (profileFilter.Age != null)
-                filters.Add(Builders<Profile>.Filter.In(x => x.Age, profileFilter.Age));
-
-            var combineFilters = Builders<Profile>.Filter.And(filters);
-
             try
             {
+                List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>();
+
+                //Remove currentUser from the list.
+                filters.Add(Builders<Profile>.Filter.Ne(x => x.ProfileId, currentUser.ProfileId));
+
+                //Add basic search criteria.
+                filters.Add(Builders<Profile>.Filter.Eq(x => x.SexualOrientation, currentUser.SexualOrientation));
+                filters.Add(Builders<Profile>.Filter.Eq(x => x.Gender, profileFilter.Gender));
+
+                //if (currentUser.SexualOrientation == SexualOrientationType.Heterosexual)
+                //    filters.Add(Builders<Profile>.Filter.Ne(x => x.Gender, currentUser.Gender));
+
+                //if (currentUser.SexualOrientation == SexualOrientationType.Homosexual)
+                //    filters.Add(Builders<Profile>.Filter.Eq(x => x.Gender, currentUser.Gender));
+
+                //Apply all other ProfileFilter criterias.
+                filters = this.ApplyProfileFilter(profileFilter, filters);
+
+                var combineFilters = Builders<Profile>.Filter.And(filters);
+
                 switch (orderByType)
                 {
                     case OrderByType.CreatedOn:
@@ -240,43 +239,54 @@ namespace Avalon.Data
             }
         }
 
+        private List<FilterDefinition<Profile>> ApplyProfileFilter(ProfileFilter profileFilter, List<FilterDefinition<Profile>> filters)
+        {
+            if (!string.IsNullOrEmpty(profileFilter.Name))
+                filters.Add(Builders<Profile>.Filter.Eq(x => x.Name, profileFilter.Name));  // TODO: Make Name case insensitivity
+
+            if (profileFilter.Age != null)
+                filters.Add(Builders<Profile>.Filter.In(x => x.Age, profileFilter.Age));
+
+            return filters;
+        }
+
         /// <summary>Gets the latest profiles.</summary>
         /// <param name="currentUser">The current user.</param>
         /// <param name="orderByType">The OrderByDescending column type.</param>
         /// <returns></returns>
         public async Task<IEnumerable<Profile>> GetLatestProfiles(CurrentUser currentUser, OrderByType orderByType)
         {
-            List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>();
-
-            //Remove currentUser from the list.
-            filters.Add(Builders<Profile>.Filter.Ne(x => x.ProfileId, currentUser.ProfileId));
-            filters.Add(Builders<Profile>.Filter.Eq(x => x.SexualOrientation, currentUser.SexualOrientation));
-
-            if (currentUser.SexualOrientation == SexualOrientationType.Heterosexual)
-                filters.Add(Builders<Profile>.Filter.Ne(x => x.Gender, currentUser.Gender));
-
-            if (currentUser.SexualOrientation == SexualOrientationType.Homosexual)
-                filters.Add(Builders<Profile>.Filter.Eq(x => x.Gender, currentUser.Gender));
-
-            var combineFilters = Builders<Profile>.Filter.And(filters);
-
             try
             {
-                switch (orderByType)
-                {
-                    case OrderByType.CreatedOn:
-                        return _context.Profiles
-                                .Find(combineFilters).ToList().OrderByDescending(p => p.CreatedOn);
-                    case OrderByType.UpdatedOn:
-                        return _context.Profiles
-                                .Find(combineFilters).ToList().OrderByDescending(p => p.UpdatedOn);
-                    case OrderByType.LastActive:
-                        return _context.Profiles
-                                .Find(combineFilters).ToList().OrderByDescending(p => p.UpdatedOn);
-                    default:
-                        return _context.Profiles
-                                .Find(combineFilters).ToList().OrderByDescending(p => p.CreatedOn);
-                }
+                List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>();
+
+                //Remove currentUser from the list.
+                filters.Add(Builders<Profile>.Filter.Ne(x => x.ProfileId, currentUser.ProfileId));
+                filters.Add(Builders<Profile>.Filter.Eq(x => x.SexualOrientation, currentUser.SexualOrientation));
+
+                if (currentUser.SexualOrientation == SexualOrientationType.Heterosexual)
+                    filters.Add(Builders<Profile>.Filter.Ne(x => x.Gender, currentUser.Gender));
+
+                if (currentUser.SexualOrientation == SexualOrientationType.Homosexual)
+                    filters.Add(Builders<Profile>.Filter.Eq(x => x.Gender, currentUser.Gender));
+
+                var combineFilters = Builders<Profile>.Filter.And(filters);
+
+                    switch (orderByType)
+                    {
+                        case OrderByType.CreatedOn:
+                            return _context.Profiles
+                                    .Find(combineFilters).ToList().OrderByDescending(p => p.CreatedOn);
+                        case OrderByType.UpdatedOn:
+                            return _context.Profiles
+                                    .Find(combineFilters).ToList().OrderByDescending(p => p.UpdatedOn);
+                        case OrderByType.LastActive:
+                            return _context.Profiles
+                                    .Find(combineFilters).ToList().OrderByDescending(p => p.UpdatedOn);
+                        default:
+                            return _context.Profiles
+                                    .Find(combineFilters).ToList().OrderByDescending(p => p.CreatedOn);
+                    }
             }
             catch (Exception ex)
             {

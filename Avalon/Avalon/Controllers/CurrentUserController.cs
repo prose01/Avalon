@@ -126,14 +126,10 @@ namespace Avalon.Controllers
                 item.Images = currentUser.Images;
                 item.CreatedOn = currentUser.CreatedOn;
 
-                // Update ProfileFilter with sexualOrientation and Gender when CurrentUser is updated.
-                if(currentUser.SexualOrientation != item.SexualOrientation)
+                // Update ProfileFilter Gender when CurrentUser is updated.
+                if(currentUser.SexualOrientation != item.SexualOrientation || currentUser.Gender != item.Gender)
                 {
-                    var BasicProfileFilter = this.CreateBasicProfileFilter(item);
-                    item.ProfileFilter.SexualOrientation = BasicProfileFilter.SexualOrientation;
-
-                    if(BasicProfileFilter.SexualOrientation == SexualOrientationType.Heterosexual)
-                        item.ProfileFilter.Gender = BasicProfileFilter.Gender;
+                    item.ProfileFilter.Gender = this.CreateBasicProfileFilter(item).Gender;
                 }
 
                 return Ok(_profileRepository.UpdateProfile(item));
@@ -287,21 +283,16 @@ namespace Avalon.Controllers
             switch (currentUser.SexualOrientation)
             {
                 case SexualOrientationType.Heterosexual:
-                    filter.SexualOrientation = SexualOrientationType.Heterosexual;
                     filter.Gender = currentUser.Gender == GenderType.Male ? GenderType.Female : GenderType.Male;
                     break;
                 case SexualOrientationType.Homosexual:
-                    filter.SexualOrientation = SexualOrientationType.Homosexual;
                     filter.Gender = currentUser.Gender;
                     break;
                 case SexualOrientationType.Bisexual:
-                    filter.SexualOrientation = SexualOrientationType.Bisexual;
                     break;
                 case SexualOrientationType.Asexual:
-                    filter.SexualOrientation = SexualOrientationType.Asexual;
                     break;
                 default:
-                    filter.SexualOrientation = SexualOrientationType.Heterosexual;
                     filter.Gender = currentUser.Gender == GenderType.Male ? GenderType.Female : GenderType.Male;
                     break;
             }

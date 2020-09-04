@@ -11,7 +11,7 @@ namespace Avalon.Controllers
 {
     [Produces("application/json")]
     [Route("[controller]")]
-    //[Authorize]
+    [Authorize]
     [ApiController]
     public class ProfilesQueryController : Controller
     {
@@ -104,6 +104,8 @@ namespace Avalon.Controllers
         [HttpGet("~/GetProfileById/{profileId}")]
         public async Task<ActionResult<Profile>> Get(string profileId)
         {
+            if (string.IsNullOrEmpty(profileId)) throw new ArgumentException($"ProfileId is null.", nameof(profileId));
+
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
             if (currentUser.ProfileId == profileId) throw new ArgumentException($"ProfileId is similar to current user profileId.", nameof(profileId));
@@ -127,7 +129,7 @@ namespace Avalon.Controllers
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
             return await _profilesQueryRepository.GetChatMemberProfiles(currentUser) ?? throw new ArgumentException($"There are no ChatMembers for current user.");
-        }
+        }        
 
         /// <summary>
         /// Gets the specified profile based on a filter. Eg. { Body: 'something' }
@@ -136,11 +138,13 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpPost("~/GetProfileByFilter")]
-        public async Task<IEnumerable<Profile>> GetProfileByFilter([FromBody]ProfileFilter profileFilter, OrderByType orderByType)
+        public async Task<IEnumerable<Profile>> GetProfileByFilter([FromBody] RequestBody requestBody)
         {
+            if (requestBody.ProfileFilter == null) throw new ArgumentException($"ProfileFilter is null.", nameof(requestBody.ProfileFilter));
+
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            return await _profilesQueryRepository.GetProfileByFilter(currentUser, profileFilter, orderByType) ?? throw new ArgumentException($"Current users profileFilter cannot find any matching profiles.", nameof(profileFilter));
+            return await _profilesQueryRepository.GetProfileByFilter(currentUser, requestBody.ProfileFilter, requestBody.OrderByType) ?? throw new ArgumentException($"Current users profileFilter cannot find any matching profiles.", nameof(requestBody.ProfileFilter));
         }
 
         /// <summary>
