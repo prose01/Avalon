@@ -25,13 +25,13 @@ namespace Avalon.Model
         [DataType(DataType.DateTime)]
         public abstract DateTime LastActive { get; set; }
 
-        [Range(0, 120)]
+        [Range(16, 120)]
         public abstract int? Age { get; set; }
 
         [Range(0, 250)]
         public abstract int? Height { get; set; }
 
-        [Range(0, 300)]  // Might not
+        [Range(0, 700)]  // Might not
         public abstract int? Weight { get; set; }
 
         [StringLength(2000, ErrorMessage = "Description length cannot be more than 2000.")]
