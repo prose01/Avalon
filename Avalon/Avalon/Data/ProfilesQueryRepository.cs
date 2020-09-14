@@ -241,11 +241,62 @@ namespace Avalon.Data
 
         private List<FilterDefinition<Profile>> ApplyProfileFilter(ProfileFilter profileFilter, List<FilterDefinition<Profile>> filters)
         {
-            if (!string.IsNullOrEmpty(profileFilter.Name))
-                filters.Add(Builders<Profile>.Filter.Eq(x => x.Name, profileFilter.Name));  // TODO: Make Name case insensitivity
+            if (profileFilter.Name != null)
+                filters.Add(Builders<Profile>.Filter.Eq(x => x.Name, profileFilter.Name)); // TODO: Make Name case insensitivity and as a LIKE %%
 
             if (profileFilter.Age != null)
-                filters.Add(Builders<Profile>.Filter.In(x => x.Age, profileFilter.Age));
+                filters.Add(Builders<Profile>.Filter.In(x => x.Age, profileFilter.Age)); // TODO: Make Age a range
+
+            if (profileFilter.Height != null)
+                filters.Add(Builders<Profile>.Filter.In(x => x.Height, profileFilter.Height)); // TODO: Make Height a range
+
+            if (profileFilter.Weight != null)
+                filters.Add(Builders<Profile>.Filter.In(x => x.Weight, profileFilter.Weight)); // TODO: Make Weight a range
+
+            if (profileFilter.Description != null)
+                filters.Add(Builders<Profile>.Filter.Eq(x => x.Description, profileFilter.Description)); // TODO: Make Description case insensitivity and as a LIKE %%
+
+            if (profileFilter.Body != null && profileFilter.Body != BodyType.NotChosen)
+                filters.Add(Builders<Profile>.Filter.Eq(x => x.Body, profileFilter.Body));
+
+            if (profileFilter.SmokingHabits != null && profileFilter.SmokingHabits != SmokingHabitsType.NotChosen)
+                filters.Add(Builders<Profile>.Filter.Eq(x => x.SmokingHabits, profileFilter.SmokingHabits));
+
+            if (profileFilter.HasChildren != null && profileFilter.HasChildren != HasChildrenType.NotChosen)
+                filters.Add(Builders<Profile>.Filter.Eq(x => x.HasChildren, profileFilter.HasChildren));
+
+            if (profileFilter.WantChildren != null && profileFilter.WantChildren != WantChildrenType.NotChosen)
+                filters.Add(Builders<Profile>.Filter.Eq(x => x.WantChildren, profileFilter.WantChildren));
+
+            if (profileFilter.HasPets != null && profileFilter.HasPets != HasPetsType.NotChosen)
+                filters.Add(Builders<Profile>.Filter.Eq(x => x.HasPets, profileFilter.HasPets));
+
+            if (profileFilter.LivesIn != null && profileFilter.LivesIn != LivesInType.NotChosen)
+                filters.Add(Builders<Profile>.Filter.Eq(x => x.LivesIn, profileFilter.LivesIn));
+
+            if (profileFilter.Education != null && profileFilter.Education != EducationType.NotChosen)
+                filters.Add(Builders<Profile>.Filter.Eq(x => x.Education, profileFilter.Education));
+
+            if (profileFilter.EducationStatus != null && profileFilter.EducationStatus != EducationStatusType.NotChosen)
+                filters.Add(Builders<Profile>.Filter.Eq(x => x.EducationStatus, profileFilter.EducationStatus));
+
+            if (profileFilter.EducationLevel != null && profileFilter.EducationLevel != EducationLevelType.NotChosen)
+                filters.Add(Builders<Profile>.Filter.Eq(x => x.EducationLevel, profileFilter.EducationLevel));
+
+            if (profileFilter.EmploymentStatus != null && profileFilter.EmploymentStatus != EmploymentStatusType.NotChosen)
+                filters.Add(Builders<Profile>.Filter.Eq(x => x.EmploymentStatus, profileFilter.EmploymentStatus));
+
+            if (profileFilter.SportsActivity != null && profileFilter.SportsActivity != SportsActivityType.NotChosen)
+                filters.Add(Builders<Profile>.Filter.Eq(x => x.SportsActivity, profileFilter.SportsActivity));
+
+            if (profileFilter.EatingHabits != null && profileFilter.EatingHabits != EatingHabitsType.NotChosen)
+                filters.Add(Builders<Profile>.Filter.Eq(x => x.EatingHabits, profileFilter.EatingHabits));
+
+            if (profileFilter.ClotheStyle != null && profileFilter.ClotheStyle != ClotheStyleType.NotChosen)
+                filters.Add(Builders<Profile>.Filter.Eq(x => x.ClotheStyle, profileFilter.ClotheStyle));
+
+            if (profileFilter.BodyArt != null && profileFilter.BodyArt != BodyArtType.NotChosen)
+                filters.Add(Builders<Profile>.Filter.Eq(x => x.BodyArt, profileFilter.BodyArt));
 
             return filters;
         }
