@@ -49,7 +49,7 @@ namespace Avalon.Model
 
         public override HasPetsType HasPets { get; set; }
 
-        public override LocationType LivesIn { get; set; }
+        public override LivesInType LivesIn { get; set; }
 
         public override EducationType Education { get; set; }
 

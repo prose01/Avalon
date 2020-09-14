@@ -65,7 +65,7 @@ namespace Avalon.Model
         public abstract HasPetsType HasPets { get; set; }
 
         [BsonRepresentation(BsonType.String)]
-        public abstract LocationType LivesIn { get; set; }
+        public abstract LivesInType LivesIn { get; set; }
 
         [BsonRepresentation(BsonType.String)]
         public abstract EducationType Education { get; set; }

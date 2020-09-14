@@ -37,7 +37,7 @@ namespace Avalon.Model
 
         public HasPetsType HasPets { get; set; }
 
-        public LocationType LivesIn { get; set; }
+        public LivesInType LivesIn { get; set; }
 
         public EducationType Education { get; set; }
 

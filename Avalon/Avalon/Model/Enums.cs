@@ -125,7 +125,7 @@
         Other
     }
 
-    public enum LocationType
+    public enum LivesInType
     {
         NotChosen,
         City,
