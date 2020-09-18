@@ -1,10 +1,12 @@
 ﻿using Avalon.Interfaces;
 using Avalon.Model;
 using Microsoft.Extensions.Options;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Avalon.Data
@@ -206,12 +208,6 @@ namespace Avalon.Data
                 filters.Add(Builders<Profile>.Filter.Eq(x => x.SexualOrientation, currentUser.SexualOrientation));
                 filters.Add(Builders<Profile>.Filter.Eq(x => x.Gender, profileFilter.Gender));
 
-                //if (currentUser.SexualOrientation == SexualOrientationType.Heterosexual)
-                //    filters.Add(Builders<Profile>.Filter.Ne(x => x.Gender, currentUser.Gender));
-
-                //if (currentUser.SexualOrientation == SexualOrientationType.Homosexual)
-                //    filters.Add(Builders<Profile>.Filter.Eq(x => x.Gender, currentUser.Gender));
-
                 //Apply all other ProfileFilter criterias.
                 filters = this.ApplyProfileFilter(profileFilter, filters);
 
@@ -242,16 +238,20 @@ namespace Avalon.Data
         private List<FilterDefinition<Profile>> ApplyProfileFilter(ProfileFilter profileFilter, List<FilterDefinition<Profile>> filters)
         {
             if (profileFilter.Name != null)
-                filters.Add(Builders<Profile>.Filter.Eq(x => x.Name, profileFilter.Name)); // TODO: Make Name case insensitivity and as a LIKE %%
+            {
+                //var regex = new Regex($"^" + profileFilter.Name + "^");
+                //;
+                filters.Add(Builders<Profile>.Filter.Regex(x => x.Name, new BsonRegularExpression(profileFilter.Name, "i"))); // TODO: Make Name case insensitivity and as a LIKE %%
+            }
 
             if (profileFilter.Age != null)
-                filters.Add(Builders<Profile>.Filter.In(x => x.Age, profileFilter.Age)); // TODO: Make Age a range
+                filters.Add(Builders<Profile>.Filter.In(x => x.Age, profileFilter.Age)); 
 
             if (profileFilter.Height != null)
-                filters.Add(Builders<Profile>.Filter.In(x => x.Height, profileFilter.Height)); // TODO: Make Height a range
+                filters.Add(Builders<Profile>.Filter.In(x => x.Height, profileFilter.Height)); 
 
             if (profileFilter.Weight != null)
-                filters.Add(Builders<Profile>.Filter.In(x => x.Weight, profileFilter.Weight)); // TODO: Make Weight a range
+                filters.Add(Builders<Profile>.Filter.In(x => x.Weight, profileFilter.Weight)); 
 
             if (profileFilter.Description != null)
                 filters.Add(Builders<Profile>.Filter.Eq(x => x.Description, profileFilter.Description)); // TODO: Make Description case insensitivity and as a LIKE %%
