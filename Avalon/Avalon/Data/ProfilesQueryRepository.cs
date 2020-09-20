@@ -238,11 +238,7 @@ namespace Avalon.Data
         private List<FilterDefinition<Profile>> ApplyProfileFilter(ProfileFilter profileFilter, List<FilterDefinition<Profile>> filters)
         {
             if (profileFilter.Name != null)
-            {
-                //var regex = new Regex($"^" + profileFilter.Name + "^");
-                //;
-                filters.Add(Builders<Profile>.Filter.Regex(x => x.Name, new BsonRegularExpression(profileFilter.Name, "i"))); // TODO: Make Name case insensitivity and as a LIKE %%
-            }
+                filters.Add(Builders<Profile>.Filter.Regex(x => x.Name, new BsonRegularExpression(profileFilter.Name, "i")));
 
             if (profileFilter.Age != null)
                 filters.Add(Builders<Profile>.Filter.In(x => x.Age, profileFilter.Age)); 
@@ -254,7 +250,7 @@ namespace Avalon.Data
                 filters.Add(Builders<Profile>.Filter.In(x => x.Weight, profileFilter.Weight)); 
 
             if (profileFilter.Description != null)
-                filters.Add(Builders<Profile>.Filter.Eq(x => x.Description, profileFilter.Description)); // TODO: Make Description case insensitivity and as a LIKE %%
+                filters.Add(Builders<Profile>.Filter.Regex(x => x.Description, new BsonRegularExpression(profileFilter.Description, "i"))); 
 
             if (profileFilter.Body != null && profileFilter.Body != BodyType.NotChosen)
                 filters.Add(Builders<Profile>.Filter.Eq(x => x.Body, profileFilter.Body));
