@@ -136,7 +136,9 @@ namespace Avalon
             // Shows UseCors with CorsPolicyBuilder.
             // Remember to remove Cors for production.
             app.UseCors("CorsPolicy");
-            
+
+            app.UseHttpsRedirection();
+
             // Enable Authentication
             app.UseAuthentication();
 
