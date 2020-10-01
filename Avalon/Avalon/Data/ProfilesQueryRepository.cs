@@ -246,9 +246,6 @@ namespace Avalon.Data
             if (profileFilter.Height != null)
                 filters.Add(Builders<Profile>.Filter.In(x => x.Height, profileFilter.Height)); 
 
-            if (profileFilter.Weight != null)
-                filters.Add(Builders<Profile>.Filter.In(x => x.Weight, profileFilter.Weight)); 
-
             if (profileFilter.Description != null)
                 filters.Add(Builders<Profile>.Filter.Regex(x => x.Description, new BsonRegularExpression(profileFilter.Description, "i"))); 
 
@@ -275,9 +272,6 @@ namespace Avalon.Data
 
             if (profileFilter.EducationStatus != null && profileFilter.EducationStatus != EducationStatusType.NotChosen)
                 filters.Add(Builders<Profile>.Filter.Eq(x => x.EducationStatus, profileFilter.EducationStatus));
-
-            if (profileFilter.EducationLevel != null && profileFilter.EducationLevel != EducationLevelType.NotChosen)
-                filters.Add(Builders<Profile>.Filter.Eq(x => x.EducationLevel, profileFilter.EducationLevel));
 
             if (profileFilter.EmploymentStatus != null && profileFilter.EmploymentStatus != EmploymentStatusType.NotChosen)
                 filters.Add(Builders<Profile>.Filter.Eq(x => x.EmploymentStatus, profileFilter.EmploymentStatus));

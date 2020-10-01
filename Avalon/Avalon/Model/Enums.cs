@@ -55,15 +55,6 @@
         Other
     }
 
-    public enum EducationLevelType
-    {
-        NotChosen,
-        Bachelor,
-        Master,
-        Phd,
-        Other
-    }
-
     public enum EducationStatusType
     {
         NotChosen,

@@ -16,7 +16,6 @@ namespace Avalon.Model
         public DateTime LastActive { get; set; }
         public List<int?> Age { get; set; }
         public List<int?> Height { get; set; }
-        public List<int?> Weight { get; set; }
         public string Description { get; set; }
 
         //public override string[] Tags { get; set; }
@@ -42,8 +41,6 @@ namespace Avalon.Model
         public EducationType Education { get; set; }
 
         public EducationStatusType EducationStatus { get; set; }
-
-        public EducationLevelType EducationLevel { get; set; }
 
         public EmploymentStatusType EmploymentStatus { get; set; }
 

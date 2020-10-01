@@ -31,9 +31,6 @@ namespace Avalon.Model
         [Range(0, 250)]
         public abstract int? Height { get; set; }
 
-        [Range(0, 700)]  // Might not
-        public abstract int? Weight { get; set; }
-
         [StringLength(2000, ErrorMessage = "Description length cannot be more than 2000.")]
         public abstract string Description { get; set; }
         public abstract List<ImageModel> Images { get; set; }
@@ -72,9 +69,6 @@ namespace Avalon.Model
 
         [BsonRepresentation(BsonType.String)]
         public abstract EducationStatusType EducationStatus { get; set; }
-
-        [BsonRepresentation(BsonType.String)]
-        public abstract EducationLevelType EducationLevel { get; set; }
 
         [BsonRepresentation(BsonType.String)]
         public abstract EmploymentStatusType EmploymentStatus { get; set; }
