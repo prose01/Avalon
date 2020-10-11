@@ -46,6 +46,9 @@ namespace Avalon
             // Add framework services.
             services.AddMvc().AddJsonOptions(options => {
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+
+                // TODO: https://www.ryadel.com/en/jsonserializationexception-self-referencing-loop-detected-error-fix-entity-framework-asp-net-core/
+                //options.JsonSerializerOptions.ReferenceHandling = ReferenceHandling.Preserve; 
             });
 
             // Add authentication.

@@ -6,7 +6,6 @@ using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Avalon.Data
@@ -30,11 +29,11 @@ namespace Avalon.Data
             try
             {
                 var filter = Builders<Profile>
-                                .Filter.Eq(e => e.ProfileId, profileId);
+                                .Filter.Eq(p => p.ProfileId, profileId);
 
                 var update = Builders<Profile>
-                                .Update.Set(e => e.Admin, true)
-                                .Set(e => e.UpdatedOn, DateTime.Now);
+                                .Update.Set(p => p.Admin, true)
+                                .Set(p => p.UpdatedOn, DateTime.Now);
 
                 var options = new FindOneAndUpdateOptions<Profile>
                 {
@@ -57,11 +56,11 @@ namespace Avalon.Data
             try
             {
                 var filter = Builders<Profile>
-                                .Filter.Eq(e => e.ProfileId, profileId);
+                                .Filter.Eq(p => p.ProfileId, profileId);
 
                 var update = Builders<Profile>
-                                .Update.Set(e => e.Admin, false)
-                                .Set(e => e.UpdatedOn, DateTime.Now);
+                                .Update.Set(p => p.Admin, false)
+                                .Set(p => p.UpdatedOn, DateTime.Now);
 
                 var options = new FindOneAndUpdateOptions<Profile>
                 {
@@ -122,7 +121,7 @@ namespace Avalon.Data
             try
             {
                 var filter = Builders<Profile>
-                                .Filter.Eq(e => e.ProfileId, profileId);
+                                .Filter.Eq(p => p.ProfileId, profileId);
 
                 return await _context.Profiles
                     .Find(filter)
@@ -159,7 +158,7 @@ namespace Avalon.Data
             try
             {
                 var filter = Builders<Profile>
-                                .Filter.Eq(e => e.Auth0Id, auth0Id); 
+                                .Filter.Eq(p => p.Auth0Id, auth0Id);
                 return await _context.Profiles
                     .Find(filter)
                     .FirstOrDefaultAsync();
@@ -178,7 +177,7 @@ namespace Avalon.Data
             try
             {
                 var filter = Builders<Profile>
-                                .Filter.Eq(e => e.Name, profileName); // TODO: Make Name case insensitivity
+                                .Filter.Regex(p => p.Name, new BsonRegularExpression(profileName, "i")); 
 
                 return await _context.Profiles
                     .Find(filter)
@@ -202,11 +201,11 @@ namespace Avalon.Data
                 List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>();
 
                 //Remove currentUser from the list.
-                filters.Add(Builders<Profile>.Filter.Ne(x => x.ProfileId, currentUser.ProfileId));
+                filters.Add(Builders<Profile>.Filter.Ne(p => p.ProfileId, currentUser.ProfileId));
 
                 //Add basic search criteria.
-                filters.Add(Builders<Profile>.Filter.Eq(x => x.SexualOrientation, currentUser.SexualOrientation));
-                filters.Add(Builders<Profile>.Filter.Eq(x => x.Gender, profileFilter.Gender));
+                filters.Add(Builders<Profile>.Filter.Eq(p => p.SexualOrientation, currentUser.SexualOrientation));
+                filters.Add(Builders<Profile>.Filter.Eq(p => p.Gender, profileFilter.Gender));
 
                 //Apply all other ProfileFilter criterias.
                 filters = this.ApplyProfileFilter(profileFilter, filters);
@@ -237,58 +236,68 @@ namespace Avalon.Data
 
         private List<FilterDefinition<Profile>> ApplyProfileFilter(ProfileFilter profileFilter, List<FilterDefinition<Profile>> filters)
         {
-            if (profileFilter.Name != null)
-                filters.Add(Builders<Profile>.Filter.Regex(x => x.Name, new BsonRegularExpression(profileFilter.Name, "i")));
+            try
+            {
+                if (profileFilter.Name != null)
+                    filters.Add(Builders<Profile>.Filter.Regex(p => p.Name, new BsonRegularExpression(profileFilter.Name, "i")));
 
-            if (profileFilter.Age != null)
-                filters.Add(Builders<Profile>.Filter.In(x => x.Age, profileFilter.Age)); 
+                if (profileFilter.Age != null)
+                    filters.Add(Builders<Profile>.Filter.In(p => p.Age, profileFilter.Age));
 
-            if (profileFilter.Height != null)
-                filters.Add(Builders<Profile>.Filter.In(x => x.Height, profileFilter.Height)); 
+                if (profileFilter.Height != null)
+                    filters.Add(Builders<Profile>.Filter.In(p => p.Height, profileFilter.Height));
 
-            if (profileFilter.Description != null)
-                filters.Add(Builders<Profile>.Filter.Regex(x => x.Description, new BsonRegularExpression(profileFilter.Description, "i"))); 
+                if (profileFilter.Description != null)
+                    filters.Add(Builders<Profile>.Filter.Regex(p => p.Description, new BsonRegularExpression(profileFilter.Description, "i")));
 
-            if (profileFilter.Body != null && profileFilter.Body != BodyType.NotChosen)
-                filters.Add(Builders<Profile>.Filter.Eq(x => x.Body, profileFilter.Body));
+                if (profileFilter.Tags != null)
+                    filters.Add(Builders<Profile>.Filter.Eq(p => p.Tags, profileFilter.Tags));
 
-            if (profileFilter.SmokingHabits != null && profileFilter.SmokingHabits != SmokingHabitsType.NotChosen)
-                filters.Add(Builders<Profile>.Filter.Eq(x => x.SmokingHabits, profileFilter.SmokingHabits));
+                if (profileFilter.Body != BodyType.NotChosen)
+                    filters.Add(Builders<Profile>.Filter.Eq(p => p.Body, profileFilter.Body));
 
-            if (profileFilter.HasChildren != null && profileFilter.HasChildren != HasChildrenType.NotChosen)
-                filters.Add(Builders<Profile>.Filter.Eq(x => x.HasChildren, profileFilter.HasChildren));
+                if (profileFilter.SmokingHabits != SmokingHabitsType.NotChosen)
+                    filters.Add(Builders<Profile>.Filter.Eq(p => p.SmokingHabits, profileFilter.SmokingHabits));
 
-            if (profileFilter.WantChildren != null && profileFilter.WantChildren != WantChildrenType.NotChosen)
-                filters.Add(Builders<Profile>.Filter.Eq(x => x.WantChildren, profileFilter.WantChildren));
+                if (profileFilter.HasChildren != HasChildrenType.NotChosen)
+                    filters.Add(Builders<Profile>.Filter.Eq(p => p.HasChildren, profileFilter.HasChildren));
 
-            if (profileFilter.HasPets != null && profileFilter.HasPets != HasPetsType.NotChosen)
-                filters.Add(Builders<Profile>.Filter.Eq(x => x.HasPets, profileFilter.HasPets));
+                if (profileFilter.WantChildren != WantChildrenType.NotChosen)
+                    filters.Add(Builders<Profile>.Filter.Eq(p => p.WantChildren, profileFilter.WantChildren));
 
-            if (profileFilter.LivesIn != null && profileFilter.LivesIn != LivesInType.NotChosen)
-                filters.Add(Builders<Profile>.Filter.Eq(x => x.LivesIn, profileFilter.LivesIn));
+                if (profileFilter.HasPets != HasPetsType.NotChosen)
+                    filters.Add(Builders<Profile>.Filter.Eq(p => p.HasPets, profileFilter.HasPets));
 
-            if (profileFilter.Education != null && profileFilter.Education != EducationType.NotChosen)
-                filters.Add(Builders<Profile>.Filter.Eq(x => x.Education, profileFilter.Education));
+                if (profileFilter.LivesIn != LivesInType.NotChosen)
+                    filters.Add(Builders<Profile>.Filter.Eq(p => p.LivesIn, profileFilter.LivesIn));
 
-            if (profileFilter.EducationStatus != null && profileFilter.EducationStatus != EducationStatusType.NotChosen)
-                filters.Add(Builders<Profile>.Filter.Eq(x => x.EducationStatus, profileFilter.EducationStatus));
+                if (profileFilter.Education != EducationType.NotChosen)
+                    filters.Add(Builders<Profile>.Filter.Eq(p => p.Education, profileFilter.Education));
 
-            if (profileFilter.EmploymentStatus != null && profileFilter.EmploymentStatus != EmploymentStatusType.NotChosen)
-                filters.Add(Builders<Profile>.Filter.Eq(x => x.EmploymentStatus, profileFilter.EmploymentStatus));
+                if (profileFilter.EducationStatus != EducationStatusType.NotChosen)
+                    filters.Add(Builders<Profile>.Filter.Eq(p => p.EducationStatus, profileFilter.EducationStatus));
 
-            if (profileFilter.SportsActivity != null && profileFilter.SportsActivity != SportsActivityType.NotChosen)
-                filters.Add(Builders<Profile>.Filter.Eq(x => x.SportsActivity, profileFilter.SportsActivity));
+                if (profileFilter.EmploymentStatus != EmploymentStatusType.NotChosen)
+                    filters.Add(Builders<Profile>.Filter.Eq(p => p.EmploymentStatus, profileFilter.EmploymentStatus));
 
-            if (profileFilter.EatingHabits != null && profileFilter.EatingHabits != EatingHabitsType.NotChosen)
-                filters.Add(Builders<Profile>.Filter.Eq(x => x.EatingHabits, profileFilter.EatingHabits));
+                if (profileFilter.SportsActivity != SportsActivityType.NotChosen)
+                    filters.Add(Builders<Profile>.Filter.Eq(p => p.SportsActivity, profileFilter.SportsActivity));
 
-            if (profileFilter.ClotheStyle != null && profileFilter.ClotheStyle != ClotheStyleType.NotChosen)
-                filters.Add(Builders<Profile>.Filter.Eq(x => x.ClotheStyle, profileFilter.ClotheStyle));
+                if (profileFilter.EatingHabits != EatingHabitsType.NotChosen)
+                    filters.Add(Builders<Profile>.Filter.Eq(p => p.EatingHabits, profileFilter.EatingHabits));
 
-            if (profileFilter.BodyArt != null && profileFilter.BodyArt != BodyArtType.NotChosen)
-                filters.Add(Builders<Profile>.Filter.Eq(x => x.BodyArt, profileFilter.BodyArt));
+                if (profileFilter.ClotheStyle != ClotheStyleType.NotChosen)
+                    filters.Add(Builders<Profile>.Filter.Eq(p => p.ClotheStyle, profileFilter.ClotheStyle));
 
-            return filters;
+                if (profileFilter.BodyArt != BodyArtType.NotChosen)
+                    filters.Add(Builders<Profile>.Filter.Eq(p => p.BodyArt, profileFilter.BodyArt));
+
+                return filters;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
         /// <summary>Gets the latest profiles.</summary>
@@ -302,32 +311,32 @@ namespace Avalon.Data
                 List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>();
 
                 //Remove currentUser from the list.
-                filters.Add(Builders<Profile>.Filter.Ne(x => x.ProfileId, currentUser.ProfileId));
-                filters.Add(Builders<Profile>.Filter.Eq(x => x.SexualOrientation, currentUser.SexualOrientation));
+                filters.Add(Builders<Profile>.Filter.Ne(p => p.ProfileId, currentUser.ProfileId));
+                filters.Add(Builders<Profile>.Filter.Eq(p => p.SexualOrientation, currentUser.SexualOrientation));
 
                 if (currentUser.SexualOrientation == SexualOrientationType.Heterosexual)
-                    filters.Add(Builders<Profile>.Filter.Ne(x => x.Gender, currentUser.Gender));
+                    filters.Add(Builders<Profile>.Filter.Ne(p => p.Gender, currentUser.Gender));
 
                 if (currentUser.SexualOrientation == SexualOrientationType.Homosexual)
-                    filters.Add(Builders<Profile>.Filter.Eq(x => x.Gender, currentUser.Gender));
+                    filters.Add(Builders<Profile>.Filter.Eq(p => p.Gender, currentUser.Gender));
 
                 var combineFilters = Builders<Profile>.Filter.And(filters);
 
-                    switch (orderByType)
-                    {
-                        case OrderByType.CreatedOn:
-                            return _context.Profiles
-                                    .Find(combineFilters).ToList().OrderByDescending(p => p.CreatedOn);
-                        case OrderByType.UpdatedOn:
-                            return _context.Profiles
-                                    .Find(combineFilters).ToList().OrderByDescending(p => p.UpdatedOn);
-                        case OrderByType.LastActive:
-                            return _context.Profiles
-                                    .Find(combineFilters).ToList().OrderByDescending(p => p.UpdatedOn);
-                        default:
-                            return _context.Profiles
-                                    .Find(combineFilters).ToList().OrderByDescending(p => p.CreatedOn);
-                    }
+                switch (orderByType)
+                {
+                    case OrderByType.CreatedOn:
+                        return _context.Profiles
+                                .Find(combineFilters).ToList().OrderByDescending(p => p.CreatedOn);
+                    case OrderByType.UpdatedOn:
+                        return _context.Profiles
+                                .Find(combineFilters).ToList().OrderByDescending(p => p.UpdatedOn);
+                    case OrderByType.LastActive:
+                        return _context.Profiles
+                                .Find(combineFilters).ToList().OrderByDescending(p => p.UpdatedOn);
+                    default:
+                        return _context.Profiles
+                                .Find(combineFilters).ToList().OrderByDescending(p => p.CreatedOn);
+                }
             }
             catch (Exception ex)
             {
@@ -335,100 +344,9 @@ namespace Avalon.Data
             }
         }
 
-        ///// <summary>Gets the latest created profiles.</summary>
-        ///// <param name="currentUser">The current user.</param>
-        ///// <returns></returns>
-        //public async Task<IEnumerable<Profile>> GetLatestCreatedProfiles(CurrentUser currentUser)
-        //{
-        //    List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>();
-
-        //    //Remove currentUser from the list.
-        //    filters.Add(Builders<Profile>.Filter.Ne(x => x.ProfileId, currentUser.ProfileId));
-        //    filters.Add(Builders<Profile>.Filter.Eq(x => x.SexualOrientation, currentUser.SexualOrientation));
-
-        //    if (currentUser.SexualOrientation == SexualOrientationType.Heterosexual)
-        //        filters.Add(Builders<Profile>.Filter.Ne(x => x.Gender, currentUser.Gender));
-
-        //    if (currentUser.SexualOrientation == SexualOrientationType.Homosexual)
-        //        filters.Add(Builders<Profile>.Filter.Eq(x => x.Gender, currentUser.Gender));
-
-        //    var combineFilters = Builders<Profile>.Filter.And(filters);
-
-        //    try
-        //    {
-        //        return _context.Profiles
-        //            .Find(combineFilters).ToList().OrderByDescending(p => p.CreatedOn);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw ex;
-        //    }
-        //}
-
-        ///// <summary>Gets the last updated profiles.</summary>
-        ///// <param name="currentUser">The current user.</param>
-        ///// <returns></returns>
-        //public async Task<IEnumerable<Profile>> GetLastUpdatedProfiles(CurrentUser currentUser)
-        //{
-        //    List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>();
-
-        //    //Remove currentUser from the list.
-        //    filters.Add(Builders<Profile>.Filter.Ne(x => x.ProfileId, currentUser.ProfileId));
-        //    filters.Add(Builders<Profile>.Filter.Eq(x => x.SexualOrientation, currentUser.SexualOrientation));
-
-        //    if (currentUser.SexualOrientation == SexualOrientationType.Heterosexual)
-        //        filters.Add(Builders<Profile>.Filter.Ne(x => x.Gender, currentUser.Gender));
-
-        //    if (currentUser.SexualOrientation == SexualOrientationType.Homosexual)
-        //        filters.Add(Builders<Profile>.Filter.Eq(x => x.Gender, currentUser.Gender));
-
-        //    var combineFilters = Builders<Profile>.Filter.And(filters);
-
-        //    try
-        //    {
-        //        return _context.Profiles
-        //            .Find(combineFilters).ToList().OrderByDescending(p => p.UpdatedOn);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw ex;
-        //    }
-        //}
-
-        ///// <summary>Gets the last active profiles.</summary>
-        ///// <param name="currentUser">The current user.</param>
-        ///// <returns></returns>
-        //public async Task<IEnumerable<Profile>> GetLastActiveProfiles(CurrentUser currentUser)
-        //{
-        //    List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>();
-
-        //    //Remove currentUser from the list.
-        //    filters.Add(Builders<Profile>.Filter.Ne(x => x.ProfileId, currentUser.ProfileId));
-        //    filters.Add(Builders<Profile>.Filter.Eq(x => x.SexualOrientation, currentUser.SexualOrientation));
-
-        //    if (currentUser.SexualOrientation == SexualOrientationType.Heterosexual)
-        //        filters.Add(Builders<Profile>.Filter.Ne(x => x.Gender, currentUser.Gender));
-
-        //    if (currentUser.SexualOrientation == SexualOrientationType.Homosexual)
-        //        filters.Add(Builders<Profile>.Filter.Eq(x => x.Gender, currentUser.Gender));
-
-        //    var combineFilters = Builders<Profile>.Filter.And(filters);
-
-        //    try
-        //    {
-        //        return _context.Profiles
-        //            .Find(combineFilters).ToList().OrderByDescending(p => p.LastActive);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw ex;
-        //    }
-        //}
-
         #endregion
 
         #region Bookmarked 
-        // Bør nok reduceres til kun GetBookmarkedProfiles da filtreringen kan ske i frontend. 
 
         /// <summary>Gets the bookmarked profiles.</summary>
         /// <param name="currentUser">The current user.</param>

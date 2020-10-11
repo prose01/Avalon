@@ -80,14 +80,10 @@ namespace Avalon.Data
         {
             try
             {
-                //var currentUser = await _context.CurrentUser
-                //    .Find(filter)
-                //    .FirstOrDefaultAsync();
-
                 var filter = Builders<CurrentUser>.Filter.Eq("Auth0Id", auth0Id);
 
                 var update = Builders<CurrentUser>
-                                .Update.Set(e => e.LastActive, DateTime.Now);
+                                .Update.Set(p => p.LastActive, DateTime.Now);
 
                 var options = new FindOneAndUpdateOptions<CurrentUser>
                 {
@@ -113,10 +109,10 @@ namespace Avalon.Data
             try
             {
                 var filter = Builders<CurrentUser>
-                                .Filter.Eq(e => e.ProfileId, currentUser.ProfileId);
+                                .Filter.Eq(p => p.ProfileId, currentUser.ProfileId);
 
                 var update = Builders<CurrentUser>
-                                .Update.Set(e => e.ProfileFilter, profileFilter);
+                                .Update.Set(p => p.ProfileFilter, profileFilter);
 
                 var options = new FindOneAndUpdateOptions<CurrentUser>
                 {
@@ -165,10 +161,10 @@ namespace Avalon.Data
                     return null;
 
                 var filter = Builders<CurrentUser>
-                                .Filter.Eq(e => e.ProfileId, currentUser.ProfileId);
+                                .Filter.Eq(p => p.ProfileId, currentUser.ProfileId);
 
                 var update = Builders<CurrentUser>
-                                .Update.PushEach(e => e.Bookmarks, newBookmarks);
+                                .Update.PushEach(p => p.Bookmarks, newBookmarks);
 
                 var options = new FindOneAndUpdateOptions<CurrentUser>
                 {
@@ -198,10 +194,10 @@ namespace Avalon.Data
                     return null;
 
                 var filter = Builders<CurrentUser>
-                                .Filter.Eq(e => e.ProfileId, currentUser.ProfileId);
+                                .Filter.Eq(p => p.ProfileId, currentUser.ProfileId);
 
                 var update = Builders<CurrentUser>
-                                .Update.PullAll(e => e.Bookmarks, removeBookmarks);
+                                .Update.PullAll(p => p.Bookmarks, removeBookmarks);
 
                 var options = new FindOneAndUpdateOptions<CurrentUser>
                 {
@@ -225,13 +221,13 @@ namespace Avalon.Data
             try
             {
                 //Filter out allready added ChatMembers.
-                var newChatMemberIds = profileIds.Where(i => !currentUser.ChatMemberslist.Any(n => n.ProfileId == i)).ToList();
+                var newChatMemberIds = profileIds.Where(i => !currentUser.ChatMemberslist.Any(m => m.ProfileId == i)).ToList();
 
                 if (newChatMemberIds.Count == 0)
                     return null;
 
                 var filter = Builders<CurrentUser>
-                                .Filter.Eq(e => e.ProfileId, currentUser.ProfileId);
+                                .Filter.Eq(p => p.ProfileId, currentUser.ProfileId);
 
                 List<ChatMember> newChatMembers = new List<ChatMember>();
 
@@ -241,7 +237,7 @@ namespace Avalon.Data
                 }
 
                 var update = Builders<CurrentUser>
-                                .Update.PushEach(e => e.ChatMemberslist, newChatMembers);      // TODO: Kig på $addToSet
+                                .Update.PushEach(p => p.ChatMemberslist, newChatMembers);      // TODO: Kig på $addToSet
 
                 var options = new FindOneAndUpdateOptions<CurrentUser>
                 {
@@ -265,13 +261,13 @@ namespace Avalon.Data
             try
             {
                 //Filter out ChatMembers not on list.
-                var removeChatMemberIds = profileIds.Where(i => currentUser.ChatMemberslist.Any(n => n.ProfileId == i)).ToList();
+                var removeChatMemberIds = profileIds.Where(i => currentUser.ChatMemberslist.Any(m => m.ProfileId == i)).ToList();
 
                 if (removeChatMemberIds.Count == 0)
                     return null;
 
                 var filter = Builders<CurrentUser>
-                                .Filter.Eq(e => e.ProfileId, currentUser.ProfileId);
+                                .Filter.Eq(p => p.ProfileId, currentUser.ProfileId);
 
                 List<ChatMember> removeChatMembers = new List<ChatMember>();
 
@@ -281,7 +277,7 @@ namespace Avalon.Data
                 }
 
                 var update = Builders<CurrentUser>
-                                .Update.PullAll(e => e.ChatMemberslist, removeChatMembers);
+                                .Update.PullAll(p => p.ChatMemberslist, removeChatMembers);
 
                 var options = new FindOneAndUpdateOptions<CurrentUser>
                 {
@@ -304,19 +300,19 @@ namespace Avalon.Data
         {
             try
             {
-                List<string> updatableChatMembers = profileIds.Where(i => currentUser.ChatMemberslist.Any(n => n.ProfileId == i)).ToList();
+                List<string> updatableChatMembers = profileIds.Where(i => currentUser.ChatMemberslist.Any(m => m.ProfileId == i)).ToList();
 
                 if (updatableChatMembers.Count == 0)
                     return null;
 
                 var filter = Builders<CurrentUser>
-                                .Filter.Eq(e => e.ProfileId, currentUser.ProfileId);
+                                .Filter.Eq(p => p.ProfileId, currentUser.ProfileId);
 
                 List<ChatMember> updateChatMembers = new List<ChatMember>();
 
                 foreach (var member in currentUser.ChatMemberslist)
                 {
-                    if(profileIds.Any(x => member.ProfileId == x))
+                    if(profileIds.Any(m => member.ProfileId == m))
                     {
                         member.Blocked = !member.Blocked;
                     }
@@ -325,7 +321,7 @@ namespace Avalon.Data
                 }
 
                 var update = Builders<CurrentUser>
-                                .Update.Set(e => e.ChatMemberslist, updateChatMembers);
+                                .Update.Set(p => p.ChatMemberslist, updateChatMembers);
 
                 var options = new FindOneAndUpdateOptions<CurrentUser>
                 {

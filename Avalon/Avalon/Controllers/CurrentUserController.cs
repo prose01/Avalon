@@ -65,7 +65,8 @@ namespace Avalon.Controllers
 
                 item.Auth0Id = auth0Id;
 
-                // Initiate empty lists and other default 
+                // Initiate empty lists and other default
+                item.Tags ??= new List<string>();
                 item.Bookmarks = new List<string>(); 
                 item.ChatMemberslist = new List<ChatMember>();
                 item.ProfileFilter = this.CreateBasicProfileFilter(item);
@@ -152,8 +153,9 @@ namespace Avalon.Controllers
 
             try
             {
-                //await _helper.DeleteProfileFromAuth0(currentUser.ProfileId);
-                //await _profileRepository.DeleteCurrentUser(currentUser.ProfileId);
+                await _helper.DeleteProfileFromAuth0(currentUser.ProfileId);
+                await _profileRepository.DeleteCurrentUser(currentUser.ProfileId);
+                //await _helper.DeleteProfileFromArtemis(currentUser.ProfileId);        // TODO: Delete all photos for Profile in Artemis
 
                 return Ok();
             }
