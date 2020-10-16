@@ -241,17 +241,17 @@ namespace Avalon.Data
                 if (profileFilter.Name != null)
                     filters.Add(Builders<Profile>.Filter.Regex(p => p.Name, new BsonRegularExpression(profileFilter.Name, "i")));
 
-                if (profileFilter.Age != null)
+                if (profileFilter.Age != null && profileFilter.Age[1] != null)
                     filters.Add(Builders<Profile>.Filter.In(p => p.Age, profileFilter.Age));
 
-                if (profileFilter.Height != null)
+                if (profileFilter.Height != null && profileFilter.Height[1] != null)
                     filters.Add(Builders<Profile>.Filter.In(p => p.Height, profileFilter.Height));
 
                 if (profileFilter.Description != null)
                     filters.Add(Builders<Profile>.Filter.Regex(p => p.Description, new BsonRegularExpression(profileFilter.Description, "i")));
 
-                if (profileFilter.Tags != null)
-                    filters.Add(Builders<Profile>.Filter.Eq(p => p.Tags, profileFilter.Tags));
+                if (profileFilter.Tags != null && profileFilter.Tags.Count > 0)
+                    filters.Add(Builders<Profile>.Filter.AnyIn(p => p.Tags, profileFilter.Tags));
 
                 if (profileFilter.Body != BodyType.NotChosen)
                     filters.Add(Builders<Profile>.Filter.Eq(p => p.Body, profileFilter.Body));

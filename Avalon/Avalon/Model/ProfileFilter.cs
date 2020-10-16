@@ -6,9 +6,6 @@ namespace Avalon.Model
     public class ProfileFilter
     {
         public string Name { get; set; }
-        public DateTime CreatedOn { get; set; }
-        public DateTime UpdatedOn { get; set; }
-        public DateTime LastActive { get; set; }
         public List<int?> Age { get; set; }
         public List<int?> Height { get; set; }
         public string Description { get; set; }
