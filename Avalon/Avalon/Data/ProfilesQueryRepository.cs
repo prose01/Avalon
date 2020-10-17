@@ -344,6 +344,92 @@ namespace Avalon.Data
             }
         }
 
+
+        /// <summary>Add currentUser.profileId to IsBookmarked list of every profile in profileIds list.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <param name="profileIds">The profile ids.</param>
+        public async Task AddIsBookmarkedToProfiles(CurrentUser currentUser, string[] profileIds)
+        {
+            try
+            {
+                var query = _context.Profiles.Find(p => profileIds.Contains(p.ProfileId));
+
+                var profiles = await Task.FromResult(query.ToList());
+                
+                foreach (var profile in profiles)
+                {
+                    if (profile.IsBookmarked.ContainsKey(currentUser.ProfileId))
+                    {
+                        profile.IsBookmarked[currentUser.ProfileId] = DateTime.Now;
+                    }
+                    else
+                    {
+                        var isBookmarkedPair = from pair in profile.IsBookmarked
+                                               orderby pair.Value descending
+                                               select pair;
+
+                        if (isBookmarkedPair.Count() == 10)
+                        {
+                            profile.IsBookmarked.Remove(isBookmarkedPair.Last().Key);
+                        }
+
+                        profile.IsBookmarked.Add(currentUser.ProfileId, DateTime.Now);
+                    }
+
+                    var filter = Builders<Profile>
+                               .Filter.Eq(p => p.ProfileId, profile.ProfileId);
+
+                    var update = Builders<Profile>
+                                .Update.Set(p => p.IsBookmarked, profile.IsBookmarked);
+
+                    await _context.Profiles.FindOneAndUpdateAsync(filter, update);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        /// <summary>Add currentUser.profileId to visited list of profile.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <param name="profile"></param>
+        public async Task AddVisitedToProfiles(CurrentUser currentUser, Profile profile)
+        {
+            try
+            {
+                if (profile.Visited.ContainsKey(currentUser.ProfileId))
+                {
+                    profile.Visited[currentUser.ProfileId] = DateTime.Now;
+                }
+                else
+                {
+                    var visitedPair = from pair in profile.Visited
+                                      orderby pair.Value descending
+                                      select pair;
+
+                    if (visitedPair.Count() == 10)
+                    {
+                        profile.Visited.Remove(visitedPair.Last().Key);
+                    }
+
+                    profile.Visited.Add(currentUser.ProfileId, DateTime.Now);
+                }
+
+                var filter = Builders<Profile>
+                           .Filter.Eq(p => p.ProfileId, profile.ProfileId);
+
+                var update = Builders<Profile>
+                            .Update.Set(p => p.Visited, profile.Visited);
+
+                await _context.Profiles.FindOneAndUpdateAsync(filter, update);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         #endregion
 
         #region Bookmarked 

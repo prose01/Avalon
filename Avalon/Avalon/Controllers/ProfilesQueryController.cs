@@ -117,6 +117,9 @@ namespace Avalon.Controllers
                 return NotFound();
             }
 
+            // Notify profile that currentUser has visited their profile.
+            await _profilesQueryRepository.AddVisitedToProfiles(currentUser, profile);
+
             return profile;
         }
 
@@ -176,45 +179,6 @@ namespace Avalon.Controllers
             return await _profilesQueryRepository.GetLatestProfiles(currentUser, orderByType);
         }
 
-        ///// <summary>
-        ///// Gets Latest Created Profiles.
-        ///// </summary>
-        ///// <returns></returns>
-        //[NoCache]
-        //[HttpGet("~/GetLatestCreatedProfiles/")]
-        //public async Task<IEnumerable<Profile>> GetLatestCreatedProfiles()
-        //{
-        //    var currentUser = await _helper.GetCurrentUserProfile(User);
-
-        //    return await _profilesQueryRepository.GetLatestCreatedProfiles(currentUser);
-        //}
-
-        ///// <summary>
-        ///// Gets Last Updated Profiles.
-        ///// </summary>
-        ///// <returns></returns>
-        //[NoCache]
-        //[HttpGet("~/GetLastUpdatedProfiles/")]
-        //public async Task<IEnumerable<Profile>> GetLastUpdatedProfiles()
-        //{
-        //    var currentUser = await _helper.GetCurrentUserProfile(User);
-
-        //    return await _profilesQueryRepository.GetLastUpdatedProfiles(currentUser);
-        //}
-
-        ///// <summary>
-        ///// Gets Last Active Profiles.
-        ///// </summary>
-        ///// <returns></returns>
-        //[NoCache]
-        //[HttpGet("~/GetLastActiveProfiles/")]
-        //public async Task<IEnumerable<Profile>> GetLastActiveProfiles()
-        //{
-        //    var currentUser = await _helper.GetCurrentUserProfile(User);
-
-        //    return await _profilesQueryRepository.GetLastActiveProfiles(currentUser);
-        //}
-
         /// <summary>
         /// Gets Bookmarked Profiles.
         /// </summary>
@@ -227,9 +191,6 @@ namespace Avalon.Controllers
 
             return await _profilesQueryRepository.GetBookmarkedProfiles(currentUser);
         }
-
-
-
 
         #region Maintenance
 

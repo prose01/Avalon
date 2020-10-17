@@ -1,6 +1,7 @@
 ﻿using MongoDB.Bson;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Avalon.Model
 {
@@ -12,6 +13,12 @@ namespace Avalon.Model
         public List<ChatMember> ChatMemberslist { get; set; } // TODO: Remember to initiate the list when new user is created!!! 
 
         public ProfileFilter ProfileFilter { get; set; }
+
+        [MaxLength(10)]
+        public Dictionary<string, DateTime> Visited { get; set; }
+
+        [MaxLength(10)]
+        public Dictionary<string, DateTime> IsBookmarked { get; set; }
 
         #endregion
 

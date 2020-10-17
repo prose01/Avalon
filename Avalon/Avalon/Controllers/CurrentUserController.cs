@@ -45,8 +45,6 @@ namespace Avalon.Controllers
         [HttpPost("~/CurrentUser")]
         public async Task<IActionResult> Post([FromBody] CurrentUser item)
         {
-            //if (!ModelState.IsValid) return BadRequest(); unnecessary
-
             try
             {
                 // Check if Auth0Id exists
@@ -65,12 +63,14 @@ namespace Avalon.Controllers
 
                 item.Auth0Id = auth0Id;
 
-                // Initiate empty lists and other default
+                // Initiate empty lists and other defaults
                 item.Tags ??= new List<string>();
                 item.Bookmarks = new List<string>(); 
                 item.ChatMemberslist = new List<ChatMember>();
-                item.ProfileFilter = this.CreateBasicProfileFilter(item);
                 item.Images = new List<ImageModel>();
+                item.IsBookmarked = new Dictionary<string, DateTime>();
+                item.Visited = new Dictionary<string, DateTime>();
+                item.ProfileFilter = this.CreateBasicProfileFilter(item);
 
                 return Ok(_profileRepository.AddProfile(item));
             }
@@ -123,6 +123,8 @@ namespace Avalon.Controllers
                 item.Name = currentUser.Name; // You cannot change your name after create.
                 item.Bookmarks = currentUser.Bookmarks;
                 item.ChatMemberslist = currentUser.ChatMemberslist;
+                item.IsBookmarked = currentUser.IsBookmarked;
+                item.Visited = currentUser.Visited;
                 item.ProfileFilter = currentUser.ProfileFilter;
                 item.Images = currentUser.Images;
                 item.CreatedOn = currentUser.CreatedOn;
@@ -172,7 +174,6 @@ namespace Avalon.Controllers
         [HttpPost("~/SaveProfileFilter")]
         public async Task<IActionResult> SaveProfileFilter([FromBody]ProfileFilter profileFilter)
         {
-            //if (!ModelState.IsValid) return BadRequest(); unnecessary
             if (profileFilter == null) return BadRequest();
 
             try
@@ -205,7 +206,6 @@ namespace Avalon.Controllers
         [HttpPost("~/AddProfilesToBookmarks")]
         public async Task<IActionResult> AddProfilesToBookmarks([FromBody] string[] profileIds)
         {
-            //if (!ModelState.IsValid) return BadRequest(); unnecessary
             if (profileIds == null || profileIds.Length < 1) return BadRequest();
 
             try
@@ -214,6 +214,9 @@ namespace Avalon.Controllers
 
                 await _profileRepository.AddProfilesToBookmarks(currentUser, profileIds);
                 await _profileRepository.AddProfilesToChatMemberslist(currentUser, profileIds);
+
+                // Notify other profiles that currentUser has bookmarked their profile.
+                await _profilesQueryRepository.AddIsBookmarkedToProfiles(currentUser, profileIds);
 
                 return Ok();
             }
@@ -231,7 +234,6 @@ namespace Avalon.Controllers
         [HttpPost("~/RemoveProfilesFromBookmarks")]
         public async Task<IActionResult> RemoveProfilesFromBookmarks([FromBody] string[] profileIds)
         {
-            //if (!ModelState.IsValid) throw new ArgumentException($"ModelState is not valid {ModelState.IsValid}.", nameof(profileIds)); unnecessary
             if (profileIds == null || profileIds.Length < 1) throw new ArgumentException($"ProfileIds is either null {profileIds} or length is < 1 {profileIds.Length}.", nameof(profileIds));
 
             try
@@ -256,7 +258,6 @@ namespace Avalon.Controllers
         [HttpPost("~/BlockChatMembers")]
         public async Task<IActionResult> BlockChatMembers([FromBody] string[] profileIds)
         {
-            //if (!ModelState.IsValid) return BadRequest(); unnecessary
             if (profileIds == null || profileIds.Length < 1) return BadRequest();
 
             try
