@@ -376,7 +376,7 @@ namespace Avalon.Data
         {
             try
             {
-                return await _context.Profiles.Find(p => p.LastActive < DateTime.Now.AddDays(-30)).Limit(10).ToListAsync();
+                return await _context.Profiles.Find(p => p.LastActive < DateTime.Now.AddDays(-30) && !p.Admin).Limit(10).ToListAsync();
             }
             catch (Exception ex)
             {
