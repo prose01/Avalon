@@ -1,7 +1,6 @@
 ﻿using MongoDB.Bson;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 
 namespace Avalon.Model
 {
@@ -9,17 +8,10 @@ namespace Avalon.Model
     {
         #region special properties
         public List<string> Bookmarks { private get; set; }
-
-        public List<ChatMember> ChatMemberslist { get; set; } // TODO: Remember to initiate the list when new user is created!!! 
-
+        public List<ChatMember> ChatMemberslist { get; set; }
         public ProfileFilter ProfileFilter { get; set; }
-
-        [MaxLength(10)]
-        public Dictionary<string, DateTime> Visited { get; set; }
-
-        [MaxLength(10)]
-        public Dictionary<string, DateTime> IsBookmarked { get; set; }
-
+        public override Dictionary<string, DateTime> Visited { get; set; }
+        public override Dictionary<string, DateTime> IsBookmarked { get; set; }
         #endregion
 
         public override ObjectId _id { get; set; }
@@ -35,51 +27,20 @@ namespace Avalon.Model
         public override string Description { get; set; }
         public override List<ImageModel> Images { get; set; }
         public override List<string> Tags { get; set; }
-
-        //public override string JobTitle { get; set; } = string.Empty;
-
         public override GenderType Gender { get; set; }
         public override SexualOrientationType SexualOrientation { get; set; } // TODO: Should this be encrypted?
-
         public override BodyType Body { get; set; }
-
         public override SmokingHabitsType SmokingHabits { get; set; }
-
-        //[BsonRepresentation(BsonType.String)]  // Maybe not
-        //public abstract AllergiesType Allergies { get; set; }
-
         public override HasChildrenType HasChildren { get; set; }
-
         public override WantChildrenType WantChildren { get; set; }
-
         public override HasPetsType HasPets { get; set; }
-
         public override LivesInType LivesIn { get; set; }
-
         public override EducationType Education { get; set; }
-
         public override EducationStatusType EducationStatus { get; set; }
-
         public override EmploymentStatusType EmploymentStatus { get; set; }
-
-        //[BsonRepresentation(BsonType.String)]
-        //public abstract EmploymentAreaType EmploymentArea { get; set; }
-
-        //[BsonRepresentation(BsonType.String)]
-        //public abstract EmploymentLevelType EmploymentLevel { get; set; }
-
-        //[BsonRepresentation(BsonType.String)] //Maybe not
-        //public abstract PoliticalOrientationType PoliticalOrientation { get; set; }
-
-        //[BsonRepresentation(BsonType.String)] //Maybe not
-        //public abstract ReligiousOrientationType ReligiousOrientation { get; set; }
-
         public override SportsActivityType SportsActivity { get; set; }
-
         public override EatingHabitsType EatingHabits { get; set; }
-
         public override ClotheStyleType ClotheStyle { get; set; }
-
         public override BodyArtType BodyArt { get; set; }
     }
 }

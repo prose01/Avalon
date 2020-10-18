@@ -391,6 +391,39 @@ namespace Avalon.Data
             }
         }
 
+        /// <summary>Remove currentUser.profileId from IsBookmarked list of every profile in profileIds list.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <param name="profileIds">The profile ids.</param>
+        public async Task RemoveIsBookmarkedFromProfiles(CurrentUser currentUser, string[] profileIds)
+        {
+            try
+            {
+                var query = _context.Profiles.Find(p => profileIds.Contains(p.ProfileId));
+
+                var profiles = await Task.FromResult(query.ToList());
+
+                foreach (var profile in profiles)
+                {
+                    if (profile.IsBookmarked.ContainsKey(currentUser.ProfileId))
+                    {
+                        profile.IsBookmarked.Remove(currentUser.ProfileId);
+                    }
+
+                    var filter = Builders<Profile>
+                               .Filter.Eq(p => p.ProfileId, profile.ProfileId);
+
+                    var update = Builders<Profile>
+                                .Update.Set(p => p.IsBookmarked, profile.IsBookmarked);
+
+                    await _context.Profiles.FindOneAndUpdateAsync(filter, update);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         /// <summary>Add currentUser.profileId to visited list of profile.</summary>
         /// <param name="currentUser">The current user.</param>
         /// <param name="profile"></param>

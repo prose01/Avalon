@@ -243,6 +243,9 @@ namespace Avalon.Controllers
                 await _profileRepository.RemoveProfilesFromBookmarks(currentUser, profileIds);
                 await _profileRepository.RemoveProfilesFromChatMemberslist(currentUser, profileIds);
 
+                /// Remove currentUser.profileId from IsBookmarked list of every profile in profileIds list.
+                await _profilesQueryRepository.RemoveIsBookmarkedFromProfiles(currentUser, profileIds);
+
                 return Ok();
             }
             catch (Exception ex)

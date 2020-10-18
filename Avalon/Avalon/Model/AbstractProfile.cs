@@ -9,6 +9,13 @@ namespace Avalon.Model
     [BsonKnownTypes(typeof(CurrentUser), typeof(Profile))]
     public abstract class AbstractProfile
     {
+        #region special properties
+        [MaxLength(10)]
+        public abstract Dictionary<string, DateTime> Visited { get; set; }
+        [MaxLength(10)]
+        public abstract Dictionary<string, DateTime> IsBookmarked { get; set; }
+        #endregion
+
         [BsonId]
         public abstract ObjectId _id { get; set; }
         public abstract string Auth0Id { get; set; }
@@ -41,7 +48,6 @@ namespace Avalon.Model
         //public abstract string JobTitle { get; set; }
 
         [BsonRepresentation(BsonType.String)]
-        //[EnumDataType(typeof(GenderType))]
         public abstract GenderType Gender { get; set; }
 
         [BsonRepresentation(BsonType.String)]
