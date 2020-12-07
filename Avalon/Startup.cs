@@ -115,7 +115,8 @@ namespace Avalon
                 options.Auth0TokenAddress = Configuration.GetSection("Auth0:TokenAddress").Value;
             });
 
-            services.AddTransient<ICurrentUserRepository, CurrentUserRepository>();
+            //TODO: Out maybe?
+            //services.AddTransient<ICurrentUserRepository, CurrentUserRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline
