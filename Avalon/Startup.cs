@@ -33,15 +33,15 @@ namespace Avalon
         public void ConfigureServices(IServiceCollection services)
         {
             // Add service and create Policy with options
-            services.AddCors(options =>
-            {
-                options.AddPolicy("CorsPolicy",
-                    builder => builder.WithOrigins("http://localhost:4200")
-                                .WithMethods("GET", "POST", "PUT", "PATCH", "DELETE", "HEAD")
-                                .AllowAnyHeader()
-                                .AllowCredentials()
-                    );
-            });
+            //services.AddCors(options =>
+            //{
+            //    options.AddPolicy("CorsPolicy",
+            //        builder => builder.WithOrigins("http://localhost:4200")
+            //                    .WithMethods("GET", "POST", "PUT", "PATCH", "DELETE", "HEAD")
+            //                    .AllowAnyHeader()
+            //                    .AllowCredentials()
+            //        );
+            //});
 
             // Add framework services.
             services.AddMvc().AddJsonOptions(options => {
