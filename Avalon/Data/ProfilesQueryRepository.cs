@@ -343,6 +343,45 @@ namespace Avalon.Data
                 throw ex;
             }
         }
+        public async Task<IEnumerable<Profile>> GetLatestProfiles(CurrentUser currentUser, OrderByType orderByType, int skip, int limit)
+        {
+            try
+            {
+                List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>();
+
+                //Remove currentUser from the list.
+                filters.Add(Builders<Profile>.Filter.Ne(p => p.ProfileId, currentUser.ProfileId));
+                filters.Add(Builders<Profile>.Filter.Eq(p => p.SexualOrientation, currentUser.SexualOrientation));
+
+                if (currentUser.SexualOrientation == SexualOrientationType.Heterosexual)
+                    filters.Add(Builders<Profile>.Filter.Ne(p => p.Gender, currentUser.Gender));
+
+                if (currentUser.SexualOrientation == SexualOrientationType.Homosexual)
+                    filters.Add(Builders<Profile>.Filter.Eq(p => p.Gender, currentUser.Gender));
+
+                var combineFilters = Builders<Profile>.Filter.And(filters);
+
+                switch (orderByType)
+                {
+                    case OrderByType.CreatedOn:
+                        return _context.Profiles
+                                .Find(combineFilters).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.CreatedOn);
+                    case OrderByType.UpdatedOn:
+                        return _context.Profiles
+                                .Find(combineFilters).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.UpdatedOn);
+                    case OrderByType.LastActive:
+                        return _context.Profiles
+                                .Find(combineFilters).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.UpdatedOn);
+                    default:
+                        return _context.Profiles
+                                .Find(combineFilters).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.CreatedOn);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
 
 
         /// <summary>Add currentUser.profileId to IsBookmarked list of every profile in profileIds list.</summary>

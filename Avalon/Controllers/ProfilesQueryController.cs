@@ -179,6 +179,17 @@ namespace Avalon.Controllers
             return await _profilesQueryRepository.GetLatestProfiles(currentUser, orderByType);
         }
 
+        [NoCache]
+        [HttpGet("~/GetLatestProfiles/")]
+        public async Task<IEnumerable<Profile>> GetLatestProfiles([FromQuery] ParameterFilter parameterFilter)
+        {
+            var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            var skip = (parameterFilter.PageNumber - 1) * parameterFilter.PageSize;
+
+            return await _profilesQueryRepository.GetLatestProfiles(currentUser, parameterFilter.OrderByType, skip, parameterFilter.PageSize);
+        }
+
         /// <summary>
         /// Gets Bookmarked Profiles.
         /// </summary>
