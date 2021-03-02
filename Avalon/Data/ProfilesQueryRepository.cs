@@ -343,7 +343,7 @@ namespace Avalon.Data
                 throw ex;
             }
         }
-        public async Task<IEnumerable<Profile>> GetLatestProfiles(CurrentUser currentUser, OrderByType orderByType, int skip, int limit)
+        public async Task<IEnumerable<Profile>> GetLatestProfiles(CurrentUser currentUser, OrderByType orderByType, string sortDirection, int skip, int limit)
         {
             try
             {
@@ -364,14 +364,36 @@ namespace Avalon.Data
                 switch (orderByType)
                 {
                     case OrderByType.CreatedOn:
-                        return _context.Profiles
-                                .Find(combineFilters).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.CreatedOn);
+                        if (sortDirection == "asc") {
+                            return _context.Profiles
+                                    .Find(combineFilters).Skip(skip).Limit(limit).ToList().OrderBy(p => p.CreatedOn);
+                        }
+                        else {
+                            return _context.Profiles
+                                    .Find(combineFilters).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.CreatedOn);
+                        }
                     case OrderByType.UpdatedOn:
-                        return _context.Profiles
-                                .Find(combineFilters).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.UpdatedOn);
+                        if (sortDirection == "asc")
+                        {
+                            return _context.Profiles
+                                    .Find(combineFilters).Skip(skip).Limit(limit).ToList().OrderBy(p => p.UpdatedOn);
+                        }
+                        else
+                        {
+                            return _context.Profiles
+                                    .Find(combineFilters).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.UpdatedOn);
+                        }
                     case OrderByType.LastActive:
-                        return _context.Profiles
-                                .Find(combineFilters).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.UpdatedOn);
+                        if (sortDirection == "asc")
+                        {
+                            return _context.Profiles
+                                    .Find(combineFilters).Skip(skip).Limit(limit).ToList().OrderBy(p => p.LastActive);
+                        }
+                        else
+                        {
+                            return _context.Profiles
+                                    .Find(combineFilters).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.LastActive);
+                        }
                     default:
                         return _context.Profiles
                                 .Find(combineFilters).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.CreatedOn);
