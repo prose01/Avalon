@@ -185,7 +185,7 @@ namespace Avalon.Controllers
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            var skip = (parameterFilter.PageIndex - 1) * parameterFilter.PageSize;
+            var skip = parameterFilter.PageIndex == 0 ? parameterFilter.PageIndex : parameterFilter.PageIndex * parameterFilter.PageSize;
 
             return await _profilesQueryRepository.GetLatestProfiles(currentUser, parameterFilter.OrderByType, parameterFilter.SortDirection, skip, parameterFilter.PageSize);
         }
