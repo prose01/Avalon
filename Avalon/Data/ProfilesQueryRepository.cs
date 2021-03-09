@@ -136,13 +136,13 @@ namespace Avalon.Data
         /// <summary>Gets curretUser's chatmember profiles.</summary>
         /// <param name="currentUser"></param>
         /// <returns></returns>
-        public async Task<IEnumerable<Profile>> GetChatMemberProfiles(CurrentUser currentUser)
+        public async Task<IEnumerable<Profile>> GetChatMemberProfiles(CurrentUser currentUser, int skip, int limit)
         {
             try
             {
                 var chatMembers = currentUser.ChatMemberslist.Select(m => m.ProfileId);
 
-                return await _context.Profiles.Find(p => chatMembers.Contains(p.ProfileId)).ToListAsync();
+                return await _context.Profiles.Find(p => chatMembers.Contains(p.ProfileId)).Skip(skip).Limit(limit).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -194,7 +194,7 @@ namespace Avalon.Data
         /// <param name="filter">The filter.</param>
         /// <param name="orderByType">The OrderByDescending column type.</param>
         /// <returns></returns>
-        public async Task<IEnumerable<Profile>> GetProfileByFilter(CurrentUser currentUser, ProfileFilter profileFilter, OrderByType orderByType)
+        public async Task<IEnumerable<Profile>> GetProfileByFilter(CurrentUser currentUser, ProfileFilter profileFilter, OrderByType orderByType, int skip, int limit)
         {
             try
             {
@@ -216,16 +216,16 @@ namespace Avalon.Data
                 {
                     case OrderByType.CreatedOn:
                         return _context.Profiles
-                                .Find(combineFilters).ToList().OrderByDescending(p => p.CreatedOn);
+                                .Find(combineFilters).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.CreatedOn);
                     case OrderByType.UpdatedOn:
                         return _context.Profiles
-                                .Find(combineFilters).ToList().OrderByDescending(p => p.UpdatedOn);
+                                .Find(combineFilters).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.UpdatedOn);
                     case OrderByType.LastActive:
                         return _context.Profiles
-                                .Find(combineFilters).ToList().OrderByDescending(p => p.UpdatedOn);
+                                .Find(combineFilters).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.UpdatedOn);
                     default:
                         return _context.Profiles
-                                .Find(combineFilters).ToList().OrderByDescending(p => p.CreatedOn);
+                                .Find(combineFilters).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.CreatedOn);
                 }
             }
             catch (Exception ex)
@@ -303,8 +303,11 @@ namespace Avalon.Data
         /// <summary>Gets the latest profiles.</summary>
         /// <param name="currentUser">The current user.</param>
         /// <param name="orderByType">The OrderByDescending column type.</param>
+        /// <param name="sortDirection">The sort direction.</param>
+        /// <param name="skip">The skip.</param>
+        /// <param name="limit">The limit.</param>
         /// <returns></returns>
-        public async Task<IEnumerable<Profile>> GetLatestProfiles(CurrentUser currentUser, OrderByType orderByType)
+        public async Task<IEnumerable<Profile>> GetLatestProfiles(CurrentUser currentUser, OrderByType orderByType, int skip, int limit)
         {
             try
             {
@@ -326,77 +329,16 @@ namespace Avalon.Data
                 {
                     case OrderByType.CreatedOn:
                         return _context.Profiles
-                                .Find(combineFilters).ToList().OrderByDescending(p => p.CreatedOn);
-                    case OrderByType.UpdatedOn:
-                        return _context.Profiles
-                                .Find(combineFilters).ToList().OrderByDescending(p => p.UpdatedOn);
-                    case OrderByType.LastActive:
-                        return _context.Profiles
-                                .Find(combineFilters).ToList().OrderByDescending(p => p.UpdatedOn);
-                    default:
-                        return _context.Profiles
-                                .Find(combineFilters).ToList().OrderByDescending(p => p.CreatedOn);
-                }
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
-        public async Task<IEnumerable<Profile>> GetLatestProfiles(CurrentUser currentUser, OrderByType orderByType, string sortDirection, int skip, int limit)
-        {
-            try
-            {
-                List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>();
-
-                //Remove currentUser from the list.
-                filters.Add(Builders<Profile>.Filter.Ne(p => p.ProfileId, currentUser.ProfileId));
-                filters.Add(Builders<Profile>.Filter.Eq(p => p.SexualOrientation, currentUser.SexualOrientation));
-
-                if (currentUser.SexualOrientation == SexualOrientationType.Heterosexual)
-                    filters.Add(Builders<Profile>.Filter.Ne(p => p.Gender, currentUser.Gender));
-
-                if (currentUser.SexualOrientation == SexualOrientationType.Homosexual)
-                    filters.Add(Builders<Profile>.Filter.Eq(p => p.Gender, currentUser.Gender));
-
-                var combineFilters = Builders<Profile>.Filter.And(filters);
-
-                switch (orderByType)
-                {
-                    case OrderByType.CreatedOn:
-                        if (sortDirection == "asc") {
-                            return _context.Profiles
-                                    .Find(combineFilters).Skip(skip).Limit(limit).ToList().OrderBy(p => p.CreatedOn);
-                        }
-                        else {
-                            return _context.Profiles
                                     .Find(combineFilters).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.CreatedOn);
-                        }
                     case OrderByType.UpdatedOn:
-                        if (sortDirection == "asc")
-                        {
-                            return _context.Profiles
-                                    .Find(combineFilters).Skip(skip).Limit(limit).ToList().OrderBy(p => p.UpdatedOn);
-                        }
-                        else
-                        {
-                            return _context.Profiles
+                        return _context.Profiles
                                     .Find(combineFilters).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.UpdatedOn);
-                        }
                     case OrderByType.LastActive:
-                        if (sortDirection == "asc")
-                        {
-                            return _context.Profiles
-                                    .Find(combineFilters).Skip(skip).Limit(limit).ToList().OrderBy(p => p.LastActive);
-                        }
-                        else
-                        {
-                            return _context.Profiles
+                        return _context.Profiles
                                     .Find(combineFilters).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.LastActive);
-                        }
                     default:
                         return _context.Profiles
-                                .Find(combineFilters).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.CreatedOn);
+                                    .Find(combineFilters).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.CreatedOn);
                 }
             }
             catch (Exception ex)
@@ -531,12 +473,12 @@ namespace Avalon.Data
         /// <summary>Gets the bookmarked profiles.</summary>
         /// <param name="currentUser">The current user.</param>
         /// <returns></returns>
-        public async Task<IEnumerable<Profile>> GetBookmarkedProfiles(CurrentUser currentUser)
+        public async Task<IEnumerable<Profile>> GetBookmarkedProfiles(CurrentUser currentUser, int skip, int limit)
         {
             try
             {
                 // Get all other Profiles from ProfileIds
-                var query = _context.Profiles.Find(p => currentUser.Bookmarks.Contains(p.ProfileId));  // Check for null/ingen bookmarks
+                var query = _context.Profiles.Find(p => currentUser.Bookmarks.Contains(p.ProfileId)).Skip(skip).Limit(limit);  // Check for null/ingen bookmarks
 
                 return await Task.FromResult(query.ToList());
             }

@@ -124,61 +124,60 @@ namespace Avalon.Controllers
         }
 
         /// <summary>Gets the currentUser's chatMember profiles.</summary>
+        /// <param name="parameterFilter"></param>
         /// <returns></returns>
         [NoCache]
         [HttpPost("~/GetChatMemberProfiles")]
-        public async Task<IEnumerable<Profile>> GetChatMemberProfiles()
+        public async Task<IEnumerable<Profile>> GetChatMemberProfiles([FromQuery] ParameterFilter parameterFilter)
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            return await _profilesQueryRepository.GetChatMemberProfiles(currentUser) ?? throw new ArgumentException($"There are no ChatMembers for current user.");
-        }        
+            var skip = parameterFilter.PageIndex == 0 ? parameterFilter.PageIndex : parameterFilter.PageIndex * parameterFilter.PageSize;
+
+            return await _profilesQueryRepository.GetChatMemberProfiles(currentUser, skip, parameterFilter.PageSize) ?? throw new ArgumentException($"There are no ChatMembers for current user.");
+        }
 
         /// <summary>
         /// Gets the specified profile based on a filter. Eg. { Body: 'something' }
         /// </summary>
-        /// <param name="orderByType">The OrderByDescending column type.</param>
+        /// <param name="parameterFilter"></param>
         /// <returns></returns>
         [NoCache]
         [HttpPost("~/GetProfileByFilter")]
-        public async Task<IEnumerable<Profile>> GetProfileByFilter([FromBody] RequestBody requestBody)
+        public async Task<IEnumerable<Profile>> GetProfileByFilter([FromBody] RequestBody requestBody, [FromQuery] ParameterFilter parameterFilter)
         {
             if (requestBody.ProfileFilter == null) throw new ArgumentException($"ProfileFilter is null.", nameof(requestBody.ProfileFilter));
 
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            return await _profilesQueryRepository.GetProfileByFilter(currentUser, requestBody.ProfileFilter, requestBody.OrderByType) ?? throw new ArgumentException($"Current users profileFilter cannot find any matching profiles.", nameof(requestBody.ProfileFilter));
+            // TODO: skip & limit should either come from RequestBody or ParameterFilter
+
+            var skip = parameterFilter.PageIndex == 0 ? parameterFilter.PageIndex : parameterFilter.PageIndex * parameterFilter.PageSize;
+
+            return await _profilesQueryRepository.GetProfileByFilter(currentUser, requestBody.ProfileFilter, requestBody.OrderByType, skip, parameterFilter.PageSize) ?? throw new ArgumentException($"Current users profileFilter cannot find any matching profiles.", nameof(requestBody.ProfileFilter));
         }
 
-        /// <summary>
-        /// Gets the specified profiles based on the CurrentUser's filter.
-        /// </summary>
-        /// <param name="orderByType">The OrderByDescending column type.</param>
+        /// <summary>Gets the specified profiles based on the CurrentUser's filter.</summary>
+        /// <param name="parameterFilter"></param>
         /// <returns></returns>
         [NoCache]
-        [HttpGet("~/GetProfileByCurrentUsersFilter/{orderByType}")]
-        public async Task<IEnumerable<Profile>> GetProfileByCurrentUsersFilter(OrderByType orderByType)
+        [HttpGet("~/GetProfileByCurrentUsersFilter/")]
+        public async Task<IEnumerable<Profile>> GetProfileByCurrentUsersFilter([FromQuery] ParameterFilter parameterFilter)
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
             if (currentUser.ProfileFilter == null) throw new ArgumentException($"Current users profileFilter is null.");
 
-            return await _profilesQueryRepository.GetProfileByFilter(currentUser, currentUser.ProfileFilter, orderByType);
+            var skip = parameterFilter.PageIndex == 0 ? parameterFilter.PageIndex : parameterFilter.PageIndex * parameterFilter.PageSize;
+
+            return await _profilesQueryRepository.GetProfileByFilter(currentUser, currentUser.ProfileFilter, parameterFilter.OrderByType, skip, parameterFilter.PageSize);
         }
 
         /// <summary>
         /// Gets Latest Profiles OrderBy.
         /// </summary>
+        /// <param name="parameterFilter"></param>
         /// <returns></returns>
-        [NoCache]
-        [HttpGet("~/GetLatestProfiles/{orderByType}")]
-        public async Task<IEnumerable<Profile>> GetLatestProfiles(OrderByType orderByType)
-        {
-            var currentUser = await _helper.GetCurrentUserProfile(User);
-
-            return await _profilesQueryRepository.GetLatestProfiles(currentUser, orderByType);
-        }
-
         [NoCache]
         [HttpGet("~/GetLatestProfiles/")]
         public async Task<IEnumerable<Profile>> GetLatestProfiles([FromQuery] ParameterFilter parameterFilter)
@@ -187,20 +186,23 @@ namespace Avalon.Controllers
 
             var skip = parameterFilter.PageIndex == 0 ? parameterFilter.PageIndex : parameterFilter.PageIndex * parameterFilter.PageSize;
 
-            return await _profilesQueryRepository.GetLatestProfiles(currentUser, parameterFilter.OrderByType, parameterFilter.SortDirection, skip, parameterFilter.PageSize);
+            return await _profilesQueryRepository.GetLatestProfiles(currentUser, parameterFilter.OrderByType, skip, parameterFilter.PageSize);
         }
 
         /// <summary>
         /// Gets Bookmarked Profiles.
         /// </summary>
+        /// <param name="parameterFilter"></param>
         /// <returns></returns>
         [NoCache]
         [HttpGet("~/GetBookmarkedProfiles/")]
-        public async Task<IEnumerable<Profile>> GetBookmarkedProfiles()
+        public async Task<IEnumerable<Profile>> GetBookmarkedProfiles([FromQuery] ParameterFilter parameterFilter)
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            return await _profilesQueryRepository.GetBookmarkedProfiles(currentUser);
+            var skip = parameterFilter.PageIndex == 0 ? parameterFilter.PageIndex : parameterFilter.PageIndex * parameterFilter.PageSize;
+
+            return await _profilesQueryRepository.GetBookmarkedProfiles(currentUser, skip, parameterFilter.PageSize);
         }
 
         #region Maintenance

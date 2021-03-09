@@ -6,8 +6,6 @@
 
         public OrderByType OrderByType { get; set; } = OrderByType.CreatedOn;
 
-        public string SortDirection { get; set; } = "desc";
-
         //private int _pageIndex = 1;
 
         //public int PageIndex

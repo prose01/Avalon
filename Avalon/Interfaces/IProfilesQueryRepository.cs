@@ -12,16 +12,15 @@ namespace Avalon.Interfaces
         Task<DeleteResult> DeleteProfile(string profileId);
         //Task<DeleteResult> DeleteProfiles(string[] profileIds);
         Task<Profile> GetProfileById(string profileId);
-        Task<IEnumerable<Profile>> GetChatMemberProfiles(CurrentUser currentUser);
+        Task<IEnumerable<Profile>> GetChatMemberProfiles(CurrentUser currentUser, int skip, int limit);
         Task<Profile> GetProfileByAuth0Id(string auth0Id);
         Task<Profile> GetProfileByName(string profileName);
-        Task<IEnumerable<Profile>> GetProfileByFilter(CurrentUser currentUser, ProfileFilter profileFilter, OrderByType orderByType);
-        Task<IEnumerable<Profile>> GetLatestProfiles(CurrentUser currentUser, OrderByType orderByType);
-        Task<IEnumerable<Profile>> GetLatestProfiles(CurrentUser currentUser, OrderByType orderByType, string sortDirection, int skip, int limit);
+        Task<IEnumerable<Profile>> GetProfileByFilter(CurrentUser currentUser, ProfileFilter profileFilter, OrderByType orderByType, int skip, int limit);
+        Task<IEnumerable<Profile>> GetLatestProfiles(CurrentUser currentUser, OrderByType orderByType, int skip, int limit);
         Task AddIsBookmarkedToProfiles(CurrentUser currentUser, string[] profileIds);
         Task RemoveIsBookmarkedFromProfiles(CurrentUser currentUser, string[] profileIds);
         Task AddVisitedToProfiles(CurrentUser currentUser, Profile profile);
-        Task<IEnumerable<Profile>> GetBookmarkedProfiles(CurrentUser profile);
+        Task<IEnumerable<Profile>> GetBookmarkedProfiles(CurrentUser profile, int skip, int limit);
         Task<IEnumerable<Profile>> GetOldProfiles();
     }
 }
