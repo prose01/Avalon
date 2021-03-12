@@ -127,7 +127,7 @@ namespace Avalon.Controllers
         /// <param name="parameterFilter"></param>
         /// <returns></returns>
         [NoCache]
-        [HttpPost("~/GetChatMemberProfiles")]
+        [HttpGet("~/GetChatMemberProfiles")]
         public async Task<IEnumerable<Profile>> GetChatMemberProfiles([FromQuery] ParameterFilter parameterFilter)
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
