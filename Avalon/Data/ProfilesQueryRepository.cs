@@ -241,11 +241,17 @@ namespace Avalon.Data
                 if (profileFilter.Name != null)
                     filters.Add(Builders<Profile>.Filter.Regex(p => p.Name, new BsonRegularExpression(profileFilter.Name, "i")));
 
-                if (profileFilter.Age != null && profileFilter.Age[1] != null)
-                    filters.Add(Builders<Profile>.Filter.In(p => p.Age, profileFilter.Age));
+                if (profileFilter.Age != null && profileFilter.Age[0] > 0)
+                    filters.Add(Builders<Profile>.Filter.Gte(p => p.Age, profileFilter.Age[0]));
 
-                if (profileFilter.Height != null && profileFilter.Height[1] != null)
-                    filters.Add(Builders<Profile>.Filter.In(p => p.Height, profileFilter.Height));
+                if (profileFilter.Age != null && profileFilter.Age[1] > 0)
+                    filters.Add(Builders<Profile>.Filter.Lte(p => p.Age, profileFilter.Age[1]));
+
+                if (profileFilter.Height != null && profileFilter.Height[0] > 0)
+                    filters.Add(Builders<Profile>.Filter.Gte(p => p.Height, profileFilter.Height[0]));
+
+                if (profileFilter.Height != null && profileFilter.Height[1] > 0)
+                    filters.Add(Builders<Profile>.Filter.Lte(p => p.Height, profileFilter.Height[1]));
 
                 if (profileFilter.Description != null)
                     filters.Add(Builders<Profile>.Filter.Regex(p => p.Description, new BsonRegularExpression(profileFilter.Description, "i")));
