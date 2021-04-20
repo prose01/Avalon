@@ -202,7 +202,7 @@ namespace Avalon.Controllers
 
             var skip = parameterFilter.PageIndex == 0 ? parameterFilter.PageIndex : parameterFilter.PageIndex * parameterFilter.PageSize;
 
-            return await _profilesQueryRepository.GetBookmarkedProfiles(currentUser, skip, parameterFilter.PageSize);
+            return await _profilesQueryRepository.GetBookmarkedProfiles(currentUser, parameterFilter.OrderByType, skip, parameterFilter.PageSize);
         }
 
         #region Maintenance

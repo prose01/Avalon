@@ -479,14 +479,25 @@ namespace Avalon.Data
         /// <summary>Gets the bookmarked profiles.</summary>
         /// <param name="currentUser">The current user.</param>
         /// <returns></returns>
-        public async Task<IEnumerable<Profile>> GetBookmarkedProfiles(CurrentUser currentUser, int skip, int limit)
+        public async Task<IEnumerable<Profile>> GetBookmarkedProfiles(CurrentUser currentUser, OrderByType orderByType, int skip, int limit)
         {
             try
             {
-                // Get all other Profiles from ProfileIds
-                var query = _context.Profiles.Find(p => currentUser.Bookmarks.Contains(p.ProfileId)).Skip(skip).Limit(limit);  // Check for null/ingen bookmarks
-
-                return await Task.FromResult(query.ToList());
+                switch (orderByType)
+                {
+                    case OrderByType.CreatedOn:
+                        return _context.Profiles
+                                    .Find(p => currentUser.Bookmarks.Contains(p.ProfileId)).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.CreatedOn);
+                    case OrderByType.UpdatedOn:
+                        return _context.Profiles
+                                    .Find(p => currentUser.Bookmarks.Contains(p.ProfileId)).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.UpdatedOn);
+                    case OrderByType.LastActive:
+                        return _context.Profiles
+                                    .Find(p => currentUser.Bookmarks.Contains(p.ProfileId)).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.LastActive);
+                    default:
+                        return _context.Profiles
+                                    .Find(p => currentUser.Bookmarks.Contains(p.ProfileId)).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.CreatedOn);
+                }
             }
             catch (Exception ex)
             {

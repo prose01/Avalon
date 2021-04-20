@@ -20,7 +20,7 @@ namespace Avalon.Interfaces
         Task AddIsBookmarkedToProfiles(CurrentUser currentUser, string[] profileIds);
         Task RemoveIsBookmarkedFromProfiles(CurrentUser currentUser, string[] profileIds);
         Task AddVisitedToProfiles(CurrentUser currentUser, Profile profile);
-        Task<IEnumerable<Profile>> GetBookmarkedProfiles(CurrentUser profile, int skip, int limit);
+        Task<IEnumerable<Profile>> GetBookmarkedProfiles(CurrentUser profile, OrderByType orderByType, int skip, int limit);
         Task<IEnumerable<Profile>> GetOldProfiles();
     }
 }
