@@ -123,6 +123,40 @@ namespace Avalon.Controllers
             return profile;
         }
 
+
+        /// <summary>Adds the visited to profiles.</summary>
+        /// <param name="profileId">The profile identifier.</param>
+        /// <returns>
+        ///   <br />
+        /// </returns>
+        /// <exception cref="ArgumentException">ProfileId is null. - profileId
+        /// or
+        /// ProfileId is similar to current user profileId. - profileId
+        /// or
+        /// Profile is not found. - profileId</exception>
+        [NoCache]
+        [HttpGet("~/AddVisitedToProfiles/{profileId}")]
+        public async Task<IActionResult> AddVisitedToProfiles(string profileId)
+        {
+            if (string.IsNullOrEmpty(profileId)) throw new ArgumentException($"ProfileId is null.", nameof(profileId));
+
+            var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            if (currentUser.ProfileId == profileId) throw new ArgumentException($"ProfileId is similar to current user profileId.", nameof(profileId));
+
+            var profile = await _profilesQueryRepository.GetProfileById(profileId);
+
+            if (profile == null)
+            {
+                 throw new ArgumentException($"Profile is not found.", nameof(profileId));
+            }
+
+            // Notify profile that currentUser has visited their profile.
+            await _profilesQueryRepository.AddVisitedToProfiles(currentUser, profile); 
+
+            return Ok();
+        }
+
         /// <summary>Gets the currentUser's chatMember profiles.</summary>
         /// <param name="parameterFilter"></param>
         /// <returns></returns>
