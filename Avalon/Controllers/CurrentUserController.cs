@@ -16,13 +16,13 @@ namespace Avalon.Controllers
     [ApiController]
     public class CurrentUserController : Controller
     {
-        private readonly ICurrentUserRepository _profileRepository;
+        private readonly ICurrentUserRepository _currentUserRepository;
         private readonly IProfilesQueryRepository _profilesQueryRepository;
         private readonly IHelperMethods _helper;
 
-        public CurrentUserController(ICurrentUserRepository profileRepository, IProfilesQueryRepository profilesQueryRepository, IHelperMethods helperMethods)
+        public CurrentUserController(ICurrentUserRepository currentUserRepository, IProfilesQueryRepository profilesQueryRepository, IHelperMethods helperMethods)
         {
-            _profileRepository = profileRepository;
+            _currentUserRepository = currentUserRepository;
             _profilesQueryRepository = profilesQueryRepository;
             _helper = helperMethods;
         }
@@ -72,7 +72,7 @@ namespace Avalon.Controllers
                 item.Visited = new Dictionary<string, DateTime>();
                 item.ProfileFilter = this.CreateBasicProfileFilter(item);
 
-                return Ok(_profileRepository.AddProfile(item));
+                return Ok(_currentUserRepository.AddProfile(item));
             }
             catch (Exception ex)
             {
@@ -89,7 +89,7 @@ namespace Avalon.Controllers
         //{
         //    var currentUser = await _helper.GetCurrentUserProfile(User);
 
-        //    var item = _profileRepository.GetProfileById(currentUser.ProfileId).Result ?? null;
+        //    var item = _currentUserRepository.GetProfileById(currentUser.ProfileId).Result ?? null;
 
         //    patch.ApplyTo(item, ModelState);
 
@@ -98,7 +98,7 @@ namespace Avalon.Controllers
         //        return new BadRequestObjectResult(ModelState);
         //    }
 
-        //    return Ok(_profileRepository.UpdateProfile(item));
+        //    return Ok(_currentUserRepository.UpdateProfile(item));
         //}
 
 
@@ -135,7 +135,7 @@ namespace Avalon.Controllers
                     item.ProfileFilter.Gender = this.CreateBasicProfileFilter(item).Gender;
                 }
 
-                return Ok(_profileRepository.UpdateProfile(item));
+                return Ok(_currentUserRepository.UpdateProfile(item));
             }
             catch (Exception ex)
             {
@@ -156,7 +156,7 @@ namespace Avalon.Controllers
             try
             {
                 await _helper.DeleteProfileFromAuth0(currentUser.ProfileId);
-                await _profileRepository.DeleteCurrentUser(currentUser.ProfileId);
+                await _currentUserRepository.DeleteCurrentUser(currentUser.ProfileId);
                 //await _helper.DeleteProfileFromArtemis(currentUser.ProfileId);        // TODO: Delete all photos for Profile in Artemis
 
                 return Ok();
@@ -180,7 +180,7 @@ namespace Avalon.Controllers
             {
                 var currentUser = await _helper.GetCurrentUserProfile(User);
 
-                return Ok(_profileRepository.SaveProfileFilter(currentUser, profileFilter));
+                return Ok(_currentUserRepository.SaveProfileFilter(currentUser, profileFilter));
             }
             catch (Exception ex)
             {
@@ -196,7 +196,7 @@ namespace Avalon.Controllers
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            return await _profileRepository.LoadProfileFilter(currentUser);
+            return await _currentUserRepository.LoadProfileFilter(currentUser);
         }
 
         /// <summary>Adds the profiles to currentUser bookmarks and ChatMemberslist.</summary>
@@ -212,8 +212,8 @@ namespace Avalon.Controllers
             {
                 var currentUser = await _helper.GetCurrentUserProfile(User);
 
-                await _profileRepository.AddProfilesToBookmarks(currentUser, profileIds);
-                await _profileRepository.AddProfilesToChatMemberslist(currentUser, profileIds);
+                await _currentUserRepository.AddProfilesToBookmarks(currentUser, profileIds);
+                await _currentUserRepository.AddProfilesToChatMemberslist(currentUser, profileIds);
 
                 // Notify other profiles that currentUser has bookmarked their profile.
                 await _profilesQueryRepository.AddIsBookmarkedToProfiles(currentUser, profileIds);
@@ -240,8 +240,8 @@ namespace Avalon.Controllers
             {
                 var currentUser = await _helper.GetCurrentUserProfile(User);
 
-                await _profileRepository.RemoveProfilesFromBookmarks(currentUser, profileIds);
-                await _profileRepository.RemoveProfilesFromChatMemberslist(currentUser, profileIds);
+                await _currentUserRepository.RemoveProfilesFromBookmarks(currentUser, profileIds);
+                await _currentUserRepository.RemoveProfilesFromChatMemberslist(currentUser, profileIds);
 
                 /// Remove currentUser.profileId from IsBookmarked list of every profile in profileIds list.
                 await _profilesQueryRepository.RemoveIsBookmarkedFromProfiles(currentUser, profileIds);
@@ -267,7 +267,7 @@ namespace Avalon.Controllers
             {
                 var currentUser = await _helper.GetCurrentUserProfile(User);
 
-                await _profileRepository.BlockChatMembers(currentUser, profileIds);
+                await _currentUserRepository.BlockChatMembers(currentUser, profileIds);
 
                 return Ok();
             }

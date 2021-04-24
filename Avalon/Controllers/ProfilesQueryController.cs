@@ -100,28 +100,28 @@ namespace Avalon.Controllers
         /// </summary>
         /// <param name="profileId">The profile identifier.</param>
         /// <returns></returns>
-        [NoCache]
-        [HttpGet("~/GetProfileById/{profileId}")]
-        public async Task<ActionResult<Profile>> Get(string profileId)
-        {
-            if (string.IsNullOrEmpty(profileId)) throw new ArgumentException($"ProfileId is null.", nameof(profileId));
+        //[NoCache]
+        //[HttpGet("~/GetProfileById/{profileId}")]
+        //public async Task<ActionResult<Profile>> Get(string profileId)
+        //{
+        //    if (string.IsNullOrEmpty(profileId)) throw new ArgumentException($"ProfileId is null.", nameof(profileId));
 
-            var currentUser = await _helper.GetCurrentUserProfile(User);
+        //    var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            if (currentUser.ProfileId == profileId) throw new ArgumentException($"ProfileId is similar to current user profileId.", nameof(profileId));
+        //    if (currentUser.ProfileId == profileId) throw new ArgumentException($"ProfileId is similar to current user profileId.", nameof(profileId));
 
-            var profile = await _profilesQueryRepository.GetProfileById(profileId);
+        //    var profile = await _profilesQueryRepository.GetProfileById(profileId);
 
-            if (profile == null)
-            {
-                return NotFound();
-            }
+        //    if (profile == null)
+        //    {
+        //        return NotFound();
+        //    }
 
-            // Notify profile that currentUser has visited their profile.
-            await _profilesQueryRepository.AddVisitedToProfiles(currentUser, profile);
+        //    // Notify profile that currentUser has visited their profile.
+        //    await _profilesQueryRepository.AddVisitedToProfiles(currentUser, profile);
 
-            return profile;
-        }
+        //    return profile;
+        //}
 
 
         /// <summary>Adds the visited to profiles.</summary>
