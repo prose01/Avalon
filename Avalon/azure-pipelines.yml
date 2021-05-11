@@ -4,11 +4,6 @@ pool:
 variables:
   buildConfiguration: 'Release'
 
-jobs:
-- job: Linux
-  pool:
-    vmImage: 'ubuntu-latest'
-
 steps:
 - task: UseDotNet@2
   inputs:
