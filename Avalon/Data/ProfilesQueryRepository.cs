@@ -212,21 +212,23 @@ namespace Avalon.Data
 
                 var combineFilters = Builders<Profile>.Filter.And(filters);
 
+                SortDefinition<Profile> sortDefinition;
+
                 switch (orderByType)
                 {
-                    case OrderByType.CreatedOn:
-                        return _context.Profiles
-                                .Find(combineFilters).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.CreatedOn);
                     case OrderByType.UpdatedOn:
-                        return _context.Profiles
-                                .Find(combineFilters).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.UpdatedOn);
+                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.UpdatedOn);
+                        break;
                     case OrderByType.LastActive:
-                        return _context.Profiles
-                                .Find(combineFilters).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.UpdatedOn);
+                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.LastActive);
+                        break;
                     default:
-                        return _context.Profiles
-                                .Find(combineFilters).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.CreatedOn);
+                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.CreatedOn);
+                        break;
                 }
+
+                return _context.Profiles
+                                .Find(combineFilters).Sort(sortDefinition).Skip(skip).Limit(limit).ToList();
             }
             catch (Exception ex)
             {
@@ -331,21 +333,23 @@ namespace Avalon.Data
 
                 var combineFilters = Builders<Profile>.Filter.And(filters);
 
+                SortDefinition<Profile> sortDefinition;
+
                 switch (orderByType)
                 {
-                    case OrderByType.CreatedOn:
-                        return _context.Profiles
-                                    .Find(combineFilters).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.CreatedOn);
                     case OrderByType.UpdatedOn:
-                        return _context.Profiles
-                                    .Find(combineFilters).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.UpdatedOn);
+                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.UpdatedOn);
+                        break;
                     case OrderByType.LastActive:
-                        return _context.Profiles
-                                    .Find(combineFilters).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.LastActive);
+                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.LastActive);
+                        break;
                     default:
-                        return _context.Profiles
-                                    .Find(combineFilters).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.CreatedOn);
+                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.CreatedOn);
+                        break;
                 }
+
+                return _context.Profiles
+                            .Find(combineFilters).Sort(sortDefinition).Skip(skip).Limit(limit).ToList();
             }
             catch (Exception ex)
             {
@@ -353,6 +357,36 @@ namespace Avalon.Data
             }
         }
 
+        /// <summary>Gets the bookmarked profiles.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <returns></returns>
+        public async Task<IEnumerable<Profile>> GetBookmarkedProfiles(CurrentUser currentUser, OrderByType orderByType, int skip, int limit)
+        {
+            try
+            {
+                SortDefinition<Profile> sortDefinition;
+
+                switch (orderByType)
+                {
+                    case OrderByType.UpdatedOn:
+                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.UpdatedOn);
+                        break;
+                    case OrderByType.LastActive:
+                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.LastActive);
+                        break;
+                    default:
+                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.CreatedOn);
+                        break;
+                }
+
+                return _context.Profiles
+                                    .Find(p => currentUser.Bookmarks.Contains(p.ProfileId)).Sort(sortDefinition).Skip(skip).Limit(limit).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
 
         /// <summary>Add currentUser.profileId to IsBookmarked list of every profile in profileIds list.</summary>
         /// <param name="currentUser">The current user.</param>
@@ -465,39 +499,6 @@ namespace Avalon.Data
                             .Update.Set(p => p.Visited, profile.Visited);
 
                 await _context.Profiles.FindOneAndUpdateAsync(filter, update);
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
-
-        #endregion
-
-        #region Bookmarked 
-
-        /// <summary>Gets the bookmarked profiles.</summary>
-        /// <param name="currentUser">The current user.</param>
-        /// <returns></returns>
-        public async Task<IEnumerable<Profile>> GetBookmarkedProfiles(CurrentUser currentUser, OrderByType orderByType, int skip, int limit)
-        {
-            try
-            {
-                switch (orderByType)
-                {
-                    case OrderByType.CreatedOn:
-                        return _context.Profiles
-                                    .Find(p => currentUser.Bookmarks.Contains(p.ProfileId)).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.CreatedOn);
-                    case OrderByType.UpdatedOn:
-                        return _context.Profiles
-                                    .Find(p => currentUser.Bookmarks.Contains(p.ProfileId)).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.UpdatedOn);
-                    case OrderByType.LastActive:
-                        return _context.Profiles
-                                    .Find(p => currentUser.Bookmarks.Contains(p.ProfileId)).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.LastActive);
-                    default:
-                        return _context.Profiles
-                                    .Find(p => currentUser.Bookmarks.Contains(p.ProfileId)).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.CreatedOn);
-                }
             }
             catch (Exception ex)
             {
