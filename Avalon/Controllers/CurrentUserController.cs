@@ -33,9 +33,18 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpGet("~/CurrentUser")]
-        public async Task<CurrentUser> GetCurrentUserProfile()
+        [ProducesResponseType(200)]
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<CurrentUser>> GetCurrentUserProfile()
         {
-            return await _helper.GetCurrentUserProfile(User);
+            var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            if (currentUser == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(currentUser);
         }
 
         /// <summary>
@@ -43,6 +52,8 @@ namespace Avalon.Controllers
         /// </summary>
         /// <param name="profile"> The value.</param>
         [HttpPost("~/CurrentUser")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
         public async Task<IActionResult> Post([FromBody] CurrentUser item)
         {
             try
@@ -107,6 +118,9 @@ namespace Avalon.Controllers
         /// <param name="item">The profile</param>
         [NoCache]
         [HttpPut("~/CurrentUser")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
         public async Task<IActionResult> Put([FromBody] CurrentUser item)
         {
             //if (!ModelState.IsValid) return BadRequest(); unnecessary
@@ -114,6 +128,11 @@ namespace Avalon.Controllers
             try
             {
                 var currentUser = await _helper.GetCurrentUserProfile(User);
+
+                if (currentUser == null)
+                {
+                    return NotFound();
+                }
 
                 if (currentUser.ProfileId != item.ProfileId) return BadRequest();
 
@@ -147,9 +166,17 @@ namespace Avalon.Controllers
         /// Deletes the CurrentUser profile.
         /// </summary>
         [HttpDelete("~/CurrentUser")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
         public async Task<IActionResult> DeleteCurrentUser()
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            if (currentUser == null)
+            {
+                return NotFound();
+            }
 
             if (currentUser.Admin) return BadRequest(); // Admins cannot delete themseleves.
 
@@ -159,7 +186,7 @@ namespace Avalon.Controllers
                 await _currentUserRepository.DeleteCurrentUser(currentUser.ProfileId);
                 //await _helper.DeleteProfileFromArtemis(currentUser.ProfileId);        // TODO: Delete all photos for Profile in Artemis
 
-                return Ok();
+                return NoContent();
             }
             catch (Exception ex)
             {
@@ -172,6 +199,9 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpPost("~/SaveProfileFilter")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
         public async Task<IActionResult> SaveProfileFilter([FromBody]ProfileFilter profileFilter)
         {
             if (profileFilter == null) return BadRequest();
@@ -179,6 +209,11 @@ namespace Avalon.Controllers
             try
             {
                 var currentUser = await _helper.GetCurrentUserProfile(User);
+
+                if (currentUser == null)
+                {
+                    return NotFound();
+                }
 
                 return Ok(_currentUserRepository.SaveProfileFilter(currentUser, profileFilter));
             }
@@ -192,9 +227,16 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpGet("~/LoadProfileFilter")]
-        public async Task<ProfileFilter> LoadProfileFilter()
+        [ProducesResponseType(200)]
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<ProfileFilter>> LoadProfileFilter()
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            if (currentUser == null)      // TODO: What do we do here?
+            {
+                return NotFound();
+            }
 
             return await _currentUserRepository.LoadProfileFilter(currentUser);
         }
@@ -204,6 +246,9 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpPost("~/AddProfilesToBookmarks")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
         public async Task<IActionResult> AddProfilesToBookmarks([FromBody] string[] profileIds)
         {
             if (profileIds == null || profileIds.Length < 1) return BadRequest();
@@ -212,13 +257,18 @@ namespace Avalon.Controllers
             {
                 var currentUser = await _helper.GetCurrentUserProfile(User);
 
+                if (currentUser == null)
+                {
+                    return NotFound();
+                }
+
                 await _currentUserRepository.AddProfilesToBookmarks(currentUser, profileIds);
                 await _currentUserRepository.AddProfilesToChatMemberslist(currentUser, profileIds);
 
                 // Notify other profiles that currentUser has bookmarked their profile.
                 await _profilesQueryRepository.AddIsBookmarkedToProfiles(currentUser, profileIds);
 
-                return Ok();
+                return NoContent();
             }
             catch (Exception ex)
             {
@@ -229,9 +279,12 @@ namespace Avalon.Controllers
 
         /// <summary>Removes the profiles from currentUser bookmarks and ChatMemberslist.</summary>
         /// <param name="profileIds">The profile ids.</param>
+        /// <exception cref="ArgumentException">ProfileIds is either null {profileIds} or length is < 1 {profileIds.Length}. {profileIds}</exception>
         /// <returns></returns>
         [NoCache]
         [HttpPost("~/RemoveProfilesFromBookmarks")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
         public async Task<IActionResult> RemoveProfilesFromBookmarks([FromBody] string[] profileIds)
         {
             if (profileIds == null || profileIds.Length < 1) throw new ArgumentException($"ProfileIds is either null {profileIds} or length is < 1 {profileIds.Length}.", nameof(profileIds));
@@ -240,13 +293,18 @@ namespace Avalon.Controllers
             {
                 var currentUser = await _helper.GetCurrentUserProfile(User);
 
+                if (currentUser == null)
+                {
+                    return NotFound();
+                }
+
                 await _currentUserRepository.RemoveProfilesFromBookmarks(currentUser, profileIds);
                 await _currentUserRepository.RemoveProfilesFromChatMemberslist(currentUser, profileIds);
 
                 /// Remove currentUser.profileId from IsBookmarked list of every profile in profileIds list.
                 await _profilesQueryRepository.RemoveIsBookmarkedFromProfiles(currentUser, profileIds);
 
-                return Ok();
+                return NoContent();
             }
             catch (Exception ex)
             {
@@ -259,6 +317,8 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpPost("~/BlockChatMembers")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
         public async Task<IActionResult> BlockChatMembers([FromBody] string[] profileIds)
         {
             if (profileIds == null || profileIds.Length < 1) return BadRequest();
@@ -267,9 +327,14 @@ namespace Avalon.Controllers
             {
                 var currentUser = await _helper.GetCurrentUserProfile(User);
 
+                if (currentUser == null)
+                {
+                    return NotFound();
+                }
+
                 await _currentUserRepository.BlockChatMembers(currentUser, profileIds);
 
-                return Ok();
+                return NoContent();
             }
             catch (Exception ex)
             {

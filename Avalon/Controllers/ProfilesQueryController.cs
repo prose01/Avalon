@@ -28,13 +28,22 @@ namespace Avalon.Controllers
         /// Deletes the specified profile identifiers.
         /// </summary>
         /// <param name="profileIds">The profile identifiers.</param>
+        /// <exception cref="ArgumentException">ProfileIds is either null {profileIds} or length is < 1 {profileIds.Length}. {profileIds}</exception>
+        /// <exception cref="ArgumentException">Current user does not have admin status.</exception>
         [NoCache]
         [HttpPost("~/DeleteProfiles")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
         public async Task<IActionResult> DeleteProfiles([FromBody]string[] profileIds)
         {
             if (profileIds == null || profileIds.Length < 1) throw new ArgumentException($"ProfileIds is either null {profileIds} or length is < 1 {profileIds.Length}.", nameof(profileIds));
 
             var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            if (currentUser == null)
+            {
+                return NotFound();
+            }
 
             if (!currentUser.Admin) throw new ArgumentException($"Current user does not have admin status.");
 
@@ -46,26 +55,36 @@ namespace Avalon.Controllers
                     await _profilesQueryRepository.DeleteProfile(profileId);
                 }
 
-                return Ok();
+                return NoContent();
             }
             catch (Exception ex)
             {
-                throw ex;
+                return Problem(ex.ToString());
             }
         }
 
         /// <summary>
         /// Sets the specified profile identifier as admin.
         /// </summary>
-        /// <param name="profileId">The profile identifier.</param>
+        /// <param name="profile">The profile.</param>
+        /// <exception cref="ArgumentException">Profile is null. {profile}</exception>
+        /// <exception cref="ArgumentException">Current user does not have admin status.</exception>
+        /// <exception cref="ArgumentException">Current user cannot set admin status to itself. {profile}</exception>
         /// <returns></returns>
         [NoCache]
         [HttpPost("~/SetAsAdmin")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(404)]
         public async Task<IActionResult> SetAsAdmin([FromBody] Profile profile)
         {
             if (profile == null) throw new ArgumentException($"Profile is null.", nameof(profile));
 
             var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            if (currentUser == null)
+            {
+                return NotFound();
+            }
 
             if (!currentUser.Admin) throw new ArgumentException($"Current user does not have admin status.");
 
@@ -77,15 +96,25 @@ namespace Avalon.Controllers
         /// <summary>
         /// Removes the specified profile identifier as admin.
         /// </summary>
-        /// <param name="profileId">The profile identifier.</param>
+        /// <param name="profile">The profile.</param>
+        /// <exception cref="ArgumentException">Profile is null. {profile}</exception>
+        /// <exception cref="ArgumentException">Current user does not have admin status.</exception>
+        /// <exception cref="ArgumentException">Current user cannot set admin status to itself. {profile}</exception>
         /// <returns></returns>
         [NoCache]
         [HttpPost("~/RemoveAdmin")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(404)]
         public async Task<IActionResult> RemoveAdmin([FromBody] Profile profile)
         {
             if (profile == null) throw new ArgumentException($"Profile is null.", nameof(profile));
 
             var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            if (currentUser == null)
+            {
+                return NotFound();
+            }
 
             if (!currentUser.Admin) throw new ArgumentException($"Current user does not have admin status.");
 
@@ -126,21 +155,24 @@ namespace Avalon.Controllers
 
         /// <summary>Adds the visited to profiles.</summary>
         /// <param name="profileId">The profile identifier.</param>
-        /// <returns>
-        ///   <br />
-        /// </returns>
-        /// <exception cref="ArgumentException">ProfileId is null. - profileId
-        /// or
-        /// ProfileId is similar to current user profileId. - profileId
-        /// or
-        /// Profile is not found. - profileId</exception>
+        /// <exception cref="ArgumentException">ProfileId is null. {profileId}</exception>
+        /// <exception cref="ArgumentException">ProfileId is similar to current user profileId. {profileId}</exception>
+        /// <exception cref="ArgumentException">Profile is not found. {profileId}</exception>
+        /// <returns> </returns>
         [NoCache]
         [HttpGet("~/AddVisitedToProfiles/{profileId}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
         public async Task<IActionResult> AddVisitedToProfiles(string profileId)
         {
             if (string.IsNullOrEmpty(profileId)) throw new ArgumentException($"ProfileId is null.", nameof(profileId));
 
             var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            if (currentUser == null)
+            {
+                return NotFound();
+            }
 
             if (currentUser.ProfileId == profileId) throw new ArgumentException($"ProfileId is similar to current user profileId.", nameof(profileId));
 
@@ -154,11 +186,12 @@ namespace Avalon.Controllers
             // Notify profile that currentUser has visited their profile.
             await _profilesQueryRepository.AddVisitedToProfiles(currentUser, profile); 
 
-            return Ok();
+            return NoContent();
         }
 
         /// <summary>Gets the currentUser's chatMember profiles.</summary>
         /// <param name="parameterFilter"></param>
+        /// <exception cref="ArgumentException">There are no ChatMembers for current user.</exception>
         /// <returns></returns>
         [NoCache]
         [HttpGet("~/GetChatMemberProfiles")]
@@ -175,6 +208,8 @@ namespace Avalon.Controllers
         /// Gets the specified profile based on a filter. Eg. { Body: 'something' }
         /// </summary>
         /// <param name="parameterFilter"></param>
+        /// <exception cref="ArgumentException">ProfileFilter is null. {requestBody.ProfileFilter}</exception>
+        /// <exception cref="ArgumentException">Current users profileFilter cannot find any matching profiles. {requestBody.ProfileFilter}</exception>
         /// <returns></returns>
         [NoCache]
         [HttpPost("~/GetProfileByFilter")]
@@ -196,11 +231,12 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpGet("~/GetProfileByCurrentUsersFilter/")]
+        /// <exception cref="ArgumentException">Current users profileFilter is null. {parameterFilter}</exception>
         public async Task<IEnumerable<Profile>> GetProfileByCurrentUsersFilter([FromQuery] ParameterFilter parameterFilter)
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            if (currentUser.ProfileFilter == null) throw new ArgumentException($"Current users profileFilter is null.");
+            if (currentUser.ProfileFilter == null) throw new ArgumentException($"Current users profileFilter is null.", nameof(parameterFilter));
 
             var skip = parameterFilter.PageIndex == 0 ? parameterFilter.PageIndex : parameterFilter.PageIndex * parameterFilter.PageSize;
 
@@ -245,6 +281,7 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpDelete("~/DeleteOldProfiles")]
+        [ProducesResponseType(204)]
         public async Task<IActionResult> DeleteOldProfiles()
         {
             try
@@ -257,11 +294,11 @@ namespace Avalon.Controllers
                     //await _profilesQueryRepository.DeleteProfile(profile.ProfileId);
                 }
 
-                return Ok();
+                return NoContent();
             }
             catch (Exception ex)
             {
-                throw ex;
+                return Problem(ex.ToString());
             }
         }
 
