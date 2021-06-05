@@ -52,7 +52,7 @@ namespace Avalon.Controllers
         /// </summary>
         /// <param name="profile"> The value.</param>
         [HttpPost("~/CurrentUser")]
-        [ProducesResponseType(200)]
+        [ProducesResponseType(204)]
         [ProducesResponseType(400)]
         public async Task<IActionResult> Post([FromBody] CurrentUser item)
         {
@@ -83,7 +83,9 @@ namespace Avalon.Controllers
                 item.Visited = new Dictionary<string, DateTime>();
                 item.ProfileFilter = this.CreateBasicProfileFilter(item);
 
-                return Ok(_currentUserRepository.AddProfile(item));
+                await _currentUserRepository.AddProfile(item);
+
+                return NoContent();
             }
             catch (Exception ex)
             {

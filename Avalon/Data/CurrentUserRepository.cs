@@ -31,9 +31,9 @@ namespace Avalon.Data
 
                 await _context.CurrentUser.InsertOneAsync(currentUser);
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -47,9 +47,9 @@ namespace Avalon.Data
                 return await _context.CurrentUser.DeleteOneAsync(
                     Builders<CurrentUser>.Filter.Eq("ProfileId", profileId));
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -67,9 +67,9 @@ namespace Avalon.Data
                                             , currentUser
                                             , new UpdateOptions { IsUpsert = true });
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -94,9 +94,9 @@ namespace Avalon.Data
 
 
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -121,9 +121,9 @@ namespace Avalon.Data
 
                 return await _context.CurrentUser.FindOneAndUpdateAsync(filter, update, options);
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -140,9 +140,9 @@ namespace Avalon.Data
 
                 return await Task.FromResult(query.FirstOrDefault());
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -173,9 +173,9 @@ namespace Avalon.Data
 
                 return await _context.CurrentUser.FindOneAndUpdateAsync(filter, update, options);
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -206,9 +206,9 @@ namespace Avalon.Data
 
                 return await _context.CurrentUser.FindOneAndUpdateAsync(filter, update, options);
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -246,9 +246,9 @@ namespace Avalon.Data
 
                 return await _context.CurrentUser.FindOneAndUpdateAsync(filter, update, options);
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -286,9 +286,9 @@ namespace Avalon.Data
 
                 return await _context.CurrentUser.FindOneAndUpdateAsync(filter, update, options);
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -330,9 +330,9 @@ namespace Avalon.Data
 
                 return await _context.CurrentUser.FindOneAndUpdateAsync(filter, update, options);
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
     }

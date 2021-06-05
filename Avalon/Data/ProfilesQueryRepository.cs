@@ -42,9 +42,9 @@ namespace Avalon.Data
 
                 return await _context.Profiles.FindOneAndUpdateAsync(filter, update, options);
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -69,9 +69,9 @@ namespace Avalon.Data
 
                 return await _context.Profiles.FindOneAndUpdateAsync(filter, update, options);
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -89,9 +89,9 @@ namespace Avalon.Data
                 return await _context.Profiles.DeleteOneAsync(
                     Builders<Profile>.Filter.Eq("ProfileId", profileId));
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -127,9 +127,9 @@ namespace Avalon.Data
                     .Find(filter)
                     .FirstOrDefaultAsync();
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -144,9 +144,9 @@ namespace Avalon.Data
 
                 return await _context.Profiles.Find(p => chatMembers.Contains(p.ProfileId)).Skip(skip).Limit(limit).ToListAsync();
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -163,9 +163,9 @@ namespace Avalon.Data
                     .Find(filter)
                     .FirstOrDefaultAsync();
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -183,9 +183,9 @@ namespace Avalon.Data
                     .Find(filter)
                     .FirstOrDefaultAsync();
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -227,12 +227,12 @@ namespace Avalon.Data
                         break;
                 }
 
-                return _context.Profiles
-                                .Find(combineFilters).Sort(sortDefinition).Skip(skip).Limit(limit).ToList();
+                return await _context.Profiles
+                                .Find(combineFilters).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -302,9 +302,9 @@ namespace Avalon.Data
 
                 return filters;
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -348,12 +348,12 @@ namespace Avalon.Data
                         break;
                 }
 
-                return _context.Profiles
-                            .Find(combineFilters).Sort(sortDefinition).Skip(skip).Limit(limit).ToList();
+                return await _context.Profiles
+                            .Find(combineFilters).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -379,12 +379,12 @@ namespace Avalon.Data
                         break;
                 }
 
-                return _context.Profiles
-                                    .Find(p => currentUser.Bookmarks.Contains(p.ProfileId)).Sort(sortDefinition).Skip(skip).Limit(limit).ToList();
+                return await _context.Profiles
+                                    .Find(p => currentUser.Bookmarks.Contains(p.ProfileId)).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -428,9 +428,9 @@ namespace Avalon.Data
                     await _context.Profiles.FindOneAndUpdateAsync(filter, update);
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -461,9 +461,9 @@ namespace Avalon.Data
                     await _context.Profiles.FindOneAndUpdateAsync(filter, update);
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -500,9 +500,9 @@ namespace Avalon.Data
 
                 await _context.Profiles.FindOneAndUpdateAsync(filter, update);
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -518,9 +518,9 @@ namespace Avalon.Data
             {
                 return await _context.Profiles.Find(p => p.LastActive < DateTime.Now.AddDays(-30) && !p.Admin).Limit(10).ToListAsync();
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 

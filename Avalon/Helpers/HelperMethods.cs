@@ -63,9 +63,9 @@ namespace Avalon.Helpers
                 request.AddHeader("authorization", "Bearer " + token);
                 IRestResponse response = await client.ExecuteAsync(request, CancellationToken.None);
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -84,9 +84,9 @@ namespace Avalon.Helpers
 
                 return JsonSerializer.Deserialize<AccessToken>(response.Content).access_token;
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
     }
