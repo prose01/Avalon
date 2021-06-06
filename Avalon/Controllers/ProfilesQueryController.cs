@@ -90,7 +90,7 @@ namespace Avalon.Controllers
 
             if (currentUser.ProfileId == profile.ProfileId) throw new ArgumentException($"Current user cannot set admin status to itself.", nameof(profile));
 
-            return Ok(_profilesQueryRepository.SetAsAdmin(profile.ProfileId));
+            return Ok(await _profilesQueryRepository.SetAsAdmin(profile.ProfileId));
         }
 
         /// <summary>
@@ -119,8 +119,8 @@ namespace Avalon.Controllers
             if (!currentUser.Admin) throw new ArgumentException($"Current user does not have admin status.");
 
             if (currentUser.ProfileId == profile.ProfileId) throw new ArgumentException($"Current user cannot remove admin status from itself.", nameof(profile));
-
-            return Ok(_profilesQueryRepository.RemoveAdmin(profile.ProfileId));
+            
+            return Ok(await _profilesQueryRepository.RemoveAdmin(profile.ProfileId));
         }
 
         // GET api/profiles/5

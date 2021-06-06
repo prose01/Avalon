@@ -56,16 +56,26 @@ namespace Avalon.Data
         /// <summary>Updates the profile.</summary>
         /// <param name="item">The profile.</param>
         /// <returns></returns>
-        public async Task<ReplaceOneResult> UpdateProfile(CurrentUser currentUser)
+        public async Task UpdateProfile(CurrentUser currentUser)
         {
             try
             {
                 currentUser.UpdatedOn = DateTime.Now;
 
-                return await _context.CurrentUser
-                            .ReplaceOneAsync(p => p.ProfileId.Equals(currentUser.ProfileId)
-                                            , currentUser
-                                            , new UpdateOptions { IsUpsert = true });
+                //return await _context.CurrentUser
+                //            .ReplaceOneAsync(p => p.ProfileId.Equals(currentUser.ProfileId)
+                //                            , currentUser
+                //                            , new UpdateOptions { IsUpsert = true });
+
+                var filter = Builders<CurrentUser>
+                                .Filter.Eq(p => p.ProfileId, currentUser.ProfileId);
+
+                //var options = new FindOneAndReplaceOptions<CurrentUser>
+                //{
+                //    ReturnDocument = ReturnDocument.After
+                //};
+
+                await _context.CurrentUser.ReplaceOneAsync(filter, currentUser);
             }
             catch
             {

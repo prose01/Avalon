@@ -120,13 +120,11 @@ namespace Avalon.Controllers
         /// <param name="item">The profile</param>
         [NoCache]
         [HttpPut("~/CurrentUser")]
-        [ProducesResponseType(200)]
+        [ProducesResponseType(204)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> Put([FromBody] CurrentUser item)
         {
-            //if (!ModelState.IsValid) return BadRequest(); unnecessary
-
             try
             {
                 var currentUser = await _helper.GetCurrentUserProfile(User);
@@ -156,7 +154,9 @@ namespace Avalon.Controllers
                     item.ProfileFilter.Gender = this.CreateBasicProfileFilter(item).Gender;
                 }
 
-                return Ok(_currentUserRepository.UpdateProfile(item));
+                await _currentUserRepository.UpdateProfile(item);
+
+                return NoContent();
             }
             catch (Exception ex)
             {

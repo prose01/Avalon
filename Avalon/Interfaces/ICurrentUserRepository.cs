@@ -8,7 +8,7 @@ namespace Avalon.Interfaces
     {
         Task AddProfile(CurrentUser item);
         Task<DeleteResult> DeleteCurrentUser(string profileId);
-        Task<ReplaceOneResult> UpdateProfile(CurrentUser item);
+        Task UpdateProfile(CurrentUser item);
         Task<CurrentUser> GetCurrentProfileByAuth0Id(string auth0Id);
         Task<CurrentUser> SaveProfileFilter(CurrentUser currentUser, ProfileFilter profileFilter);
         Task<ProfileFilter> LoadProfileFilter(CurrentUser currentUser);
