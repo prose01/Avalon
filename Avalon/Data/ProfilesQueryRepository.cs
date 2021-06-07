@@ -205,7 +205,14 @@ namespace Avalon.Data
 
                 //Add basic search criteria.
                 filters.Add(Builders<Profile>.Filter.Eq(p => p.SexualOrientation, currentUser.SexualOrientation));
-                filters.Add(Builders<Profile>.Filter.Eq(p => p.Gender, profileFilter.Gender));
+
+                if (currentUser.SexualOrientation == SexualOrientationType.Heterosexual || currentUser.SexualOrientation == SexualOrientationType.Homosexual) {
+                    filters.Add(Builders<Profile>.Filter.Eq(p => p.Gender, currentUser.ProfileFilter.Gender));
+                }
+                else
+                {
+                    filters.Add(Builders<Profile>.Filter.Eq(p => p.Gender, profileFilter.Gender));
+                }
 
                 //Apply all other ProfileFilter criterias.
                 filters = this.ApplyProfileFilter(profileFilter, filters);
