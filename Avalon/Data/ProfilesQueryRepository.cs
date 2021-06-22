@@ -513,6 +513,49 @@ namespace Avalon.Data
             }
         }
 
+        public async Task AddLikeToProfile(CurrentUser currentUser, Profile profile)
+        {
+            try
+            {
+                profile.Likes.Add(currentUser.ProfileId, DateTime.Now);
+
+                var filter = Builders<Profile>
+                           .Filter.Eq(p => p.ProfileId, profile.ProfileId);
+
+                var update = Builders<Profile>
+                            .Update.Set(p => p.Likes, profile.Likes);
+
+                await _context.Profiles.FindOneAndUpdateAsync(filter, update);
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        public async Task RemoveLikeFromProfile(CurrentUser currentUser, Profile profile)
+        {
+            try
+            {
+                if (profile.Likes.ContainsKey(currentUser.ProfileId))
+                {
+                    profile.Likes.Remove(currentUser.ProfileId);
+                }
+
+                var filter = Builders<Profile>
+                           .Filter.Eq(p => p.ProfileId, profile.ProfileId);
+
+                var update = Builders<Profile>
+                            .Update.Set(p => p.Likes, profile.Likes);
+
+                await _context.Profiles.FindOneAndUpdateAsync(filter, update);
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
         #endregion
 
         #region Maintenance

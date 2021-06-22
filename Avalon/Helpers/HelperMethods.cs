@@ -54,6 +54,8 @@ namespace Avalon.Helpers
             {
                 var profile = await _profilesQueryRepository.GetProfileById(profileId);
 
+                if (profile == null) return;
+
                 var token = GetAuth0Token();
 
                 var client = new RestClient(_auth0ApiIdentifier + "users/" + profile.Auth0Id);

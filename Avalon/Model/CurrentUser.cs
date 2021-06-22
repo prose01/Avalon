@@ -12,6 +12,7 @@ namespace Avalon.Model
         public ProfileFilter ProfileFilter { get; set; }
         public override Dictionary<string, DateTime> Visited { get; set; }
         public override Dictionary<string, DateTime> IsBookmarked { get; set; }
+        public override Dictionary<string, DateTime> Likes { get; set; }
         #endregion
 
         public override ObjectId _id { get; set; }

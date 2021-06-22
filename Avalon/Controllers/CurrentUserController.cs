@@ -37,14 +37,21 @@ namespace Avalon.Controllers
         [ProducesResponseType(404)]
         public async Task<ActionResult<CurrentUser>> GetCurrentUserProfile()
         {
-            var currentUser = await _helper.GetCurrentUserProfile(User);
-
-            if (currentUser == null)
+            try
             {
-                return NotFound();
-            }
+                var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            return Ok(currentUser);
+                if (currentUser == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok(currentUser);
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.ToString());
+            }
         }
 
         /// <summary>
@@ -76,11 +83,12 @@ namespace Avalon.Controllers
 
                 // Initiate empty lists and other defaults
                 item.Tags ??= new List<string>();
-                item.Bookmarks = new List<string>(); 
+                item.Bookmarks = new List<string>();
                 item.ChatMemberslist = new List<ChatMember>();
                 item.Images = new List<ImageModel>();
                 item.IsBookmarked = new Dictionary<string, DateTime>();
                 item.Visited = new Dictionary<string, DateTime>();
+                item.Likes = new Dictionary<string, DateTime>();
                 item.ProfileFilter = this.CreateBasicProfileFilter(item);
 
                 await _currentUserRepository.AddProfile(item);
@@ -144,12 +152,13 @@ namespace Avalon.Controllers
                 item.ChatMemberslist = currentUser.ChatMemberslist;
                 item.IsBookmarked = currentUser.IsBookmarked;
                 item.Visited = currentUser.Visited;
+                item.Likes = currentUser.Likes;
                 item.ProfileFilter = currentUser.ProfileFilter;
                 item.Images = currentUser.Images;
                 item.CreatedOn = currentUser.CreatedOn;
 
                 // Update ProfileFilter Gender when CurrentUser is updated.
-                if(currentUser.SexualOrientation != item.SexualOrientation || currentUser.Gender != item.Gender)
+                if (currentUser.SexualOrientation != item.SexualOrientation || currentUser.Gender != item.Gender)
                 {
                     item.ProfileFilter.Gender = this.CreateBasicProfileFilter(item).Gender;
                 }
@@ -204,7 +213,7 @@ namespace Avalon.Controllers
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> SaveProfileFilter([FromBody]ProfileFilter profileFilter)
+        public async Task<IActionResult> SaveProfileFilter([FromBody] ProfileFilter profileFilter)
         {
             if (profileFilter == null) return BadRequest();
 
