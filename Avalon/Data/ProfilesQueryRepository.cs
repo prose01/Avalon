@@ -517,7 +517,7 @@ namespace Avalon.Data
         {
             try
             {
-                profile.Likes.Add(currentUser.ProfileId, DateTime.Now);
+                profile.Likes.Add(currentUser.ProfileId);
 
                 var filter = Builders<Profile>
                            .Filter.Eq(p => p.ProfileId, profile.ProfileId);
@@ -537,7 +537,7 @@ namespace Avalon.Data
         {
             try
             {
-                if (profile.Likes.ContainsKey(currentUser.ProfileId))
+                if (profile.Likes.Contains(currentUser.ProfileId))
                 {
                     profile.Likes.Remove(currentUser.ProfileId);
                 }

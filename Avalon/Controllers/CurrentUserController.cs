@@ -88,7 +88,7 @@ namespace Avalon.Controllers
                 item.Images = new List<ImageModel>();
                 item.IsBookmarked = new Dictionary<string, DateTime>();
                 item.Visited = new Dictionary<string, DateTime>();
-                item.Likes = new Dictionary<string, DateTime>();
+                item.Likes = new List<string>();
                 item.ProfileFilter = this.CreateBasicProfileFilter(item);
 
                 await _currentUserRepository.AddProfile(item);

@@ -223,7 +223,7 @@ namespace Avalon.Controllers
             }
 
             // If already added just leave.
-            if (profile.Likes.ContainsKey(currentUser.ProfileId))
+            if (profile.Likes.Contains(currentUser.ProfileId))
                 return NoContent();
 
             await _profilesQueryRepository.AddLikeToProfile(currentUser, profile);
@@ -262,7 +262,7 @@ namespace Avalon.Controllers
             }
 
             // If not added just leave.
-            if (!profile.Likes.ContainsKey(currentUser.ProfileId))
+            if (!profile.Likes.Contains(currentUser.ProfileId))
                 return NoContent();
 
             await _profilesQueryRepository.RemoveLikeFromProfile(currentUser, profile);

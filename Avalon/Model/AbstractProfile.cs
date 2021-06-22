@@ -14,7 +14,6 @@ namespace Avalon.Model
         public abstract Dictionary<string, DateTime> Visited { get; set; }
         [MaxLength(10)]
         public abstract Dictionary<string, DateTime> IsBookmarked { get; set; }
-        public abstract Dictionary<string, DateTime> Likes { get; set; }
         #endregion
 
         [BsonId]
