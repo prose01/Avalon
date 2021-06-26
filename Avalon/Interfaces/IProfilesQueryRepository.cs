@@ -21,6 +21,7 @@ namespace Avalon.Interfaces
         Task RemoveIsBookmarkedFromProfiles(CurrentUser currentUser, string[] profileIds);
         Task<IEnumerable<Profile>> GetBookmarkedProfiles(CurrentUser profile, OrderByType orderByType, int skip, int limit);
         Task<IEnumerable<Profile>> GetProfilesWhoVisitedMe(CurrentUser currentUser, OrderByType orderByType, int skip, int limit);
+        Task<IEnumerable<Profile>> GetProfilesWhoBookmarkedMe(CurrentUser currentUser, OrderByType orderByType, int skip, int limit);
         Task AddVisitedToProfiles(CurrentUser currentUser, Profile profile);
         Task AddLikeToProfile(CurrentUser currentUser, Profile profile);
         Task RemoveLikeFromProfile(CurrentUser currentUser, Profile profile);
