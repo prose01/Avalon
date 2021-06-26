@@ -473,6 +473,43 @@ namespace Avalon.Data
             }
         }
 
+        /// <summary>Gets Profiles who likes my profile.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <param name="orderByType">The OrderByDescending column type.</param>
+        /// <param name="skip">The skip.</param>
+        /// <param name="limit">The limit.</param>
+        /// <returns></returns>
+        public async Task<IEnumerable<Profile>> GetProfilesWhoLikesMe(CurrentUser currentUser, OrderByType orderByType, int skip, int limit)
+        {
+            try
+            {
+                var filter = Builders<Profile>
+                                .Filter.In(p => p.ProfileId, currentUser.Likes);
+
+                SortDefinition<Profile> sortDefinition;
+
+                switch (orderByType)
+                {
+                    case OrderByType.UpdatedOn:
+                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.UpdatedOn);
+                        break;
+                    case OrderByType.LastActive:
+                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.LastActive);
+                        break;
+                    default:
+                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.CreatedOn);
+                        break;
+                }
+
+                return await _context.Profiles
+                            .Find(filter).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
         /// <summary>Add currentUser.profileId to IsBookmarked list of every profile in profileIds list.</summary>
         /// <param name="currentUser">The current user.</param>
         /// <param name="profileIds">The profile ids.</param>
