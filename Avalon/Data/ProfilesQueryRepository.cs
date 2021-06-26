@@ -193,6 +193,8 @@ namespace Avalon.Data
         /// <summary>Gets the profile by filter.</summary>
         /// <param name="filter">The filter.</param>
         /// <param name="orderByType">The OrderByDescending column type.</param>
+        /// <param name="skip">The skip.</param>
+        /// <param name="limit">The limit.</param>
         /// <returns></returns>
         public async Task<IEnumerable<Profile>> GetProfileByFilter(CurrentUser currentUser, ProfileFilter profileFilter, OrderByType orderByType, int skip, int limit)
         {
@@ -318,7 +320,6 @@ namespace Avalon.Data
         /// <summary>Gets the latest profiles.</summary>
         /// <param name="currentUser">The current user.</param>
         /// <param name="orderByType">The OrderByDescending column type.</param>
-        /// <param name="sortDirection">The sort direction.</param>
         /// <param name="skip">The skip.</param>
         /// <param name="limit">The limit.</param>
         /// <returns></returns>
@@ -366,6 +367,9 @@ namespace Avalon.Data
 
         /// <summary>Gets the bookmarked profiles.</summary>
         /// <param name="currentUser">The current user.</param>
+        /// <param name="orderByType">The OrderByDescending column type.</param>
+        /// <param name="skip">The skip.</param>
+        /// <param name="limit">The limit.</param>
         /// <returns></returns>
         public async Task<IEnumerable<Profile>> GetBookmarkedProfiles(CurrentUser currentUser, OrderByType orderByType, int skip, int limit)
         {
@@ -388,6 +392,43 @@ namespace Avalon.Data
 
                 return await _context.Profiles
                                     .Find(p => currentUser.Bookmarks.Contains(p.ProfileId)).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        /// <summary>Gets Profiles who has visited my profile.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <param name="orderByType">The OrderByDescending column type.</param>
+        /// <param name="skip">The skip.</param>
+        /// <param name="limit">The limit.</param>
+        /// <returns></returns>
+        public async Task<IEnumerable<Profile>> GetProfilesWhoVisitedMe(CurrentUser currentUser, OrderByType orderByType, int skip, int limit)
+        {
+            try
+            {
+                var filter = Builders<Profile>
+                                .Filter.In(p => p.ProfileId, currentUser.Visited.Keys);
+
+                SortDefinition<Profile> sortDefinition;
+
+                switch (orderByType)
+                {
+                    case OrderByType.UpdatedOn:
+                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.UpdatedOn);
+                        break;
+                    case OrderByType.LastActive:
+                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.LastActive);
+                        break;
+                    default:
+                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.CreatedOn);
+                        break;
+                }
+
+                return await _context.Profiles
+                            .Find(filter).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
             }
             catch
             {

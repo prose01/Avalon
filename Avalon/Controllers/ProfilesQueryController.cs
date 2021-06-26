@@ -356,6 +356,22 @@ namespace Avalon.Controllers
             return await _profilesQueryRepository.GetBookmarkedProfiles(currentUser, parameterFilter.OrderByType, skip, parameterFilter.PageSize);
         }
 
+        /// <summary>
+        /// Gets Profiles who has visited my profile.
+        /// </summary>
+        /// <param name="parameterFilter"></param>
+        /// <returns></returns>
+        [NoCache]
+        [HttpGet("~/GetProfilesWhoVisitedMe/")]
+        public async Task<IEnumerable<Profile>> GetProfilesWhoVisitedMe([FromQuery] ParameterFilter parameterFilter)
+        {
+            var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            var skip = parameterFilter.PageIndex == 0 ? parameterFilter.PageIndex : parameterFilter.PageIndex * parameterFilter.PageSize;
+
+            return await _profilesQueryRepository.GetProfilesWhoVisitedMe(currentUser, parameterFilter.OrderByType, skip, parameterFilter.PageSize);
+        }
+
         #region Maintenance
 
         /// <summary>Deletes 10 old profiles that are more than 30 days since last active.</summary>
