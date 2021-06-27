@@ -125,34 +125,42 @@ namespace Avalon.Controllers
             return Ok(await _profilesQueryRepository.RemoveAdmin(profile.ProfileId));
         }
 
-        // GET api/profiles/5
         /// <summary>
         /// Gets the specified profile identifier.
         /// </summary>
         /// <param name="profileId">The profile identifier.</param>
         /// <returns></returns>
-        //[NoCache]
-        //[HttpGet("~/GetProfileById/{profileId}")]
-        //public async Task<ActionResult<Profile>> Get(string profileId)
-        //{
-        //    if (string.IsNullOrEmpty(profileId)) throw new ArgumentException($"ProfileId is null.", nameof(profileId));
+        [NoCache]
+        [HttpGet("~/GetProfileById/{profileId}")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<Profile>> Get(string profileId)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(profileId)) throw new ArgumentException($"ProfileId is null.", nameof(profileId));
 
-        //    var currentUser = await _helper.GetCurrentUserProfile(User);
+                var currentUser = await _helper.GetCurrentUserProfile(User);
 
-        //    if (currentUser.ProfileId == profileId) throw new ArgumentException($"ProfileId is similar to current user profileId.", nameof(profileId));
+                if (currentUser.ProfileId == profileId) throw new ArgumentException($"ProfileId is similar to current user profileId.", nameof(profileId));
 
-        //    var profile = await _profilesQueryRepository.GetProfileById(profileId);
+                var profile = await _profilesQueryRepository.GetProfileById(profileId);
 
-        //    if (profile == null)
-        //    {
-        //        return NotFound();
-        //    }
+                if (profile == null)
+                {
+                    return NotFound();
+                }
 
-        //    // Notify profile that currentUser has visited their profile.
-        //    await _profilesQueryRepository.AddVisitedToProfiles(currentUser, profile);
+                // Notify profile that currentUser has visited their profile.
+                await _profilesQueryRepository.AddVisitedToProfiles(currentUser, profile);
 
-        //    return profile;
-        //}
+                return Ok(profile);
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.ToString());
+            }
+        }
 
 
         /// <summary>Adds the visited to profiles.</summary>
