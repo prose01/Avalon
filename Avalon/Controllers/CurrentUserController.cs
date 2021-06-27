@@ -210,7 +210,7 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpPost("~/SaveProfileFilter")]
-        [ProducesResponseType(200)]
+        [ProducesResponseType(204)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> SaveProfileFilter([FromBody] ProfileFilter profileFilter)
@@ -226,7 +226,9 @@ namespace Avalon.Controllers
                     return NotFound();
                 }
 
-                return Ok(_currentUserRepository.SaveProfileFilter(currentUser, profileFilter));
+                await _currentUserRepository.SaveProfileFilter(currentUser, profileFilter);
+
+                return NoContent();
             }
             catch (Exception ex)
             {

@@ -55,7 +55,6 @@ namespace Avalon.Data
 
         /// <summary>Updates the profile.</summary>
         /// <param name="item">The profile.</param>
-        /// <returns></returns>
         public async Task UpdateProfile(CurrentUser currentUser)
         {
             try
@@ -113,8 +112,7 @@ namespace Avalon.Data
         /// <summary>Saves the profile filter to currentUser.</summary>
         /// <param name="currentUser">The current user.</param>
         /// <param name="profileFilter">The profile filter.</param>
-        /// <returns></returns>
-        public async Task<CurrentUser> SaveProfileFilter(CurrentUser currentUser, ProfileFilter profileFilter)
+        public async Task SaveProfileFilter(CurrentUser currentUser, ProfileFilter profileFilter)
         {
             try
             {
@@ -129,7 +127,7 @@ namespace Avalon.Data
                     ReturnDocument = ReturnDocument.After
                 };
 
-                return await _context.CurrentUser.FindOneAndUpdateAsync(filter, update, options);
+                await _context.CurrentUser.FindOneAndUpdateAsync(filter, update, options);
             }
             catch
             {
