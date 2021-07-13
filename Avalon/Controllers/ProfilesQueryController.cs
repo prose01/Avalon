@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace Avalon.Controllers
@@ -32,23 +33,23 @@ namespace Avalon.Controllers
         /// <exception cref="ArgumentException">Current user does not have admin status.</exception>
         [NoCache]
         [HttpPost("~/DeleteProfiles")]
-        [ProducesResponseType(204)]
-        [ProducesResponseType(404)]
-        public async Task<IActionResult> DeleteProfiles([FromBody]string[] profileIds)
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> DeleteProfiles([FromBody] string[] profileIds)
         {
-            if (profileIds == null || profileIds.Length < 1) throw new ArgumentException($"ProfileIds is either null {profileIds} or length is < 1 {profileIds.Length}.", nameof(profileIds));
-
-            var currentUser = await _helper.GetCurrentUserProfile(User);
-
-            if (currentUser == null)
-            {
-                return NotFound();
-            }
-
-            if (!currentUser.Admin) throw new ArgumentException($"Current user does not have admin status.");
-
             try
             {
+                if (profileIds == null || profileIds.Length < 1) throw new ArgumentException($"ProfileIds is either null {profileIds} or length is < 1 {profileIds.Length}.", nameof(profileIds));
+
+                var currentUser = await _helper.GetCurrentUserProfile(User);
+
+                if (currentUser == null)
+                {
+                    return NotFound();
+                }
+
+                if (!currentUser.Admin) throw new ArgumentException($"Current user does not have admin status.");
+
                 foreach (var profileId in profileIds)
                 {
                     if (profileId == null) continue;
@@ -75,24 +76,31 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpPost("~/SetAsAdmin")]
-        [ProducesResponseType(200)]
-        [ProducesResponseType(404)]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> SetAsAdmin([FromBody] Profile profile)
         {
-            if (profile == null) throw new ArgumentException($"Profile is null.", nameof(profile));
-
-            var currentUser = await _helper.GetCurrentUserProfile(User);
-
-            if (currentUser == null)
+            try
             {
-                return NotFound();
+                if (profile == null) throw new ArgumentException($"Profile is null.", nameof(profile));
+
+                var currentUser = await _helper.GetCurrentUserProfile(User);
+
+                if (currentUser == null)
+                {
+                    return NotFound();
+                }
+
+                if (!currentUser.Admin) throw new ArgumentException($"Current user does not have admin status.");
+
+                if (currentUser.ProfileId == profile.ProfileId) throw new ArgumentException($"Current user cannot set admin status to itself.", nameof(profile));
+
+                return Ok(await _profilesQueryRepository.SetAsAdmin(profile.ProfileId));
             }
-
-            if (!currentUser.Admin) throw new ArgumentException($"Current user does not have admin status.");
-
-            if (currentUser.ProfileId == profile.ProfileId) throw new ArgumentException($"Current user cannot set admin status to itself.", nameof(profile));
-
-            return Ok(await _profilesQueryRepository.SetAsAdmin(profile.ProfileId));
+            catch (Exception ex)
+            {
+                return Problem(ex.ToString());
+            }
         }
 
         /// <summary>
@@ -105,24 +113,31 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpPost("~/RemoveAdmin")]
-        [ProducesResponseType(200)]
-        [ProducesResponseType(404)]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> RemoveAdmin([FromBody] Profile profile)
         {
-            if (profile == null) throw new ArgumentException($"Profile is null.", nameof(profile));
-
-            var currentUser = await _helper.GetCurrentUserProfile(User);
-
-            if (currentUser == null)
+            try
             {
-                return NotFound();
+                if (profile == null) throw new ArgumentException($"Profile is null.", nameof(profile));
+
+                var currentUser = await _helper.GetCurrentUserProfile(User);
+
+                if (currentUser == null)
+                {
+                    return NotFound();
+                }
+
+                if (!currentUser.Admin) throw new ArgumentException($"Current user does not have admin status.");
+
+                if (currentUser.ProfileId == profile.ProfileId) throw new ArgumentException($"Current user cannot remove admin status from itself.", nameof(profile));
+
+                return Ok(await _profilesQueryRepository.RemoveAdmin(profile.ProfileId));
             }
-
-            if (!currentUser.Admin) throw new ArgumentException($"Current user does not have admin status.");
-
-            if (currentUser.ProfileId == profile.ProfileId) throw new ArgumentException($"Current user cannot remove admin status from itself.", nameof(profile));
-            
-            return Ok(await _profilesQueryRepository.RemoveAdmin(profile.ProfileId));
+            catch (Exception ex)
+            {
+                return Problem(ex.ToString());
+            }
         }
 
         /// <summary>
@@ -132,8 +147,8 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpGet("~/GetProfileById/{profileId}")]
-        [ProducesResponseType(200)]
-        [ProducesResponseType(404)]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<ActionResult<Profile>> Get(string profileId)
         {
             try
@@ -150,7 +165,6 @@ namespace Avalon.Controllers
                 {
                     return NotFound();
                 }
-
                 // Notify profile that currentUser has visited their profile.
                 await _profilesQueryRepository.AddVisitedToProfiles(currentUser, profile);
 
@@ -171,32 +185,38 @@ namespace Avalon.Controllers
         /// <returns> </returns>
         [NoCache]
         [HttpGet("~/AddVisitedToProfiles/{profileId}")]
-        [ProducesResponseType(204)]
-        [ProducesResponseType(404)]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> AddVisitedToProfiles(string profileId)
         {
-            if (string.IsNullOrEmpty(profileId)) throw new ArgumentException($"ProfileId is null.", nameof(profileId));
-
-            var currentUser = await _helper.GetCurrentUserProfile(User);
-
-            if (currentUser == null)
+            try
             {
-                return NotFound();
+                if (string.IsNullOrEmpty(profileId)) throw new ArgumentException($"ProfileId is null.", nameof(profileId));
+
+                var currentUser = await _helper.GetCurrentUserProfile(User);
+
+                if (currentUser == null)
+                {
+                    return NotFound();
+                }
+
+                if (currentUser.ProfileId == profileId) throw new ArgumentException($"ProfileId is similar to current user profileId.", nameof(profileId));
+
+                var profile = await _profilesQueryRepository.GetProfileById(profileId);
+
+                if (profile == null)
+                {
+                    throw new ArgumentException($"Profile is not found.", nameof(profileId));
+                }
+                // Notify profile that currentUser has visited their profile.
+                await _profilesQueryRepository.AddVisitedToProfiles(currentUser, profile);
+
+                return NoContent();
             }
-
-            if (currentUser.ProfileId == profileId) throw new ArgumentException($"ProfileId is similar to current user profileId.", nameof(profileId));
-
-            var profile = await _profilesQueryRepository.GetProfileById(profileId);
-
-            if (profile == null)
+            catch (Exception ex)
             {
-                 throw new ArgumentException($"Profile is not found.", nameof(profileId));
+                return Problem(ex.ToString());
             }
-
-            // Notify profile that currentUser has visited their profile.
-            await _profilesQueryRepository.AddVisitedToProfiles(currentUser, profile); 
-
-            return NoContent();
         }
 
 
@@ -208,35 +228,42 @@ namespace Avalon.Controllers
         /// <returns> </returns>
         [NoCache]
         [HttpGet("~/AddLikeToProfile/{profileId}")]
-        [ProducesResponseType(204)]
-        [ProducesResponseType(404)]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> AddLikeToProfile(string profileId)
         {
-            if (string.IsNullOrEmpty(profileId)) throw new ArgumentException($"ProfileId is null.", nameof(profileId));
-
-            var currentUser = await _helper.GetCurrentUserProfile(User);
-
-            if (currentUser == null)
+            try
             {
-                return NotFound();
-            }
+                if (string.IsNullOrEmpty(profileId)) throw new ArgumentException($"ProfileId is null.", nameof(profileId));
 
-            if (currentUser.ProfileId == profileId) throw new ArgumentException($"ProfileId is similar to current user profileId.", nameof(profileId));
+                var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            var profile = await _profilesQueryRepository.GetProfileById(profileId);
+                if (currentUser == null)
+                {
+                    return NotFound();
+                }
 
-            if (profile == null)
-            {
-                throw new ArgumentException($"Profile is not found.", nameof(profileId));
-            }
+                if (currentUser.ProfileId == profileId) throw new ArgumentException($"ProfileId is similar to current user profileId.", nameof(profileId));
 
-            // If already added just leave.
-            if (profile.Likes.Contains(currentUser.ProfileId))
+                var profile = await _profilesQueryRepository.GetProfileById(profileId);
+
+                if (profile == null)
+                {
+                    throw new ArgumentException($"Profile is not found.", nameof(profileId));
+                }
+
+                // If already added just leave.
+                if (profile.Likes.Contains(currentUser.ProfileId))
+                    return NoContent();
+
+                await _profilesQueryRepository.AddLikeToProfile(currentUser, profile);
+
                 return NoContent();
-
-            await _profilesQueryRepository.AddLikeToProfile(currentUser, profile);
-
-            return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.ToString());
+            }
         }
 
         /// <summary>Removes like from profile.</summary>
@@ -247,35 +274,42 @@ namespace Avalon.Controllers
         /// <returns> </returns>
         [NoCache]
         [HttpGet("~/RemoveLikeFromProfile/{profileId}")]
-        [ProducesResponseType(204)]
-        [ProducesResponseType(404)]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> RemoveLikeFromProfile(string profileId)
         {
-            if (string.IsNullOrEmpty(profileId)) throw new ArgumentException($"ProfileId is null.", nameof(profileId));
-
-            var currentUser = await _helper.GetCurrentUserProfile(User);
-
-            if (currentUser == null)
+            try
             {
-                return NotFound();
-            }
+                if (string.IsNullOrEmpty(profileId)) throw new ArgumentException($"ProfileId is null.", nameof(profileId));
 
-            if (currentUser.ProfileId == profileId) throw new ArgumentException($"ProfileId is similar to current user profileId.", nameof(profileId));
+                var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            var profile = await _profilesQueryRepository.GetProfileById(profileId);
+                if (currentUser == null)
+                {
+                    return NotFound();
+                }
 
-            if (profile == null)
-            {
-                throw new ArgumentException($"Profile is not found.", nameof(profileId));
-            }
+                if (currentUser.ProfileId == profileId) throw new ArgumentException($"ProfileId is similar to current user profileId.", nameof(profileId));
 
-            // If not added just leave.
-            if (!profile.Likes.Contains(currentUser.ProfileId))
+                var profile = await _profilesQueryRepository.GetProfileById(profileId);
+
+                if (profile == null)
+                {
+                    throw new ArgumentException($"Profile is not found.", nameof(profileId));
+                }
+
+                // If not added just leave.
+                if (!profile.Likes.Contains(currentUser.ProfileId))
+                    return NoContent();
+
+                await _profilesQueryRepository.RemoveLikeFromProfile(currentUser, profile);
+
                 return NoContent();
-
-            await _profilesQueryRepository.RemoveLikeFromProfile(currentUser, profile);
-
-            return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.ToString());
+            }
         }
 
         /// <summary>Gets the currentUser's chatMember profiles.</summary>
@@ -418,7 +452,7 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpDelete("~/DeleteOldProfiles")]
-        [ProducesResponseType(204)]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
         public async Task<IActionResult> DeleteOldProfiles()
         {
             try

@@ -33,9 +33,16 @@ namespace Avalon.Helpers
         /// <returns></returns>
         public async Task<CurrentUser> GetCurrentUserProfile(ClaimsPrincipal user)
         {
-            var auth0Id = user.Claims.FirstOrDefault(c => c.Type == _nameidentifier)?.Value;
+            try
+            {
+                var auth0Id = user.Claims.FirstOrDefault(c => c.Type == _nameidentifier)?.Value;
 
-            return await _profileRepository.GetCurrentProfileByAuth0Id(auth0Id) ?? new CurrentUser(); // TODO: Burde smide en fejl hvis bruger ikke findes.
+                return await _profileRepository.GetCurrentProfileByAuth0Id(auth0Id) ?? new CurrentUser(); // TODO: Burde smide en fejl hvis bruger ikke findes.
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         /// <summary>Gets the current auth0 identifier for the user.</summary>
@@ -43,7 +50,14 @@ namespace Avalon.Helpers
         /// <returns>Auth0Id</returns>
         public string GetCurrentUserAuth0Id(ClaimsPrincipal user)
         {
-            return user.Claims.FirstOrDefault(c => c.Type == _nameidentifier)?.Value;
+            try
+            {
+                return user.Claims.FirstOrDefault(c => c.Type == _nameidentifier)?.Value;
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         /// <summary>Deletes the profile from Auth0. There is no going back!</summary>

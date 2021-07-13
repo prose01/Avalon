@@ -134,7 +134,9 @@ namespace Avalon.Data
         }
 
         /// <summary>Gets curretUser's chatmember profiles.</summary>
-        /// <param name="currentUser"></param>
+        /// <param name="currentUser">The current user.</param>
+        /// <param name="skip">The skip.</param>
+        /// <param name="limit">The limit.</param>
         /// <returns></returns>
         public async Task<IEnumerable<Profile>> GetChatMemberProfiles(CurrentUser currentUser, int skip, int limit)
         {
@@ -177,7 +179,7 @@ namespace Avalon.Data
             try
             {
                 var filter = Builders<Profile>
-                                .Filter.Regex(p => p.Name, new BsonRegularExpression(profileName, "i")); 
+                                .Filter.Regex(p => p.Name, new BsonRegularExpression(profileName, "i"));
 
                 return await _context.Profiles
                     .Find(filter)
@@ -191,7 +193,8 @@ namespace Avalon.Data
 
         // Search for anything in filter - eg. { Body: 'something' }
         /// <summary>Gets the profile by filter.</summary>
-        /// <param name="filter">The filter.</param>
+        /// <param name="currentUser">The current user.</param>
+        /// <param name="profileFilter">The profileFilter.</param>
         /// <param name="orderByType">The OrderByDescending column type.</param>
         /// <param name="skip">The skip.</param>
         /// <param name="limit">The limit.</param>
@@ -208,7 +211,8 @@ namespace Avalon.Data
                 //Add basic search criteria.
                 filters.Add(Builders<Profile>.Filter.Eq(p => p.SexualOrientation, currentUser.SexualOrientation));
 
-                if (currentUser.SexualOrientation == SexualOrientationType.Heterosexual || currentUser.SexualOrientation == SexualOrientationType.Homosexual) {
+                if (currentUser.SexualOrientation == SexualOrientationType.Heterosexual || currentUser.SexualOrientation == SexualOrientationType.Homosexual)
+                {
                     filters.Add(Builders<Profile>.Filter.Eq(p => p.Gender, currentUser.ProfileFilter.Gender));
                 }
                 else
@@ -245,6 +249,10 @@ namespace Avalon.Data
             }
         }
 
+        /// <summary>Applies definitions to filter.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <param name="profileFilter">The profileFilter.</param>
+        /// <param name="filterDefinition">The filterDefinition.</param>
         private List<FilterDefinition<Profile>> ApplyProfileFilter(ProfileFilter profileFilter, List<FilterDefinition<Profile>> filters)
         {
             try
@@ -520,7 +528,7 @@ namespace Avalon.Data
                 var query = _context.Profiles.Find(p => profileIds.Contains(p.ProfileId));
 
                 var profiles = await Task.FromResult(query.ToList());
-                
+
                 foreach (var profile in profiles)
                 {
                     if (profile.IsBookmarked.ContainsKey(currentUser.ProfileId))
@@ -533,10 +541,11 @@ namespace Avalon.Data
                                                orderby pair.Value descending
                                                select pair;
 
-                        if (isBookmarkedPair.Count() == 10)
-                        {
-                            profile.IsBookmarked.Remove(isBookmarkedPair.Last().Key);
-                        }
+                        // TODO: No limits
+                        //if (isBookmarkedPair.Count() == 10)
+                        //{
+                        //    profile.IsBookmarked.Remove(isBookmarkedPair.Last().Key);
+                        //}
 
                         profile.IsBookmarked.Add(currentUser.ProfileId, DateTime.Now);
                     }
@@ -572,15 +581,15 @@ namespace Avalon.Data
                     if (profile.IsBookmarked.ContainsKey(currentUser.ProfileId))
                     {
                         profile.IsBookmarked.Remove(currentUser.ProfileId);
+
+                        var filter = Builders<Profile>
+                                   .Filter.Eq(p => p.ProfileId, profile.ProfileId);
+
+                        var update = Builders<Profile>
+                                    .Update.Set(p => p.IsBookmarked, profile.IsBookmarked);
+
+                        await _context.Profiles.FindOneAndUpdateAsync(filter, update);
                     }
-
-                    var filter = Builders<Profile>
-                               .Filter.Eq(p => p.ProfileId, profile.ProfileId);
-
-                    var update = Builders<Profile>
-                                .Update.Set(p => p.IsBookmarked, profile.IsBookmarked);
-
-                    await _context.Profiles.FindOneAndUpdateAsync(filter, update);
                 }
             }
             catch
@@ -591,7 +600,7 @@ namespace Avalon.Data
 
         /// <summary>Add currentUser.profileId to visited list of profile.</summary>
         /// <param name="currentUser">The current user.</param>
-        /// <param name="profile"></param>
+        /// <param name="profile">The profile.</param>
         public async Task AddVisitedToProfiles(CurrentUser currentUser, Profile profile)
         {
             try
@@ -628,6 +637,9 @@ namespace Avalon.Data
             }
         }
 
+        /// <summary>Add currentUser.profileId to likes list of profile.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <param name="profile">The profile.</param>
         public async Task AddLikeToProfile(CurrentUser currentUser, Profile profile)
         {
             try
@@ -648,6 +660,9 @@ namespace Avalon.Data
             }
         }
 
+        /// <summary>Removes currentUser.profileId from likes list of profile.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <param name="profile">The profile.</param>
         public async Task RemoveLikeFromProfile(CurrentUser currentUser, Profile profile)
         {
             try
@@ -655,15 +670,15 @@ namespace Avalon.Data
                 if (profile.Likes.Contains(currentUser.ProfileId))
                 {
                     profile.Likes.Remove(currentUser.ProfileId);
+
+                    var filter = Builders<Profile>
+                               .Filter.Eq(p => p.ProfileId, profile.ProfileId);
+
+                    var update = Builders<Profile>
+                                .Update.Set(p => p.Likes, profile.Likes);
+
+                    await _context.Profiles.FindOneAndUpdateAsync(filter, update);
                 }
-
-                var filter = Builders<Profile>
-                           .Filter.Eq(p => p.ProfileId, profile.ProfileId);
-
-                var update = Builders<Profile>
-                            .Update.Set(p => p.Likes, profile.Likes);
-
-                await _context.Profiles.FindOneAndUpdateAsync(filter, update);
             }
             catch
             {

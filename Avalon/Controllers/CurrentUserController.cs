@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace Avalon.Controllers
@@ -33,8 +34,8 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpGet("~/CurrentUser")]
-        [ProducesResponseType(200)]
-        [ProducesResponseType(404)]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<ActionResult<CurrentUser>> GetCurrentUserProfile()
         {
             try
@@ -59,8 +60,8 @@ namespace Avalon.Controllers
         /// </summary>
         /// <param name="profile"> The value.</param>
         [HttpPost("~/CurrentUser")]
-        [ProducesResponseType(204)]
-        [ProducesResponseType(400)]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> Post([FromBody] CurrentUser item)
         {
             try
@@ -89,7 +90,7 @@ namespace Avalon.Controllers
                 item.IsBookmarked = new Dictionary<string, DateTime>();
                 item.Visited = new Dictionary<string, DateTime>();
                 item.Likes = new List<string>();
-                item.ProfileFilter = this.CreateBasicProfileFilter(item);
+                item.ProfileFilter = CreateBasicProfileFilter(item);
 
                 await _currentUserRepository.AddProfile(item);
 
@@ -128,9 +129,9 @@ namespace Avalon.Controllers
         /// <param name="item">The profile</param>
         [NoCache]
         [HttpPut("~/CurrentUser")]
-        [ProducesResponseType(204)]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(404)]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> Put([FromBody] CurrentUser item)
         {
             try
@@ -160,7 +161,7 @@ namespace Avalon.Controllers
                 // Update ProfileFilter Gender when CurrentUser is updated.
                 if (currentUser.SexualOrientation != item.SexualOrientation || currentUser.Gender != item.Gender)
                 {
-                    item.ProfileFilter.Gender = this.CreateBasicProfileFilter(item).Gender;
+                    item.ProfileFilter.Gender = CreateBasicProfileFilter(item).Gender;
                 }
 
                 await _currentUserRepository.UpdateProfile(item);
@@ -177,9 +178,9 @@ namespace Avalon.Controllers
         /// Deletes the CurrentUser profile.
         /// </summary>
         [HttpDelete("~/CurrentUser")]
-        [ProducesResponseType(204)]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(404)]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> DeleteCurrentUser()
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
@@ -195,7 +196,6 @@ namespace Avalon.Controllers
             {
                 await _helper.DeleteProfileFromAuth0(currentUser.ProfileId);
                 await _currentUserRepository.DeleteCurrentUser(currentUser.ProfileId);
-                //await _helper.DeleteProfileFromArtemis(currentUser.ProfileId);        // TODO: Delete all photos for Profile in Artemis
 
                 return NoContent();
             }
@@ -210,9 +210,9 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpPost("~/SaveProfileFilter")]
-        [ProducesResponseType(204)]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(404)]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> SaveProfileFilter([FromBody] ProfileFilter profileFilter)
         {
             if (profileFilter == null) return BadRequest();
@@ -240,18 +240,25 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpGet("~/LoadProfileFilter")]
-        [ProducesResponseType(200)]
-        [ProducesResponseType(404)]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<ActionResult<ProfileFilter>> LoadProfileFilter()
         {
-            var currentUser = await _helper.GetCurrentUserProfile(User);
-
-            if (currentUser == null)      // TODO: What do we do here?
+            try
             {
-                return NotFound();
-            }
+                var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            return await _currentUserRepository.LoadProfileFilter(currentUser);
+                if (currentUser == null)
+                {
+                    return NotFound();
+                }
+
+                return await _currentUserRepository.LoadProfileFilter(currentUser);
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.ToString());
+            }
         }
 
         /// <summary>Adds the profiles to currentUser bookmarks and ChatMemberslist.</summary>
@@ -259,9 +266,9 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpPost("~/AddProfilesToBookmarks")]
-        [ProducesResponseType(204)]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(404)]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> AddProfilesToBookmarks([FromBody] string[] profileIds)
         {
             if (profileIds == null || profileIds.Length < 1) return BadRequest();
@@ -296,8 +303,8 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpPost("~/RemoveProfilesFromBookmarks")]
-        [ProducesResponseType(204)]
-        [ProducesResponseType(404)]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> RemoveProfilesFromBookmarks([FromBody] string[] profileIds)
         {
             if (profileIds == null || profileIds.Length < 1) throw new ArgumentException($"ProfileIds is either null {profileIds} or length is < 1 {profileIds.Length}.", nameof(profileIds));
@@ -330,8 +337,8 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpPost("~/BlockChatMembers")]
-        [ProducesResponseType(204)]
-        [ProducesResponseType(404)]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> BlockChatMembers([FromBody] string[] profileIds)
         {
             if (profileIds == null || profileIds.Length < 1) return BadRequest();
@@ -355,12 +362,40 @@ namespace Avalon.Controllers
             }
         }
 
+        /// <summary>
+        /// Clean CurrenProfile for obsolete profile info.
+        /// </summary>
+        [NoCache]
+        [HttpGet("~/CleanCurrentUser")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> CleanCurrentUser()
+        {
+            var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            if (currentUser == null)
+            {
+                return NotFound();
+            }
+
+            try
+            {
+                await _currentUserRepository.CleanCurrentUser(currentUser);
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.ToString());
+            }
+        }
+
         #region Helper methods
 
         /// <summary>Creates the basic profile filter.</summary>
         /// <param name="currentUser">The current user.</param>
         /// <returns></returns>
-        private ProfileFilter CreateBasicProfileFilter(CurrentUser currentUser)
+        private static ProfileFilter CreateBasicProfileFilter(CurrentUser currentUser)
         {
             var filter = new ProfileFilter();
 

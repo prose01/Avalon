@@ -12,10 +12,14 @@ namespace Avalon.Interfaces
         Task<CurrentUser> GetCurrentProfileByAuth0Id(string auth0Id);
         Task SaveProfileFilter(CurrentUser currentUser, ProfileFilter profileFilter);
         Task<ProfileFilter> LoadProfileFilter(CurrentUser currentUser);
-        Task<CurrentUser> AddProfilesToBookmarks(CurrentUser currentUser, string[] profileIds);
-        Task<CurrentUser> RemoveProfilesFromBookmarks(CurrentUser currentUser, string[] profileIds);
-        Task<CurrentUser> AddProfilesToChatMemberslist(CurrentUser currentUser, string[] profileIds);
-        Task<CurrentUser> BlockChatMembers(CurrentUser currentUser, string[] profileIds);
-        Task<CurrentUser> RemoveProfilesFromChatMemberslist(CurrentUser currentUser, string[] profileIds);
+        Task AddProfilesToBookmarks(CurrentUser currentUser, string[] profileIds);
+        Task RemoveProfilesFromBookmarks(CurrentUser currentUser, string[] profileIds);
+        Task AddProfilesToChatMemberslist(CurrentUser currentUser, string[] profileIds);
+        Task RemoveProfilesFromChatMemberslist(CurrentUser currentUser, string[] profileIds);
+        Task BlockChatMembers(CurrentUser currentUser, string[] profileIds);
+        Task RemoveProfilesFromVisited(CurrentUser currentUser, string[] profileIds);
+        Task RemoveProfilesFromIsBookmarked(CurrentUser currentUser, string[] profileIds);
+        Task RemoveProfilesFromLikes(CurrentUser currentUser, string[] profileIds);
+        Task CleanCurrentUser(CurrentUser currentUser);
     }
 }

@@ -12,14 +12,16 @@ namespace Avalon.Data
     public class CurrentUserRepository : ICurrentUserRepository
     {
         private readonly ProfileContext _context = null;
+        private readonly IProfilesQueryRepository _profilesQueryRepository;
 
-        public CurrentUserRepository(IOptions<Settings> settings)
+        public CurrentUserRepository(IOptions<Settings> settings, IProfilesQueryRepository profilesQueryRepository)
         {
             _context = new ProfileContext(settings);
-        }        
+            _profilesQueryRepository = profilesQueryRepository;
+        }
 
         /// <summary>Adds a new profile.</summary>
-        /// <param name="item">The profile.</param>
+        /// <param name="currentUser">The current user.</param>
         public async Task AddProfile(CurrentUser currentUser)
         {
             try
@@ -54,25 +56,15 @@ namespace Avalon.Data
         }
 
         /// <summary>Updates the profile.</summary>
-        /// <param name="item">The profile.</param>
+        /// <param name="currentUser">The current user.</param>
         public async Task UpdateProfile(CurrentUser currentUser)
         {
             try
             {
                 currentUser.UpdatedOn = DateTime.Now;
 
-                //return await _context.CurrentUser
-                //            .ReplaceOneAsync(p => p.ProfileId.Equals(currentUser.ProfileId)
-                //                            , currentUser
-                //                            , new UpdateOptions { IsUpsert = true });
-
                 var filter = Builders<CurrentUser>
-                                .Filter.Eq(p => p.ProfileId, currentUser.ProfileId);
-
-                //var options = new FindOneAndReplaceOptions<CurrentUser>
-                //{
-                //    ReturnDocument = ReturnDocument.After
-                //};
+                                .Filter.Eq(c => c.ProfileId, currentUser.ProfileId);
 
                 await _context.CurrentUser.ReplaceOneAsync(filter, currentUser);
             }
@@ -92,7 +84,7 @@ namespace Avalon.Data
                 var filter = Builders<CurrentUser>.Filter.Eq("Auth0Id", auth0Id);
 
                 var update = Builders<CurrentUser>
-                                .Update.Set(p => p.LastActive, DateTime.Now);
+                                .Update.Set(c => c.LastActive, DateTime.Now);
 
                 var options = new FindOneAndUpdateOptions<CurrentUser>
                 {
@@ -117,17 +109,17 @@ namespace Avalon.Data
             try
             {
                 var filter = Builders<CurrentUser>
-                                .Filter.Eq(p => p.ProfileId, currentUser.ProfileId);
+                                .Filter.Eq(c => c.ProfileId, currentUser.ProfileId);
 
                 var update = Builders<CurrentUser>
-                                .Update.Set(p => p.ProfileFilter, profileFilter);
+                                .Update.Set(c => c.ProfileFilter, profileFilter);
 
-                var options = new FindOneAndUpdateOptions<CurrentUser>
-                {
-                    ReturnDocument = ReturnDocument.After
-                };
+                //var options = new FindOneAndUpdateOptions<CurrentUser>
+                //{
+                //    ReturnDocument = ReturnDocument.After
+                //};
 
-                await _context.CurrentUser.FindOneAndUpdateAsync(filter, update, options);
+                await _context.CurrentUser.FindOneAndUpdateAsync(filter, update);
             }
             catch
             {
@@ -142,9 +134,9 @@ namespace Avalon.Data
         {
             try
             {
-                var query = from p in _context.CurrentUser.AsQueryable()
-                            where p.ProfileId == currentUser.ProfileId
-                            select p.ProfileFilter;
+                var query = from c in _context.CurrentUser.AsQueryable()
+                            where c.ProfileId == currentUser.ProfileId
+                            select c.ProfileFilter;
 
                 return await Task.FromResult(query.FirstOrDefault());
             }
@@ -158,7 +150,7 @@ namespace Avalon.Data
         /// <param name="currentUser">The current user.</param>
         /// <param name="profileIds">The profile ids.</param>
         /// <returns></returns>
-        public async Task<CurrentUser> AddProfilesToBookmarks(CurrentUser currentUser, string[] profileIds)
+        public async Task AddProfilesToBookmarks(CurrentUser currentUser, string[] profileIds)
         {
             try
             {
@@ -166,20 +158,20 @@ namespace Avalon.Data
                 var newBookmarks = profileIds.Where(i => !currentUser.Bookmarks.Contains(i)).ToList();
 
                 if (newBookmarks.Count == 0)
-                    return null;
+                    return;
 
                 var filter = Builders<CurrentUser>
-                                .Filter.Eq(p => p.ProfileId, currentUser.ProfileId);
+                                .Filter.Eq(c => c.ProfileId, currentUser.ProfileId);
 
                 var update = Builders<CurrentUser>
-                                .Update.PushEach(p => p.Bookmarks, newBookmarks);
+                                .Update.PushEach(c => c.Bookmarks, newBookmarks);
 
-                var options = new FindOneAndUpdateOptions<CurrentUser>
-                {
-                    ReturnDocument = ReturnDocument.After
-                };
+                //var options = new FindOneAndUpdateOptions<CurrentUser>
+                //{
+                //    ReturnDocument = ReturnDocument.After
+                //};
 
-                return await _context.CurrentUser.FindOneAndUpdateAsync(filter, update, options);
+                await _context.CurrentUser.FindOneAndUpdateAsync(filter, update);
             }
             catch
             {
@@ -191,7 +183,7 @@ namespace Avalon.Data
         /// <param name="currentUser">The current user.</param>
         /// <param name="profileIds">The profile ids.</param>
         /// <returns></returns>
-        public async Task<CurrentUser> RemoveProfilesFromBookmarks(CurrentUser currentUser, string[] profileIds)
+        public async Task RemoveProfilesFromBookmarks(CurrentUser currentUser, string[] profileIds)
         {
             try
             {
@@ -199,20 +191,20 @@ namespace Avalon.Data
                 var removeBookmarks = profileIds.Where(i => currentUser.Bookmarks.Contains(i)).ToList();
 
                 if (removeBookmarks.Count == 0)
-                    return null;
+                    return;
 
                 var filter = Builders<CurrentUser>
-                                .Filter.Eq(p => p.ProfileId, currentUser.ProfileId);
+                                .Filter.Eq(c => c.ProfileId, currentUser.ProfileId);
 
                 var update = Builders<CurrentUser>
-                                .Update.PullAll(p => p.Bookmarks, removeBookmarks);
+                                .Update.PullAll(c => c.Bookmarks, removeBookmarks);
 
-                var options = new FindOneAndUpdateOptions<CurrentUser>
-                {
-                    ReturnDocument = ReturnDocument.After
-                };
+                //var options = new FindOneAndUpdateOptions<CurrentUser>
+                //{
+                //    ReturnDocument = ReturnDocument.After
+                //};
 
-                return await _context.CurrentUser.FindOneAndUpdateAsync(filter, update, options);
+                await _context.CurrentUser.FindOneAndUpdateAsync(filter, update);
             }
             catch
             {
@@ -224,7 +216,7 @@ namespace Avalon.Data
         /// <param name="currentUser">The current user.</param>
         /// <param name="profileIds">The profile ids.</param>
         /// <returns></returns>
-        public async Task<CurrentUser> AddProfilesToChatMemberslist(CurrentUser currentUser, string[] profileIds)
+        public async Task AddProfilesToChatMemberslist(CurrentUser currentUser, string[] profileIds)
         {
             try
             {
@@ -232,10 +224,10 @@ namespace Avalon.Data
                 var newChatMemberIds = profileIds.Where(i => !currentUser.ChatMemberslist.Any(m => m.ProfileId == i)).ToList();
 
                 if (newChatMemberIds.Count == 0)
-                    return null;
+                    return;
 
                 var filter = Builders<CurrentUser>
-                                .Filter.Eq(p => p.ProfileId, currentUser.ProfileId);
+                                .Filter.Eq(c => c.ProfileId, currentUser.ProfileId);
 
                 List<ChatMember> newChatMembers = new List<ChatMember>();
 
@@ -245,14 +237,14 @@ namespace Avalon.Data
                 }
 
                 var update = Builders<CurrentUser>
-                                .Update.PushEach(p => p.ChatMemberslist, newChatMembers);      // TODO: Kig på $addToSet
+                                .Update.PushEach(c => c.ChatMemberslist, newChatMembers);      // TODO: Kig på $addToSet
 
-                var options = new FindOneAndUpdateOptions<CurrentUser>
-                {
-                    ReturnDocument = ReturnDocument.After
-                };
+                //var options = new FindOneAndUpdateOptions<CurrentUser>
+                //{
+                //    ReturnDocument = ReturnDocument.After
+                //};
 
-                return await _context.CurrentUser.FindOneAndUpdateAsync(filter, update, options);
+                await _context.CurrentUser.FindOneAndUpdateAsync(filter, update);
             }
             catch
             {
@@ -264,7 +256,7 @@ namespace Avalon.Data
         /// <param name="currentUser">The current user.</param>
         /// <param name="profileIds">The profile ids.</param>
         /// <returns></returns>
-        public async Task<CurrentUser> RemoveProfilesFromChatMemberslist(CurrentUser currentUser, string[] profileIds)
+        public async Task RemoveProfilesFromChatMemberslist(CurrentUser currentUser, string[] profileIds)
         {
             try
             {
@@ -272,10 +264,10 @@ namespace Avalon.Data
                 var removeChatMemberIds = profileIds.Where(i => currentUser.ChatMemberslist.Any(m => m.ProfileId == i)).ToList();
 
                 if (removeChatMemberIds.Count == 0)
-                    return null;
+                    return;
 
                 var filter = Builders<CurrentUser>
-                                .Filter.Eq(p => p.ProfileId, currentUser.ProfileId);
+                                .Filter.Eq(c => c.ProfileId, currentUser.ProfileId);
 
                 List<ChatMember> removeChatMembers = new List<ChatMember>();
 
@@ -285,14 +277,14 @@ namespace Avalon.Data
                 }
 
                 var update = Builders<CurrentUser>
-                                .Update.PullAll(p => p.ChatMemberslist, removeChatMembers);
+                                .Update.PullAll(c => c.ChatMemberslist, removeChatMembers);
 
-                var options = new FindOneAndUpdateOptions<CurrentUser>
-                {
-                    ReturnDocument = ReturnDocument.After
-                };
+                //var options = new FindOneAndUpdateOptions<CurrentUser>
+                //{
+                //    ReturnDocument = ReturnDocument.After
+                //};
 
-                return await _context.CurrentUser.FindOneAndUpdateAsync(filter, update, options);
+                await _context.CurrentUser.FindOneAndUpdateAsync(filter, update);
             }
             catch
             {
@@ -301,20 +293,20 @@ namespace Avalon.Data
         }
 
         /// <summary>Blocks or unblocks chatmember profiles.</summary>
-        /// <param name="currentUser"></param>
+        /// <param name="currentUser">The current user.</param>
         /// <param name="profileIds">The profile identifiers.</param>
         /// <returns></returns>
-        public async Task<CurrentUser> BlockChatMembers(CurrentUser currentUser, string[] profileIds)
+        public async Task BlockChatMembers(CurrentUser currentUser, string[] profileIds)
         {
             try
             {
                 List<string> updatableChatMembers = profileIds.Where(i => currentUser.ChatMemberslist.Any(m => m.ProfileId == i)).ToList();
 
                 if (updatableChatMembers.Count == 0)
-                    return null;
+                    return;
 
                 var filter = Builders<CurrentUser>
-                                .Filter.Eq(p => p.ProfileId, currentUser.ProfileId);
+                                .Filter.Eq(c => c.ProfileId, currentUser.ProfileId);
 
                 List<ChatMember> updateChatMembers = new List<ChatMember>();
 
@@ -329,14 +321,207 @@ namespace Avalon.Data
                 }
 
                 var update = Builders<CurrentUser>
-                                .Update.Set(p => p.ChatMemberslist, updateChatMembers);
+                                .Update.Set(c => c.ChatMemberslist, updateChatMembers);
 
-                var options = new FindOneAndUpdateOptions<CurrentUser>
+                //var options = new FindOneAndUpdateOptions<CurrentUser>
+                //{
+                //    ReturnDocument = ReturnDocument.After
+                //};
+
+                await _context.CurrentUser.FindOneAndUpdateAsync(filter, update);
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        /// <summary> Remove obsolete Profiles from Visited.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <param name="profileIds">The profile identifiers.</param>
+        public async Task RemoveProfilesFromVisited(CurrentUser currentUser, string[] profileIds)
+        {
+            try
+            {
+                foreach (var profileId in profileIds)
                 {
-                    ReturnDocument = ReturnDocument.After
-                };
+                    if (currentUser.Visited.ContainsKey(profileId))
+                    {
+                        currentUser.Visited.Remove(profileId);
 
-                return await _context.CurrentUser.FindOneAndUpdateAsync(filter, update, options);
+                        var filter = Builders<CurrentUser>
+                                   .Filter.Eq(c => c.ProfileId, currentUser.ProfileId);
+
+                        var update = Builders<CurrentUser>
+                                    .Update.Set(c => c.Visited, currentUser.Visited);
+
+                        await _context.CurrentUser.FindOneAndUpdateAsync(filter, update);
+                    }
+                }
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        /// <summary> Remove obsolete Profiles from IsBookmarked.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <param name="profileIds">The profile identifiers.</param>
+        public async Task RemoveProfilesFromIsBookmarked(CurrentUser currentUser, string[] profileIds)
+        {
+            try
+            {
+                foreach (var profileId in profileIds)
+                {
+                    if (currentUser.IsBookmarked.ContainsKey(profileId))
+                    {
+                        currentUser.IsBookmarked.Remove(profileId);
+
+                        var filter = Builders<CurrentUser>
+                                   .Filter.Eq(c => c.ProfileId, currentUser.ProfileId);
+
+                        var update = Builders<CurrentUser>
+                                    .Update.Set(c => c.Visited, currentUser.Visited);
+
+                        await _context.CurrentUser.FindOneAndUpdateAsync(filter, update);
+                    }
+                }
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        /// <summary> Remove obsolete Profiles from Likes.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <param name="profileIds">The profile identifiers.</param>
+        public async Task RemoveProfilesFromLikes(CurrentUser currentUser, string[] profileIds)
+        {
+            try
+            {
+                foreach (var profileId in profileIds)
+                {
+                    if (currentUser.Likes.Contains(profileId))
+                    {
+                        currentUser.Likes.Remove(profileId);
+
+                        var filter = Builders<CurrentUser>
+                                   .Filter.Eq(c => c.ProfileId, currentUser.ProfileId);
+
+                        var update = Builders<CurrentUser>
+                                    .Update.Set(c => c.Visited, currentUser.Visited);
+
+                        await _context.CurrentUser.FindOneAndUpdateAsync(filter, update);
+                    }
+                }
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        /// <summary>Clean CurrenProfile for obsolete profile info.</summary>
+        /// <param name="currentUser">The current user.</param>
+        public async Task CleanCurrentUser(CurrentUser currentUser)
+        {
+            try
+            {
+                // Remove obsolete Profiles from Visited
+                var visitedProfileIds = new List<string>(); ;
+
+                foreach (var visited in currentUser.Visited)
+                {
+                    var item = await this._profilesQueryRepository.GetProfileById(visited.Key);
+
+                    if (item == null)
+                    {
+                        visitedProfileIds.Add(visited.Key);
+                    }
+                }
+
+                if (visitedProfileIds.Count > 0)
+                {
+                    await this.RemoveProfilesFromVisited(currentUser, visitedProfileIds.ToArray());
+                }
+
+
+                // Remove obsolete Profiles from Bookmarks
+                var bookmarkedProfileIds = new List<string>(); ;
+
+                foreach (var bookmark in currentUser.Bookmarks)
+                {
+                    var item = await this._profilesQueryRepository.GetProfileById(bookmark);
+
+                    if(item == null)
+                    {
+                        bookmarkedProfileIds.Add(bookmark);
+                    }
+                }
+
+                if (bookmarkedProfileIds.Count > 0)
+                {
+                    await this.RemoveProfilesFromBookmarks(currentUser, bookmarkedProfileIds.ToArray());
+                }
+
+
+                // Remove obsolete Profiles from IsBookmarked
+                var isBookmarkedProfileIds = new List<string>(); ;
+
+                foreach (var isBookmark in currentUser.IsBookmarked)
+                {
+                    var item = await this._profilesQueryRepository.GetProfileById(isBookmark.Key);
+
+                    if (item == null)
+                    {
+                        isBookmarkedProfileIds.Add(isBookmark.Key);
+                    }
+                }
+
+                if (isBookmarkedProfileIds.Count > 0)
+                {
+                    await this.RemoveProfilesFromIsBookmarked(currentUser, isBookmarkedProfileIds.ToArray());
+                }
+
+
+                // Remove obsolete Profiles from ChatMemberslist
+                var chatmemberProfileIds = new List<string>();
+
+                foreach (var chatmember in currentUser.ChatMemberslist)
+                {
+                    var item = await this._profilesQueryRepository.GetProfileById(chatmember.ProfileId);
+
+                    if (item == null)
+                    {
+                        chatmemberProfileIds.Add(chatmember.ProfileId);
+                    }
+                }
+
+                if (chatmemberProfileIds.Count > 0)
+                {
+                    await this.RemoveProfilesFromChatMemberslist(currentUser, isBookmarkedProfileIds.ToArray());
+                }
+
+
+                // Remove obsolete Profiles from Likes
+                var likesProfileIds = new List<string>();
+
+                foreach (var like in currentUser.Likes)
+                {
+                    var item = await this._profilesQueryRepository.GetProfileById(like);
+
+                    if (item == null)
+                    {
+                        likesProfileIds.Add(like);
+                    }
+                }
+
+                if (likesProfileIds.Count > 0)
+                {
+                    await this.RemoveProfilesFromLikes(currentUser, likesProfileIds.ToArray());
+                }
             }
             catch
             {
