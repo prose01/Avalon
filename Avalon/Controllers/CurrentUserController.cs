@@ -47,6 +47,9 @@ namespace Avalon.Controllers
                     return NotFound();
                 }
 
+                // Clean obsolete profile info from CurrentUser.
+                //await _currentUserRepository.CleanCurrentUser(currentUser);
+
                 return Ok(currentUser);
             }
             catch (Exception ex)

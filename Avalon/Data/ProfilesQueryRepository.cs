@@ -1,5 +1,6 @@
 ﻿using Avalon.Interfaces;
 using Avalon.Model;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -13,10 +14,14 @@ namespace Avalon.Data
     public class ProfilesQueryRepository : IProfilesQueryRepository
     {
         private readonly ProfileContext _context = null;
+        private readonly long _maxIsBookmarked;
+        private readonly long _maxVisited;
 
-        public ProfilesQueryRepository(IOptions<Settings> settings)
+        public ProfilesQueryRepository(IOptions<Settings> settings, IConfiguration config)
         {
             _context = new ProfileContext(settings);
+            _maxIsBookmarked = config.GetValue<long>("MaxIsBookmarked");
+            _maxVisited = config.GetValue<long>("MaxVisited");
         }
 
         #region Admin stuff
@@ -541,11 +546,10 @@ namespace Avalon.Data
                                                orderby pair.Value descending
                                                select pair;
 
-                        // TODO: No limits
-                        //if (isBookmarkedPair.Count() == 10)
-                        //{
-                        //    profile.IsBookmarked.Remove(isBookmarkedPair.Last().Key);
-                        //}
+                        if (isBookmarkedPair.Count() > _maxIsBookmarked)
+                        {
+                            profile.IsBookmarked.Remove(isBookmarkedPair.Last().Key);
+                        }
 
                         profile.IsBookmarked.Add(currentUser.ProfileId, DateTime.Now);
                     }
@@ -615,7 +619,7 @@ namespace Avalon.Data
                                       orderby pair.Value descending
                                       select pair;
 
-                    if (visitedPair.Count() == 10)
+                    if (visitedPair.Count() > _maxVisited)
                     {
                         profile.Visited.Remove(visitedPair.Last().Key);
                     }
