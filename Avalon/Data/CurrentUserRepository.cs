@@ -382,7 +382,7 @@ namespace Avalon.Data
                                    .Filter.Eq(c => c.ProfileId, currentUser.ProfileId);
 
                         var update = Builders<CurrentUser>
-                                    .Update.Set(c => c.Visited, currentUser.Visited);
+                                    .Update.Set(c => c.IsBookmarked, currentUser.IsBookmarked);
 
                         await _context.CurrentUser.FindOneAndUpdateAsync(filter, update);
                     }
@@ -411,7 +411,7 @@ namespace Avalon.Data
                                    .Filter.Eq(c => c.ProfileId, currentUser.ProfileId);
 
                         var update = Builders<CurrentUser>
-                                    .Update.Set(c => c.Visited, currentUser.Visited);
+                                    .Update.Set(c => c.Likes, currentUser.Likes);
 
                         await _context.CurrentUser.FindOneAndUpdateAsync(filter, update);
                     }
@@ -429,98 +429,113 @@ namespace Avalon.Data
         {
             try
             {
-                // Remove obsolete Profiles from Visited
-                var visitedProfileIds = new List<string>(); ;
-
-                foreach (var visited in currentUser.Visited)
+                if (currentUser.Visited != null)
                 {
-                    var item = await this._profilesQueryRepository.GetProfileById(visited.Key);
+                    // Remove obsolete Profiles from Visited
+                    var visitedProfileIds = new List<string>();
 
-                    if (item == null)
+                    foreach (var visited in currentUser.Visited)
                     {
-                        visitedProfileIds.Add(visited.Key);
+                        var item = await this._profilesQueryRepository.GetProfileById(visited.Key);
+
+                        if (item == null)
+                        {
+                            visitedProfileIds.Add(visited.Key);
+                        }
+                    }
+
+                    if (visitedProfileIds.Count > 0)
+                    {
+                        await this.RemoveProfilesFromVisited(currentUser, visitedProfileIds.ToArray());
                     }
                 }
 
-                if (visitedProfileIds.Count > 0)
+
+                if (currentUser.Bookmarks != null)
                 {
-                    await this.RemoveProfilesFromVisited(currentUser, visitedProfileIds.ToArray());
-                }
+                    // Remove obsolete Profiles from Bookmarks
+                    var bookmarkedProfileIds = new List<string>();
 
-
-                // Remove obsolete Profiles from Bookmarks
-                var bookmarkedProfileIds = new List<string>(); ;
-
-                foreach (var bookmark in currentUser.Bookmarks)
-                {
-                    var item = await this._profilesQueryRepository.GetProfileById(bookmark);
-
-                    if(item == null)
+                    foreach (var bookmark in currentUser.Bookmarks)
                     {
-                        bookmarkedProfileIds.Add(bookmark);
+                        var item = await this._profilesQueryRepository.GetProfileById(bookmark);
+
+                        if (item == null)
+                        {
+                            bookmarkedProfileIds.Add(bookmark);
+                        }
+                    }
+
+                    if (bookmarkedProfileIds.Count > 0)
+                    {
+                        await this.RemoveProfilesFromBookmarks(currentUser, bookmarkedProfileIds.ToArray());
                     }
                 }
 
-                if (bookmarkedProfileIds.Count > 0)
+
+                if (currentUser.IsBookmarked != null)
                 {
-                    await this.RemoveProfilesFromBookmarks(currentUser, bookmarkedProfileIds.ToArray());
-                }
+                    // Remove obsolete Profiles from IsBookmarked
+                    var isBookmarkedProfileIds = new List<string>();
 
-
-                // Remove obsolete Profiles from IsBookmarked
-                var isBookmarkedProfileIds = new List<string>(); ;
-
-                foreach (var isBookmark in currentUser.IsBookmarked)
-                {
-                    var item = await this._profilesQueryRepository.GetProfileById(isBookmark.Key);
-
-                    if (item == null)
+                    foreach (var isBookmark in currentUser.IsBookmarked)
                     {
-                        isBookmarkedProfileIds.Add(isBookmark.Key);
+                        var item = await this._profilesQueryRepository.GetProfileById(isBookmark.Key);
+
+                        if (item == null)
+                        {
+                            isBookmarkedProfileIds.Add(isBookmark.Key);
+                        }
+                    }
+
+                    if (isBookmarkedProfileIds.Count > 0)
+                    {
+                        await this.RemoveProfilesFromIsBookmarked(currentUser, isBookmarkedProfileIds.ToArray());
                     }
                 }
 
-                if (isBookmarkedProfileIds.Count > 0)
+
+                if (currentUser.ChatMemberslist != null)
                 {
-                    await this.RemoveProfilesFromIsBookmarked(currentUser, isBookmarkedProfileIds.ToArray());
-                }
+                    // Remove obsolete Profiles from ChatMemberslist
+                    var chatmemberProfileIds = new List<string>();
 
-
-                // Remove obsolete Profiles from ChatMemberslist
-                var chatmemberProfileIds = new List<string>();
-
-                foreach (var chatmember in currentUser.ChatMemberslist)
-                {
-                    var item = await this._profilesQueryRepository.GetProfileById(chatmember.ProfileId);
-
-                    if (item == null)
+                    foreach (var chatmember in currentUser.ChatMemberslist)
                     {
-                        chatmemberProfileIds.Add(chatmember.ProfileId);
+                        var item = await this._profilesQueryRepository.GetProfileById(chatmember.ProfileId);
+
+                        if (item == null)
+                        {
+                            chatmemberProfileIds.Add(chatmember.ProfileId);
+                        }
+                    }
+
+                    if (chatmemberProfileIds.Count > 0)
+                    {
+                        await this.RemoveProfilesFromChatMemberslist(currentUser, chatmemberProfileIds.ToArray());
                     }
                 }
 
-                if (chatmemberProfileIds.Count > 0)
+
+                if (currentUser.Likes != null)
                 {
-                    await this.RemoveProfilesFromChatMemberslist(currentUser, isBookmarkedProfileIds.ToArray());
-                }
+                    // Remove obsolete Profiles from Likes
+                    var likesProfileIds = new List<string>();
 
-
-                // Remove obsolete Profiles from Likes
-                var likesProfileIds = new List<string>();
-
-                foreach (var like in currentUser.Likes)
-                {
-                    var item = await this._profilesQueryRepository.GetProfileById(like);
-
-                    if (item == null)
+                    foreach (var like in currentUser.Likes)
                     {
-                        likesProfileIds.Add(like);
-                    }
-                }
+                        var item = await this._profilesQueryRepository.GetProfileById(like);
 
-                if (likesProfileIds.Count > 0)
-                {
-                    await this.RemoveProfilesFromLikes(currentUser, likesProfileIds.ToArray());
+                        if (item == null)
+                        {
+                            likesProfileIds.Add(like);
+                        }
+                    }
+
+                    if (likesProfileIds.Count > 0)
+                    {
+                        await this.RemoveProfilesFromLikes(currentUser, likesProfileIds.ToArray());
+                    }
                 }
             }
             catch

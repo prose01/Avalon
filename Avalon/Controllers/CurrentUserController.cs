@@ -48,7 +48,7 @@ namespace Avalon.Controllers
                 }
 
                 // Clean obsolete profile info from CurrentUser.
-                //await _currentUserRepository.CleanCurrentUser(currentUser);
+                await _currentUserRepository.CleanCurrentUser(currentUser);
 
                 return Ok(currentUser);
             }
@@ -182,7 +182,6 @@ namespace Avalon.Controllers
         /// </summary>
         [HttpDelete("~/CurrentUser")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
-        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> DeleteCurrentUser()
         {
@@ -193,7 +192,7 @@ namespace Avalon.Controllers
                 return NotFound();
             }
 
-            if (currentUser.Admin) return BadRequest(); // Admins cannot delete themseleves.
+            if (currentUser.Admin) throw new ArgumentException($"Admins cannot delete themseleves.");
 
             try
             {

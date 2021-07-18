@@ -29,7 +29,7 @@ namespace Avalon.Data
         /// <summary>Set profile as admin.</summary>
         /// <param name="item">The profile.</param>
         /// <returns></returns>
-        public async Task<Profile> SetAsAdmin(string profileId)
+        public async Task SetAsAdmin(string profileId)
         {
             try
             {
@@ -45,7 +45,7 @@ namespace Avalon.Data
                     ReturnDocument = ReturnDocument.After
                 };
 
-                return await _context.Profiles.FindOneAndUpdateAsync(filter, update, options);
+                await _context.Profiles.FindOneAndUpdateAsync(filter, update, options);
             }
             catch
             {
@@ -56,7 +56,7 @@ namespace Avalon.Data
         /// <summary>Removes profile as admin.</summary>
         /// <param name="item">The profile.</param>
         /// <returns></returns>
-        public async Task<Profile> RemoveAdmin(string profileId)
+        public async Task RemoveAdmin(string profileId)
         {
             try
             {
@@ -72,7 +72,7 @@ namespace Avalon.Data
                     ReturnDocument = ReturnDocument.After
                 };
 
-                return await _context.Profiles.FindOneAndUpdateAsync(filter, update, options);
+                await _context.Profiles.FindOneAndUpdateAsync(filter, update, options);
             }
             catch
             {

@@ -50,12 +50,19 @@ namespace Avalon.Controllers
 
                 if (!currentUser.Admin) throw new ArgumentException($"Current user does not have admin status.");
 
-                foreach (var profileId in profileIds)
+                if (Array.Exists(profileIds, x => x == currentUser.ProfileId))
                 {
-                    if (profileId == null) continue;
+                    throw new ArgumentException($"Admins cannot delete themseleves.");
+                }
+                else
+                {
+                    foreach (var profileId in profileIds)
+                    {
+                        if (profileId == null) continue;
 
-                    await _helper.DeleteProfileFromAuth0(profileId);
-                    await _profilesQueryRepository.DeleteProfile(profileId);
+                        await _helper.DeleteProfileFromAuth0(profileId);
+                        await _profilesQueryRepository.DeleteProfile(profileId);
+                    }
                 }
 
                 return NoContent();
@@ -76,13 +83,13 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpPost("~/SetAsAdmin")]
-        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> SetAsAdmin([FromBody] Profile profile)
+        public async Task<IActionResult> SetAsAdmin([FromBody] string profileId)
         {
             try
             {
-                if (profile == null) throw new ArgumentException($"Profile is null.", nameof(profile));
+                if (string.IsNullOrEmpty(profileId)) throw new ArgumentException($"Profile is null.", nameof(profileId));
 
                 var currentUser = await _helper.GetCurrentUserProfile(User);
 
@@ -93,9 +100,11 @@ namespace Avalon.Controllers
 
                 if (!currentUser.Admin) throw new ArgumentException($"Current user does not have admin status.");
 
-                if (currentUser.ProfileId == profile.ProfileId) throw new ArgumentException($"Current user cannot set admin status to itself.", nameof(profile));
+                if (currentUser.ProfileId == profileId) throw new ArgumentException($"Current user cannot set admin status to itself.", nameof(profileId));
 
-                return Ok(await _profilesQueryRepository.SetAsAdmin(profile.ProfileId));
+                await _profilesQueryRepository.SetAsAdmin(profileId); 
+
+                return NoContent();
             }
             catch (Exception ex)
             {
@@ -113,13 +122,13 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpPost("~/RemoveAdmin")]
-        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> RemoveAdmin([FromBody] Profile profile)
+        public async Task<IActionResult> RemoveAdmin([FromBody] string profileId)
         {
             try
             {
-                if (profile == null) throw new ArgumentException($"Profile is null.", nameof(profile));
+                if (string.IsNullOrEmpty(profileId)) throw new ArgumentException($"Profile is null.", nameof(profileId));
 
                 var currentUser = await _helper.GetCurrentUserProfile(User);
 
@@ -130,9 +139,11 @@ namespace Avalon.Controllers
 
                 if (!currentUser.Admin) throw new ArgumentException($"Current user does not have admin status.");
 
-                if (currentUser.ProfileId == profile.ProfileId) throw new ArgumentException($"Current user cannot remove admin status from itself.", nameof(profile));
+                if (currentUser.ProfileId == profileId) throw new ArgumentException($"Current user cannot remove admin status from itself.", nameof(profileId));
 
-                return Ok(await _profilesQueryRepository.RemoveAdmin(profile.ProfileId));
+                await _profilesQueryRepository.RemoveAdmin(profileId);
+
+                return NoContent();
             }
             catch (Exception ex)
             {
