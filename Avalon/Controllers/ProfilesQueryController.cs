@@ -83,7 +83,7 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpPost("~/SetAsAdmin")]
-        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> SetAsAdmin([FromBody] string profileId)
         {
@@ -102,9 +102,9 @@ namespace Avalon.Controllers
 
                 if (currentUser.ProfileId == profileId) throw new ArgumentException($"Current user cannot set admin status to itself.", nameof(profileId));
 
-                await _profilesQueryRepository.SetAsAdmin(profileId); 
+                //await _profilesQueryRepository.SetAsAdmin(profileId);
 
-                return NoContent();
+                return Ok(await _profilesQueryRepository.SetAsAdmin(profileId));
             }
             catch (Exception ex)
             {
@@ -122,7 +122,7 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpPost("~/RemoveAdmin")]
-        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> RemoveAdmin([FromBody] string profileId)
         {
@@ -141,9 +141,8 @@ namespace Avalon.Controllers
 
                 if (currentUser.ProfileId == profileId) throw new ArgumentException($"Current user cannot remove admin status from itself.", nameof(profileId));
 
-                await _profilesQueryRepository.RemoveAdmin(profileId);
 
-                return NoContent();
+                return Ok(await _profilesQueryRepository.RemoveAdmin(profileId));
             }
             catch (Exception ex)
             {
