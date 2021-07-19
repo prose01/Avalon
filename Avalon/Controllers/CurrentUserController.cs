@@ -75,10 +75,10 @@ namespace Avalon.Controllers
                 if (string.IsNullOrEmpty(auth0Id)) return BadRequest();
 
                 // Check if Name already exists.
-                if (_profilesQueryRepository.GetProfileByName(item.Name).Result != null) return BadRequest();
+                if (_profilesQueryRepository.GetProfileByName(item.Name).Result != null) return BadRequest("Name already exists.");
 
                 // Check if Auth0Id already exists.
-                if (_profilesQueryRepository.GetProfileByAuth0Id(auth0Id).Result != null) return BadRequest();
+                if (_profilesQueryRepository.GetProfileByAuth0Id(auth0Id).Result != null) return BadRequest("User already exists.");
 
                 // Set admin default to false! Only other admins can give this privilege.
                 item.Admin = false;
