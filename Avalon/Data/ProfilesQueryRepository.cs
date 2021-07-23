@@ -130,6 +130,7 @@ namespace Avalon.Data
 
                 return await _context.Profiles
                     .Find(filter)
+                    .Project<Profile>(this.GetProjection())
                     .FirstOrDefaultAsync();
             }
             catch
@@ -149,7 +150,7 @@ namespace Avalon.Data
             {
                 var chatMembers = currentUser.ChatMemberslist.Select(m => m.ProfileId);
 
-                return await _context.Profiles.Find(p => chatMembers.Contains(p.ProfileId)).Skip(skip).Limit(limit).ToListAsync();
+                return await _context.Profiles.Find(p => chatMembers.Contains(p.ProfileId)).Project<Profile>(this.GetProjection()).Skip(skip).Limit(limit).ToListAsync();
             }
             catch
             {
@@ -168,6 +169,7 @@ namespace Avalon.Data
                                 .Filter.Eq(p => p.Auth0Id, auth0Id);
                 return await _context.Profiles
                     .Find(filter)
+                    .Project<Profile>(this.GetProjection())
                     .FirstOrDefaultAsync();
             }
             catch
@@ -188,6 +190,7 @@ namespace Avalon.Data
 
                 return await _context.Profiles
                     .Find(filter)
+                    .Project<Profile>(this.GetProjection())
                     .FirstOrDefaultAsync();
             }
             catch
@@ -246,7 +249,7 @@ namespace Avalon.Data
                 }
 
                 return await _context.Profiles
-                                .Find(combineFilters).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
+                                .Find(combineFilters).Project<Profile>(this.GetProjection()).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
             }
             catch
             {
@@ -369,8 +372,10 @@ namespace Avalon.Data
                         break;
                 }
 
-                return await _context.Profiles
-                            .Find(combineFilters).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
+                IEnumerable<Profile> tt = await _context.Profiles
+                            .Find(combineFilters).Project<Profile>(this.GetProjection()).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
+
+                return tt;
             }
             catch
             {
@@ -404,7 +409,7 @@ namespace Avalon.Data
                 }
 
                 return await _context.Profiles
-                                    .Find(p => currentUser.Bookmarks.Contains(p.ProfileId)).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
+                                    .Find(p => currentUser.Bookmarks.Contains(p.ProfileId)).Project<Profile>(this.GetProjection()).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
             }
             catch
             {
@@ -441,7 +446,7 @@ namespace Avalon.Data
                 }
 
                 return await _context.Profiles
-                            .Find(filter).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
+                            .Find(filter).Project<Profile>(this.GetProjection()).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
             }
             catch
             {
@@ -478,7 +483,7 @@ namespace Avalon.Data
                 }
 
                 return await _context.Profiles
-                            .Find(filter).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
+                            .Find(filter).Project<Profile>(this.GetProjection()).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
             }
             catch
             {
@@ -515,7 +520,7 @@ namespace Avalon.Data
                 }
 
                 return await _context.Profiles
-                            .Find(filter).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
+                            .Find(filter).Project<Profile>(this.GetProjection()).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
             }
             catch
             {
@@ -700,7 +705,7 @@ namespace Avalon.Data
         {
             try
             {
-                return await _context.Profiles.Find(p => p.LastActive < DateTime.Now.AddDays(-30) && !p.Admin).Limit(10).ToListAsync();
+                return await _context.Profiles.Find(p => p.LastActive < DateTime.Now.AddDays(-30) && !p.Admin).Project<Profile>(this.GetProjection()).Limit(10).ToListAsync();
             }
             catch
             {
@@ -709,5 +714,13 @@ namespace Avalon.Data
         }
 
         #endregion
+
+        private ProjectionDefinition<Profile> GetProjection()
+        {
+
+            ProjectionDefinition<Profile> projection = "{ _id: 0, Auth0Id: 0, Admin:0, Gender: 0, SexualOrientation: 0, Bookmarks: 0, ChatMemberslist: 0, ProfileFilter: 0, IsBookmarked:0, Visited: 0, Likes: 0 }";
+
+            return projection;
+        }
     }
 }

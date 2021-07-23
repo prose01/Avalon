@@ -87,7 +87,7 @@ namespace Avalon.Helpers
 
         /// <summary>Gets the auth0 token.</summary>
         /// <returns></returns>
-        private string GetAuth0Token()
+        private string GetAuth0Token()  // TODO: Move id, secret etc. to appsettings.json and KeyVault.
         {
             try
             {
