@@ -150,6 +150,7 @@ namespace Avalon.Controllers
 
                 // Certain properties cannot be changed by the user.
                 item._id = currentUser._id; // _id is immutable and the type is unknow by BluePenguin.
+                item.Auth0Id = currentUser.Auth0Id; // No user is allowed to see Auth0Id and it is therefore unknow to BluePenguin.
                 item.Admin = currentUser.Admin; // No user is allowed to set themselves as Admin!
                 item.Name = currentUser.Name; // You cannot change your name after create.
                 item.Bookmarks = currentUser.Bookmarks;
