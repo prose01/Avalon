@@ -1,4 +1,5 @@
 ﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 using System;
 using System.Collections.Generic;
 
@@ -7,15 +8,22 @@ namespace Avalon.Model
     public class Profile : AbstractProfile
     {
         #region special properties
+
+        [BsonRepresentation(BsonType.String)]
+        internal SexualOrientationType SexualOrientation { get; set; }
+
+        [BsonRepresentation(BsonType.String)]
+        internal GenderType Gender { get; set; }
+
         public List<string> Bookmarks { private get; set; }
         public List<ChatMember> ChatMemberslist { private get; set; }
         public ProfileFilter ProfileFilter { private get; set; }
-        public Dictionary<string, DateTime> Visited { get; set; }
-        public override Dictionary<string, DateTime> IsBookmarked { get; set; }
-        public override List<string> Likes { get; set; }
+        public Dictionary<string, DateTime> Visited { internal get; set; }
+        public Dictionary<string, DateTime> IsBookmarked { internal get; set; }
+        public List<string> Likes { get; set; }
         #endregion
 
-        public override ObjectId _id { get; set; }
+        internal override ObjectId _id { get; set; }
         public override string Auth0Id { get; set; }
         public override string ProfileId { get; set; }
         public override bool Admin { get; set; } = false;
@@ -29,8 +37,6 @@ namespace Avalon.Model
         public override string Description { get; set; }
         public override List<ImageModel> Images { get; set; }
         public override List<string> Tags { get; set; }
-        public override GenderType Gender { get; set; }
-        public override SexualOrientationType SexualOrientation { get; set; } // TODO: Should this be encrypted?
         public override BodyType Body { get; set; }
         public override SmokingHabitsType SmokingHabits { get; set; }
         public override HasChildrenType HasChildren { get; set; }

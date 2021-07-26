@@ -372,10 +372,8 @@ namespace Avalon.Data
                         break;
                 }
 
-                IEnumerable<Profile> tt = await _context.Profiles
+                return await _context.Profiles
                             .Find(combineFilters).Project<Profile>(this.GetProjection()).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
-
-                return tt;
             }
             catch
             {
@@ -718,7 +716,17 @@ namespace Avalon.Data
         private ProjectionDefinition<Profile> GetProjection()
         {
 
-            ProjectionDefinition<Profile> projection = "{ _id: 0, Auth0Id: 0, Admin:0, Gender: 0, SexualOrientation: 0, Bookmarks: 0, ChatMemberslist: 0, ProfileFilter: 0, IsBookmarked:0, Visited: 0, Likes: 0 }";
+            ProjectionDefinition<Profile> projection = "{ " +
+                "_id: 0, " +
+                "Auth0Id: 0, " +
+                "Admin:0, " +
+                "Gender: 0, " +
+                "SexualOrientation: 0, " +
+                "Bookmarks: 0, " +
+                "ChatMemberslist: 0, " +
+                "ProfileFilter: 0, " +
+                "IsBookmarked:0, " +
+                "}";
 
             return projection;
         }

@@ -11,12 +11,12 @@ namespace Avalon.Model
     {
         #region special properties
         //public abstract Dictionary<string, DateTime> Visited { get; set; }
-        public abstract Dictionary<string, DateTime> IsBookmarked { get; set; }
-        public abstract List<string> Likes { get; set; }
+        //public abstract Dictionary<string, DateTime> IsBookmarked { get; set; }
+        //public abstract List<string> Likes { get; set; }
         #endregion
 
         [BsonId]
-        public abstract ObjectId _id { get; set; }
+        internal abstract ObjectId _id { get; set; }
         public abstract string Auth0Id { get; set; }
         public abstract string ProfileId { get; set; }
         public abstract bool Admin { get; set; }
@@ -45,12 +45,6 @@ namespace Avalon.Model
         public abstract List<ImageModel> Images { get; set; }
 
         public abstract List<string> Tags { get; set; }
-
-        [BsonRepresentation(BsonType.String)]
-        public abstract GenderType Gender { get; set; }
-
-        [BsonRepresentation(BsonType.String)]
-        public abstract SexualOrientationType SexualOrientation { get; set; } // TODO: Should this be encrypted?
 
         [BsonRepresentation(BsonType.String)]
         public abstract BodyType Body { get; set; }
