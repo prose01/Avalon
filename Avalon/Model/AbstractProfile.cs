@@ -9,17 +9,13 @@ namespace Avalon.Model
     [BsonKnownTypes(typeof(CurrentUser), typeof(Profile))]
     public abstract class AbstractProfile
     {
-        #region special properties
-        //public abstract Dictionary<string, DateTime> Visited { get; set; }
-        //public abstract Dictionary<string, DateTime> IsBookmarked { get; set; }
-        //public abstract List<string> Likes { get; set; }
-        #endregion
-
         [BsonId]
         internal abstract ObjectId _id { get; set; }
         public abstract string Auth0Id { internal get; set; }
         public abstract string ProfileId { get; set; }
         public abstract bool Admin { get; set; }
+
+        [StringLength(50, ErrorMessage = "Name length cannot be more than 50.")]
         public abstract string Name { get; set; }
 
         [DataType(DataType.DateTime)]

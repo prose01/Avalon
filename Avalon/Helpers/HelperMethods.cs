@@ -2,7 +2,6 @@
 using Avalon.Model;
 using Microsoft.Extensions.Options;
 using RestSharp;
-using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Text.Json;
