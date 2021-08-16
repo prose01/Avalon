@@ -16,7 +16,7 @@ namespace Avalon.Model
         internal GenderType Gender { get; set; }
 
         public List<string> Bookmarks { private get; set; }
-        public List<ChatMember> ChatMemberslist { private get; set; }
+        public List<ChatMember> ChatMemberslist { internal get; set; }
         public ProfileFilter ProfileFilter { private get; set; }
         public Dictionary<string, DateTime> Visited { internal get; set; }
         public Dictionary<string, DateTime> IsBookmarked { internal get; set; }
