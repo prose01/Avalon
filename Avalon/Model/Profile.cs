@@ -31,6 +31,7 @@ namespace Avalon.Model
         public override DateTime CreatedOn { get; set; }
         public override DateTime UpdatedOn { get; set; }
         public override DateTime LastActive { get; set; }
+        public override string Countrycode { get; set; }
         public override int? Age { get; set; } = null;
         public override int? Height { get; set; }
         public override bool Contactable { get; set; } = true;
