@@ -15,6 +15,7 @@ namespace Avalon.Model
         [BsonRepresentation(BsonType.String)]
         internal GenderType Gender { get; set; }
 
+        public string Languagecode { private get; set; }
         public List<string> Bookmarks { private get; set; }
         public List<ChatMember> ChatMemberslist { internal get; set; }
         public ProfileFilter ProfileFilter { private get; set; }

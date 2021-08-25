@@ -153,14 +153,27 @@ namespace Avalon.Controllers
                 item.Auth0Id = currentUser.Auth0Id; // No user is allowed to see Auth0Id and it is therefore unknow to BluePenguin.
                 item.Admin = currentUser.Admin; // No user is allowed to set themselves as Admin!
                 item.Name = currentUser.Name; // You cannot change your name after create.
-                item.Bookmarks = currentUser.Bookmarks;
-                item.ChatMemberslist = currentUser.ChatMemberslist;
-                item.IsBookmarked = currentUser.IsBookmarked;
-                item.Visited = currentUser.Visited;
-                item.Likes = currentUser.Likes;
                 item.ProfileFilter = currentUser.ProfileFilter;
                 item.Images = currentUser.Images;
                 item.CreatedOn = currentUser.CreatedOn;
+
+                // If currentUser has changed country reset all connections to other profiles.
+                if (item.Countrycode != currentUser.Countrycode)
+                {
+                    item.Bookmarks = new List<string>();
+                    item.ChatMemberslist = new List<ChatMember>();
+                    item.IsBookmarked = new Dictionary<string, DateTime>();
+                    item.Visited = new Dictionary<string, DateTime>();
+                    item.Likes = new List<string>();
+                }
+                else
+                {
+                    item.Bookmarks = currentUser.Bookmarks;
+                    item.ChatMemberslist = currentUser.ChatMemberslist;
+                    item.IsBookmarked = currentUser.IsBookmarked;
+                    item.Visited = currentUser.Visited;
+                    item.Likes = currentUser.Likes;
+                }
 
                 // Update ProfileFilter Gender when CurrentUser is updated.
                 if (currentUser.SexualOrientation != item.SexualOrientation || currentUser.Gender != item.Gender)

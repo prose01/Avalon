@@ -726,7 +726,7 @@ namespace Avalon.Data
                 "ChatMemberslist: 0, " +
                 "ProfileFilter: 0, " +
                 "IsBookmarked: 0, " +
-                "Countrycode: 0, " +
+                "Languagecode: 0, " +
                 "}";
 
             return projection;

@@ -438,7 +438,7 @@ namespace Avalon.Data
                     {
                         var item = await this._profilesQueryRepository.GetProfileById(visited.Key);
 
-                        if (item == null)
+                        if (item == null || currentUser.Countrycode != item.Countrycode)
                         {
                             visitedProfileIds.Add(visited.Key);
                         }
@@ -460,7 +460,7 @@ namespace Avalon.Data
                     {
                         var item = await this._profilesQueryRepository.GetProfileById(bookmark);
 
-                        if (item == null)
+                        if (item == null || currentUser.Countrycode != item.Countrycode)
                         {
                             bookmarkedProfileIds.Add(bookmark);
                         }
@@ -482,7 +482,7 @@ namespace Avalon.Data
                     {
                         var item = await this._profilesQueryRepository.GetProfileById(isBookmark.Key);
 
-                        if (item == null)
+                        if (item == null || currentUser.Countrycode != item.Countrycode)
                         {
                             isBookmarkedProfileIds.Add(isBookmark.Key);
                         }
@@ -504,7 +504,7 @@ namespace Avalon.Data
                     {
                         var item = await this._profilesQueryRepository.GetProfileById(chatmember.ProfileId);
 
-                        if (item == null)
+                        if (item == null || currentUser.Countrycode != item.Countrycode)
                         {
                             chatmemberProfileIds.Add(chatmember.ProfileId);
                         }
@@ -526,7 +526,7 @@ namespace Avalon.Data
                     {
                         var item = await this._profilesQueryRepository.GetProfileById(like);
 
-                        if (item == null)
+                        if (item == null || currentUser.Countrycode != item.Countrycode)
                         {
                             likesProfileIds.Add(like);
                         }
