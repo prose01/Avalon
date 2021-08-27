@@ -210,6 +210,9 @@ namespace Avalon.Controllers
                     return NotFound();
                 }
 
+                // Do not notify profile if admin has visited.
+                if(currentUser.Admin) return NoContent();
+
                 if (currentUser.ProfileId == profileId) throw new ArgumentException($"ProfileId is similar to current user profileId.", nameof(profileId));
 
                 var profile = await _profilesQueryRepository.GetProfileById(profileId);
@@ -252,6 +255,9 @@ namespace Avalon.Controllers
                 {
                     return NotFound();
                 }
+
+                // Cannot Like profile if currentUser is admin.
+                if (currentUser.Admin) return NoContent();
 
                 if (currentUser.ProfileId == profileId) throw new ArgumentException($"ProfileId is similar to current user profileId.", nameof(profileId));
 

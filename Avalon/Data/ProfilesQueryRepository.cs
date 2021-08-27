@@ -216,6 +216,9 @@ namespace Avalon.Data
                 //Remove currentUser from the list.
                 filters.Add(Builders<Profile>.Filter.Ne(p => p.ProfileId, currentUser.ProfileId));
 
+                //Remove admins from the list.
+                filters.Add(Builders<Profile>.Filter.Ne(p => p.Admin, true));
+
                 //Add basic search criteria.
                 filters.Add(Builders<Profile>.Filter.Eq(p => p.SexualOrientation, currentUser.SexualOrientation));
 
@@ -349,6 +352,11 @@ namespace Avalon.Data
 
                 //Remove currentUser from the list.
                 filters.Add(Builders<Profile>.Filter.Ne(p => p.ProfileId, currentUser.ProfileId));
+
+                //Remove admins from the list.
+                filters.Add(Builders<Profile>.Filter.Ne(p => p.Admin, true));
+
+                //Add basic search criteria.
                 filters.Add(Builders<Profile>.Filter.Eq(p => p.SexualOrientation, currentUser.SexualOrientation));
                 filters.Add(Builders<Profile>.Filter.Eq(p => p.Countrycode, currentUser.Countrycode));
 

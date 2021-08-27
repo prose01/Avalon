@@ -47,8 +47,11 @@ namespace Avalon.Controllers
                     return NotFound();
                 }
 
-                // Clean obsolete profile info from CurrentUser.
-                await _currentUserRepository.CleanCurrentUser(currentUser);
+                // Clean obsolete profile info from CurrentUser if not admin.
+                if (!currentUser.Admin)
+                {
+                    await _currentUserRepository.CleanCurrentUser(currentUser);
+                }
 
                 return Ok(currentUser);
             }
@@ -301,8 +304,11 @@ namespace Avalon.Controllers
                 await _currentUserRepository.AddProfilesToBookmarks(currentUser, profileIds);
                 await _currentUserRepository.AddProfilesToChatMemberslist(currentUser, profileIds);
 
-                // Notify other profiles that currentUser has bookmarked their profile.
-                await _profilesQueryRepository.AddIsBookmarkedToProfiles(currentUser, profileIds);
+                // Notify other profiles that currentUser has bookmarked their profile unless currentUser is admin.
+                if (!currentUser.Admin)
+                {
+                    await _profilesQueryRepository.AddIsBookmarkedToProfiles(currentUser, profileIds);
+                }
 
                 return NoContent();
             }
@@ -396,7 +402,11 @@ namespace Avalon.Controllers
 
             try
             {
-                await _currentUserRepository.CleanCurrentUser(currentUser);
+                // Clean obsolete profile info from CurrentUser if not admin.
+                if (!currentUser.Admin)
+                {
+                    await _currentUserRepository.CleanCurrentUser(currentUser);
+                }
 
                 return NoContent();
             }
