@@ -436,8 +436,14 @@ namespace Avalon.Data
         {
             try
             {
-                var filter = Builders<Profile>
-                                .Filter.In(p => p.ProfileId, currentUser.Visited.Keys);
+                List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>();
+
+                filters.Add(Builders<Profile>.Filter.In(p => p.ProfileId, currentUser.Visited.Keys));
+
+                //Remove admins from the list.
+                filters.Add(Builders<Profile>.Filter.Ne(p => p.Admin, true));
+
+                var combineFilters = Builders<Profile>.Filter.And(filters);
 
                 SortDefinition<Profile> sortDefinition;
 
@@ -455,7 +461,7 @@ namespace Avalon.Data
                 }
 
                 return await _context.Profiles
-                            .Find(filter).Project<Profile>(this.GetProjection()).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
+                            .Find(combineFilters).Project<Profile>(this.GetProjection()).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
             }
             catch
             {
@@ -473,8 +479,14 @@ namespace Avalon.Data
         {
             try
             {
-                var filter = Builders<Profile>
-                                .Filter.In(p => p.ProfileId, currentUser.IsBookmarked.Keys);
+                List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>();
+
+                filters.Add(Builders<Profile>.Filter.In(p => p.ProfileId, currentUser.IsBookmarked.Keys));
+
+                //Remove admins from the list.
+                filters.Add(Builders<Profile>.Filter.Ne(p => p.Admin, true));
+
+                var combineFilters = Builders<Profile>.Filter.And(filters);
 
                 SortDefinition<Profile> sortDefinition;
 
@@ -492,7 +504,7 @@ namespace Avalon.Data
                 }
 
                 return await _context.Profiles
-                            .Find(filter).Project<Profile>(this.GetProjection()).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
+                            .Find(combineFilters).Project<Profile>(this.GetProjection()).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
             }
             catch
             {
@@ -510,8 +522,14 @@ namespace Avalon.Data
         {
             try
             {
-                var filter = Builders<Profile>
-                                .Filter.In(p => p.ProfileId, currentUser.Likes);
+                List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>();
+
+                filters.Add(Builders<Profile>.Filter.In(p => p.ProfileId, currentUser.Likes));
+
+                //Remove admins from the list.
+                filters.Add(Builders<Profile>.Filter.Ne(p => p.Admin, true));
+
+                var combineFilters = Builders<Profile>.Filter.And(filters);
 
                 SortDefinition<Profile> sortDefinition;
 
@@ -529,7 +547,7 @@ namespace Avalon.Data
                 }
 
                 return await _context.Profiles
-                            .Find(filter).Project<Profile>(this.GetProjection()).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
+                            .Find(combineFilters).Project<Profile>(this.GetProjection()).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
             }
             catch
             {
@@ -726,7 +744,6 @@ namespace Avalon.Data
 
         private ProjectionDefinition<Profile> GetProjection()
         {
-
             ProjectionDefinition<Profile> projection = "{ " +
                 "_id: 0, " +
                 "Auth0Id: 0, " +

@@ -114,11 +114,6 @@ namespace Avalon.Data
                 var update = Builders<CurrentUser>
                                 .Update.Set(c => c.ProfileFilter, profileFilter);
 
-                //var options = new FindOneAndUpdateOptions<CurrentUser>
-                //{
-                //    ReturnDocument = ReturnDocument.After
-                //};
-
                 await _context.CurrentUser.FindOneAndUpdateAsync(filter, update);
             }
             catch
@@ -166,11 +161,6 @@ namespace Avalon.Data
                 var update = Builders<CurrentUser>
                                 .Update.PushEach(c => c.Bookmarks, newBookmarks);
 
-                //var options = new FindOneAndUpdateOptions<CurrentUser>
-                //{
-                //    ReturnDocument = ReturnDocument.After
-                //};
-
                 await _context.CurrentUser.FindOneAndUpdateAsync(filter, update);
             }
             catch
@@ -198,11 +188,6 @@ namespace Avalon.Data
 
                 var update = Builders<CurrentUser>
                                 .Update.PullAll(c => c.Bookmarks, removeBookmarks);
-
-                //var options = new FindOneAndUpdateOptions<CurrentUser>
-                //{
-                //    ReturnDocument = ReturnDocument.After
-                //};
 
                 await _context.CurrentUser.FindOneAndUpdateAsync(filter, update);
             }
@@ -233,16 +218,16 @@ namespace Avalon.Data
 
                 foreach (var chatMemberId in newChatMemberIds)
                 {
-                    newChatMembers.Add(new ChatMember() { ProfileId = chatMemberId, Blocked = false });
+                    var chatMember = this._profilesQueryRepository.GetProfileById(chatMemberId).Result;
+
+                    // Uncontactable profiles are not added to chatmemberlist unless currentUser is admin.
+                    if (!chatMember.Contactable && !currentUser.Admin) continue;
+
+                    newChatMembers.Add(new ChatMember() { ProfileId = chatMemberId, Name = chatMember.Name, Blocked = false });
                 }
 
                 var update = Builders<CurrentUser>
                                 .Update.PushEach(c => c.ChatMemberslist, newChatMembers);      // TODO: Kig på $addToSet
-
-                //var options = new FindOneAndUpdateOptions<CurrentUser>
-                //{
-                //    ReturnDocument = ReturnDocument.After
-                //};
 
                 await _context.CurrentUser.FindOneAndUpdateAsync(filter, update);
             }
@@ -260,31 +245,22 @@ namespace Avalon.Data
         {
             try
             {
-                //Filter out ChatMembers not on list.
-                var removeChatMemberIds = profileIds.Where(i => currentUser.ChatMemberslist.Any(m => m.ProfileId == i)).ToList();
-
-                if (removeChatMemberIds.Count == 0)
-                    return;
-
-                var filter = Builders<CurrentUser>
-                                .Filter.Eq(c => c.ProfileId, currentUser.ProfileId);
-
-                List<ChatMember> removeChatMembers = new List<ChatMember>();
-
-                foreach (var chatMemberId in removeChatMemberIds)
+                foreach (var profileId in profileIds)
                 {
-                    removeChatMembers.Add(new ChatMember() { ProfileId = chatMemberId, Blocked = false });
+                    //Filter out ChatMembers not on list.
+                    var removeChatMember = currentUser.ChatMemberslist.Where(i => i.ProfileId == profileId).ToList();
+
+                    if (removeChatMember.Count == 0)
+                        return;
+
+                    var filter = Builders<CurrentUser>
+                                    .Filter.Eq(c => c.ProfileId, currentUser.ProfileId);
+
+                    var update = Builders<CurrentUser>
+                                    .Update.PullAll(c => c.ChatMemberslist, removeChatMember);
+
+                    await _context.CurrentUser.FindOneAndUpdateAsync(filter, update);
                 }
-
-                var update = Builders<CurrentUser>
-                                .Update.PullAll(c => c.ChatMemberslist, removeChatMembers);
-
-                //var options = new FindOneAndUpdateOptions<CurrentUser>
-                //{
-                //    ReturnDocument = ReturnDocument.After
-                //};
-
-                await _context.CurrentUser.FindOneAndUpdateAsync(filter, update);
             }
             catch
             {
@@ -322,11 +298,6 @@ namespace Avalon.Data
 
                 var update = Builders<CurrentUser>
                                 .Update.Set(c => c.ChatMemberslist, updateChatMembers);
-
-                //var options = new FindOneAndUpdateOptions<CurrentUser>
-                //{
-                //    ReturnDocument = ReturnDocument.After
-                //};
 
                 await _context.CurrentUser.FindOneAndUpdateAsync(filter, update);
             }

@@ -102,8 +102,6 @@ namespace Avalon.Controllers
 
                 if (currentUser.ProfileId == profileId) throw new ArgumentException($"Current user cannot set admin status to itself.", nameof(profileId));
 
-                //await _profilesQueryRepository.SetAsAdmin(profileId);
-
                 return Ok(await _profilesQueryRepository.SetAsAdmin(profileId));
             }
             catch (Exception ex)
@@ -141,7 +139,6 @@ namespace Avalon.Controllers
 
                 if (currentUser.ProfileId == profileId) throw new ArgumentException($"Current user cannot remove admin status from itself.", nameof(profileId));
 
-
                 return Ok(await _profilesQueryRepository.RemoveAdmin(profileId));
             }
             catch (Exception ex)
@@ -175,8 +172,12 @@ namespace Avalon.Controllers
                 {
                     return NotFound();
                 }
-                // Notify profile that currentUser has visited their profile.
-                await _profilesQueryRepository.AddVisitedToProfiles(currentUser, profile);
+
+                // Notify profile that currentUser has visited their profile unless currentUser is admin.
+                if (!currentUser.Admin)
+                {
+                    await _profilesQueryRepository.AddVisitedToProfiles(currentUser, profile);
+                }
 
                 return Ok(profile);
             }
@@ -221,6 +222,7 @@ namespace Avalon.Controllers
                 {
                     throw new ArgumentException($"Profile is not found.", nameof(profileId));
                 }
+
                 // Notify profile that currentUser has visited their profile.
                 await _profilesQueryRepository.AddVisitedToProfiles(currentUser, profile);
 
