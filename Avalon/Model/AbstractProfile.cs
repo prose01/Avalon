@@ -15,7 +15,7 @@ namespace Avalon.Model
         public abstract string ProfileId { get; set; }
         public abstract bool Admin { get; set; }
 
-        [StringLength(50, ErrorMessage = "Name length cannot be more than 50.")]
+        [StringLength(50, ErrorMessage = "Name length cannot be more than 50 characters long.")]
         public abstract string Name { get; set; }
 
         [DataType(DataType.DateTime)]
@@ -37,7 +37,7 @@ namespace Avalon.Model
 
         public abstract bool Contactable { get; set; }
 
-        [StringLength(2000, ErrorMessage = "Description length cannot be more than 2000.")]
+        [StringLength(2000, ErrorMessage = "Description length cannot be more than 2000 characters long.")]
         public abstract string Description { get; set; }
 
         public abstract List<ImageModel> Images { get; set; }

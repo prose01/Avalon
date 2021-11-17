@@ -11,12 +11,12 @@ namespace Avalon.Data
 {
     public class CurrentUserRepository : ICurrentUserRepository
     {
-        private readonly ProfileContext _context = null;
+        private readonly Context _context = null;
         private readonly IProfilesQueryRepository _profilesQueryRepository;
 
         public CurrentUserRepository(IOptions<Settings> settings, IProfilesQueryRepository profilesQueryRepository)
         {
-            _context = new ProfileContext(settings);
+            _context = new Context(settings);
             _profilesQueryRepository = profilesQueryRepository;
         }
 

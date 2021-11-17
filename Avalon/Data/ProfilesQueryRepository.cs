@@ -13,13 +13,13 @@ namespace Avalon.Data
 {
     public class ProfilesQueryRepository : IProfilesQueryRepository
     {
-        private readonly ProfileContext _context = null;
+        private readonly Context _context = null;
         private readonly long _maxIsBookmarked;
         private readonly long _maxVisited;
 
         public ProfilesQueryRepository(IOptions<Settings> settings, IConfiguration config)
         {
-            _context = new ProfileContext(settings);
+            _context = new Context(settings);
             _maxIsBookmarked = config.GetValue<long>("MaxIsBookmarked");
             _maxVisited = config.GetValue<long>("MaxVisited");
         }
