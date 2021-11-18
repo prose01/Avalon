@@ -50,11 +50,15 @@ namespace Avalon.Data
         //    }
         //}
 
-        public async Task<IEnumerable<Feedback>> GetUnassignedFeedbacks(FeedbackType type = FeedbackType.Any)
+        public async Task<IEnumerable<Feedback>> GetUnassignedFeedbacks(string countrycode, string languagecode, FeedbackType type = FeedbackType.Any)
         {
             try
             {
                 List<FilterDefinition<Feedback>> filters = new List<FilterDefinition<Feedback>>();
+
+                filters.Add(Builders<Feedback>.Filter.Eq(f => f.Countrycode, countrycode));
+
+                filters.Add(Builders<Feedback>.Filter.Eq(f => f.Languagecode, languagecode));
 
                 filters.Add(Builders<Feedback>.Filter.Eq(f => f.AdminProfileId, null));
 
@@ -76,11 +80,15 @@ namespace Avalon.Data
             }
         }
 
-        public async Task<IEnumerable<Feedback>> GetFeedbacksByAdminProfileId(string profileId, FeedbackType type = FeedbackType.Any)
+        public async Task<IEnumerable<Feedback>> GetFeedbacksByAdminProfileId(string countrycode, string languagecode, string profileId, FeedbackType type = FeedbackType.Any)
         {
             try
             {
                 List<FilterDefinition<Feedback>> filters = new List<FilterDefinition<Feedback>>();
+
+                filters.Add(Builders<Feedback>.Filter.Eq(f => f.Countrycode, countrycode));
+
+                filters.Add(Builders<Feedback>.Filter.Eq(f => f.Languagecode, languagecode));
 
                 filters.Add(Builders<Feedback>.Filter.Eq(f => f.AdminProfileId, profileId));
 
@@ -102,11 +110,15 @@ namespace Avalon.Data
             }
         }
 
-        public async Task<IEnumerable<Feedback>> GetFeedbacksByAdminProfileIdAndStatus(bool status, string profileId, FeedbackType type = FeedbackType.Any)
+        public async Task<IEnumerable<Feedback>> GetFeedbacksByAdminProfileIdAndStatus(string countrycode, string languagecode, bool status, string profileId, FeedbackType type = FeedbackType.Any)
         {
             try
             {
                 List<FilterDefinition<Feedback>> filters = new List<FilterDefinition<Feedback>>();
+
+                filters.Add(Builders<Feedback>.Filter.Eq(f => f.Countrycode, countrycode));
+
+                filters.Add(Builders<Feedback>.Filter.Eq(f => f.Languagecode, languagecode));
 
                 filters.Add(Builders<Feedback>.Filter.Eq(f => f.AdminProfileId, profileId));
 
@@ -130,11 +142,15 @@ namespace Avalon.Data
             }
         }
 
-        public async Task<IEnumerable<Feedback>> GetFeedbacksByProfileId(string profileId, FeedbackType type = FeedbackType.Any)
+        public async Task<IEnumerable<Feedback>> GetFeedbacksByProfileId(string countrycode, string languagecode, string profileId, FeedbackType type = FeedbackType.Any)
         {
             try
             {
                 List<FilterDefinition<Feedback>> filters = new List<FilterDefinition<Feedback>>();
+
+                filters.Add(Builders<Feedback>.Filter.Eq(f => f.Countrycode, countrycode));
+
+                filters.Add(Builders<Feedback>.Filter.Eq(f => f.Languagecode, languagecode));
 
                 filters.Add(Builders<Feedback>.Filter.Eq(f => f.FromProfileId, profileId));
 
@@ -156,11 +172,15 @@ namespace Avalon.Data
             }
         }
 
-        public async Task<IEnumerable<Feedback>> GetFeedbacksByProfileIdAndStatus(bool status, string profileId, FeedbackType type = FeedbackType.Any)
+        public async Task<IEnumerable<Feedback>> GetFeedbacksByProfileIdAndStatus(string countrycode, string languagecode, bool status, string profileId, FeedbackType type = FeedbackType.Any)
         {
             try
             {
                 List<FilterDefinition<Feedback>> filters = new List<FilterDefinition<Feedback>>();
+
+                filters.Add(Builders<Feedback>.Filter.Eq(f => f.Countrycode, countrycode));
+
+                filters.Add(Builders<Feedback>.Filter.Eq(f => f.Languagecode, languagecode));
 
                 filters.Add(Builders<Feedback>.Filter.Eq(f => f.FromProfileId, profileId));
 
@@ -184,11 +204,15 @@ namespace Avalon.Data
             }
         }
 
-        public async Task<IEnumerable<Feedback>> GetFeedbacksByStatus(bool status, FeedbackType type = FeedbackType.Any)
+        public async Task<IEnumerable<Feedback>> GetFeedbacksByStatus(string countrycode, string languagecode, bool status, FeedbackType type = FeedbackType.Any)
         {
             try
             {
                 List<FilterDefinition<Feedback>> filters = new List<FilterDefinition<Feedback>>();
+
+                filters.Add(Builders<Feedback>.Filter.Eq(f => f.Countrycode, countrycode));
+
+                filters.Add(Builders<Feedback>.Filter.Eq(f => f.Languagecode, languagecode));
 
                 filters.Add(Builders<Feedback>.Filter.Eq(f => f.Open, status));
 

@@ -26,5 +26,9 @@ namespace Avalon.Model
         public string Message { get; set; }
 
         public bool Open { get; set; } = true;
+
+        public string Countrycode { get; set; }
+
+        public string Languagecode { get; set; }
     }
 }
