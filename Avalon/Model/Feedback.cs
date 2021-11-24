@@ -20,6 +20,7 @@ namespace Avalon.Model
 
         public string AdminProfileId { get; set; }
 
+        [BsonRepresentation(BsonType.String)]
         public FeedbackType FeedbackType { get; set; }
 
         [StringLength(2000, ErrorMessage = "Message length cannot be more than 2000 characters long.")]
