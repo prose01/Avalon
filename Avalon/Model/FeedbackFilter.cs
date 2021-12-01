@@ -1,22 +1,19 @@
-﻿using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace Avalon.Model
 {
-    public class Feedback
+    public class FeedbackFilter
     {
-        [BsonId]
-        public ObjectId _id { get; set; }
-
         public string FeedbackId { get; set; }
 
-        [DataType(DataType.DateTime)]
-        public DateTime? DateSent { get; set; } = DateTime.Now;
+        public DateTime? DateSentStart { get; set; } = DateTime.Now;
 
-        [DataType(DataType.DateTime)]
-        public DateTime? DateSeen { get; set; }
+        public DateTime? DateSeenEnd { get; set; }
+
+        public DateTime? DateSeenStart { get; set; } = DateTime.Now;
+
+        public DateTime? DateSentEnd { get; set; }
 
         public string FromProfileId { get; set; }
 
@@ -26,7 +23,6 @@ namespace Avalon.Model
 
         public string AdminName { get; set; }
 
-        [BsonRepresentation(BsonType.String)]
         public FeedbackType FeedbackType { get; set; }
 
         [StringLength(2000, ErrorMessage = "Message length cannot be more than 2000 characters long.")]

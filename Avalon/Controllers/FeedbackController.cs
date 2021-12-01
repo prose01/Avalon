@@ -45,9 +45,11 @@ namespace Avalon.Controllers
                     return NotFound();
                 }
 
+                item.FeedbackId = Guid.NewGuid().ToString();
                 item.DateSent = DateTime.Now;
                 item.Open = true;
                 item.FromProfileId = currentUser.ProfileId;
+                item.FromName = currentUser.Name;
                 item.Countrycode = currentUser.Countrycode;
                 item.Languagecode = currentUser.Languagecode;
 
@@ -84,13 +86,7 @@ namespace Avalon.Controllers
                 throw new ArgumentException($"Current user is null or does not have admin status.");
             }
 
-            if (string.IsNullOrEmpty(feedbackParameters.Countrycode))
-                feedbackParameters.Countrycode = currentUser.Countrycode;
-
-            if (string.IsNullOrEmpty(feedbackParameters.Languagecode))
-                feedbackParameters.Languagecode = currentUser.Languagecode;
-
-            var feedbacks = await _reedbackRepository.GetUnassignedFeedbacks(feedbackParameters.Countrycode, feedbackParameters.Languagecode, feedbackParameters.Type);
+            var feedbacks = await _reedbackRepository.GetUnassignedFeedbacks(feedbackParameters.Countrycode, feedbackParameters.Languagecode);
 
             foreach (var feedback in feedbacks)
             {
@@ -101,175 +97,45 @@ namespace Avalon.Controllers
         }
 
         /// <summary>
-        /// Gets Feedbacks By Admin ProfileId.
+        /// Assign Feedback to admin.
         /// </summary>
-        /// <param name="countrycode">The Countrycode. Defaults to admin countrycode.</param>
-        /// <param name="languagecode">The Languagecode. Defaults to admin languagecode.</param>
-        /// <param name="profileId">The profile identifier.</param>
-        /// <param name="type"> The FeedbackType.</param>
-        /// <exception cref="ArgumentException">Admin ProfileId is null.</exception>
+        /// <param name="feedbackIds">The feedback identifiers.</param>
         /// <exception cref="ArgumentException">Current user is null or does not have admin status.</exception>
         /// <returns></returns>
         [NoCache]
-        [HttpGet("~/GetFeedbacksByAdminProfileId/")]
-        public async Task<IEnumerable<Feedback>> GetFeedbacksByAdminProfileId(string countrycode, string languagecode, string profileId, FeedbackType type = FeedbackType.Any)
+        [HttpPost("~/AssignFeedbackToAdmin")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        public async Task<IActionResult> AssignFeedbackToAdmin([FromBody] string[] feedbackIds)
         {
-            if (string.IsNullOrEmpty(profileId)) throw new ArgumentException($"Admin ProfileId is null.", nameof(profileId));
-
-            var currentUser = await _helper.GetCurrentUserProfile(User);
-
-            if (currentUser == null || !currentUser.Admin)
+            try
             {
-                throw new ArgumentException($"Current user is null or does not have admin status.");
+                var currentUser = await _helper.GetCurrentUserProfile(User);
+
+                if (currentUser == null || !currentUser.Admin)
+                {
+                    throw new ArgumentException($"Current user is null or does not have admin status.");
+                }
+
+                await _reedbackRepository.AssignFeedbackToAdmin(currentUser, feedbackIds);
+
+                return NoContent();
             }
-
-            if (string.IsNullOrEmpty(countrycode))
-                countrycode = currentUser.Countrycode;
-
-            if (string.IsNullOrEmpty(languagecode))
-                languagecode = currentUser.Languagecode;
-
-            var feedbacks = await _reedbackRepository.GetFeedbacksByAdminProfileId(countrycode, languagecode, profileId, type);
-
-            foreach (var feedback in feedbacks)
+            catch (Exception ex)
             {
-                feedback.Message = _cryptography.Decrypt(feedback.Message);
+                return Problem(ex.ToString());
             }
-
-            return feedbacks;
         }
 
         /// <summary>
-        /// Gets Feedbacks By Admin ProfileId and Status.
+        /// Gets the specified feedbacks based on a filter. Eg. { FromName: 'someone' }
         /// </summary>
-        /// <param name="countrycode">The Countrycode. Defaults to admin countrycode.</param>
-        /// <param name="languagecode">The Languagecode. Defaults to admin languagecode.</param>
-        /// <param name="status">The Feedback status (true = open, false = closed, default = false).</param>
-        /// <param name="profileId">The profile identifier.</param>
-        /// <param name="type"> The FeedbackType.</param>
-        /// <exception cref="ArgumentException">Admin ProfileId is null.</exception>
+        /// <param name="feedbackFilter">The feedbackFilter.</param>
         /// <exception cref="ArgumentException">Current user is null or does not have admin status.</exception>
+        /// <exception cref="ArgumentException">Current feedbackFilter cannot find any matching feedbacks.. {feedbackFilter}</exception>
         /// <returns></returns>
         [NoCache]
-        [HttpGet("~/GetFeedbacksByAdminProfileIdAndStatus/")]
-        public async Task<IEnumerable<Feedback>> GetFeedbacksByAdminProfileIdAndStatus(string countrycode, string languagecode, bool status, string profileId, FeedbackType type = FeedbackType.Any)
-        {
-            if (string.IsNullOrEmpty(profileId)) throw new ArgumentException($"Admin ProfileId is null.", nameof(profileId));
-
-            var currentUser = await _helper.GetCurrentUserProfile(User);
-
-            if (currentUser == null || !currentUser.Admin)
-            {
-                throw new ArgumentException($"Current user is null or does not have admin status.");
-            }
-
-            if (string.IsNullOrEmpty(countrycode))
-                countrycode = currentUser.Countrycode;
-
-            if (string.IsNullOrEmpty(languagecode))
-                languagecode = currentUser.Languagecode;
-
-            var feedbacks = await _reedbackRepository.GetFeedbacksByAdminProfileIdAndStatus(countrycode, languagecode, status, profileId, type);
-
-            foreach (var feedback in feedbacks)
-            {
-                feedback.Message = _cryptography.Decrypt(feedback.Message);
-            }
-
-            return feedbacks;
-        }
-
-        /// <summary>
-        /// Gets Feedbacks By ProfileId.
-        /// </summary>
-        /// <param name="countrycode">The Countrycode. Defaults to admin countrycode.</param>
-        /// <param name="languagecode">The Languagecode. Defaults to admin languagecode.</param>
-        /// <param name="profileId">The profile identifier.</param>
-        /// <param name="type"> The FeedbackType.</param>
-        /// <exception cref="ArgumentException">ProfileId is null.</exception>
-        /// <exception cref="ArgumentException">Current user is null or does not have admin status.</exception>
-        /// <returns></returns>
-        [NoCache]
-        [HttpGet("~/GetFeedbacksByProfileId/")]
-        public async Task<IEnumerable<Feedback>> GetFeedbacksByProfileId(string countrycode, string languagecode, string profileId, FeedbackType type = FeedbackType.Any)
-        {
-            if (string.IsNullOrEmpty(profileId)) throw new ArgumentException($"ProfileId is null.", nameof(profileId));
-
-            var currentUser = await _helper.GetCurrentUserProfile(User);
-
-            if (currentUser == null || !currentUser.Admin)
-            {
-                throw new ArgumentException($"Current user is null or does not have admin status.");
-            }
-
-            if (string.IsNullOrEmpty(countrycode))
-                countrycode = currentUser.Countrycode;
-
-            if (string.IsNullOrEmpty(languagecode))
-                languagecode = currentUser.Languagecode;
-
-            var feedbacks = await _reedbackRepository.GetFeedbacksByProfileId(countrycode, languagecode, profileId, type);
-
-            foreach (var feedback in feedbacks)
-            {
-                feedback.Message = _cryptography.Decrypt(feedback.Message);
-            }
-
-            return feedbacks;
-        }
-
-        /// <summary>
-        /// Gets Feedbacks By ProfileId and Status.
-        /// </summary>
-        /// <param name="countrycode">The Countrycode. Defaults to admin countrycode.</param>
-        /// <param name="languagecode">The Languagecode. Defaults to admin languagecode.</param>
-        /// <param name="status">The Feedback status (true = open, false = closed, default = false).</param>
-        /// <param name="profileId">The profile identifier.</param>
-        /// <param name="type"> The FeedbackType.</param>
-        /// <exception cref="ArgumentException">Admin ProfileId is null.</exception>
-        /// <exception cref="ArgumentException">Current user is null or does not have admin status.</exception>
-        /// <returns></returns>
-        [NoCache]
-        [HttpGet("~/GetFeedbacksByProfileIdAndStatus/")]
-        public async Task<IEnumerable<Feedback>> GetFeedbacksByProfileIdAndStatus(string countrycode, string languagecode, bool status, string profileId, FeedbackType type = FeedbackType.Any)
-        {
-            if (string.IsNullOrEmpty(profileId)) throw new ArgumentException($"ProfileId is null.", nameof(profileId));
-
-            var currentUser = await _helper.GetCurrentUserProfile(User);
-
-            if (currentUser == null || !currentUser.Admin)
-            {
-                throw new ArgumentException($"Current user is null or does not have admin status.");
-            }
-
-            if (string.IsNullOrEmpty(countrycode))
-                countrycode = currentUser.Countrycode;
-
-            if (string.IsNullOrEmpty(languagecode))
-                languagecode = currentUser.Languagecode;
-
-            var feedbacks = await _reedbackRepository.GetFeedbacksByProfileIdAndStatus(countrycode, languagecode, status, profileId, type);
-
-            foreach (var feedback in feedbacks)
-            {
-                feedback.Message = _cryptography.Decrypt(feedback.Message);
-            }
-
-            return feedbacks;
-        }
-
-        /// <summary>
-        /// Gets Feedbacks By Status.
-        /// </summary>
-        /// <param name="countrycode">The Countrycode. Defaults to admin countrycode.</param>
-        /// <param name="languagecode">The Languagecode. Defaults to admin languagecode.</param>
-        /// <param name="status">The Feedback status (true = open, false = closed, default = false).</param>
-        /// <param name="type"> The FeedbackType.</param>
-        /// <exception cref="ArgumentException">Current user is null or does not have admin status.</exception>
-        /// <returns></returns>
-        [NoCache]
-        [HttpGet("~/GetFeedbacksByStatus/")]
-        public async Task<IEnumerable<Feedback>> GetFeedbacksByStatus(string countrycode, string languagecode, bool status, FeedbackType type = FeedbackType.Any)
+        [HttpPost("~/GetFeedbacksByFilter")]
+        public async Task<IEnumerable<Feedback>> GetFeedbacksByFilter([FromBody] FeedbackFilter feedbackFilter)
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
@@ -278,21 +144,208 @@ namespace Avalon.Controllers
                 throw new ArgumentException($"Current user is null or does not have admin status.");
             }
 
-            if (string.IsNullOrEmpty(countrycode))
-                countrycode = currentUser.Countrycode;
-
-            if (string.IsNullOrEmpty(languagecode))
-                languagecode = currentUser.Languagecode;
-
-            var feedbacks = await _reedbackRepository.GetFeedbacksByStatus(countrycode, languagecode, status, type);
-
-            foreach (var feedback in feedbacks)
-            {
-                feedback.Message = _cryptography.Decrypt(feedback.Message);
-            }
-
-            return feedbacks;
+            return await _reedbackRepository.GetFeedbacksByFilter(feedbackFilter) ?? throw new ArgumentException($"Current feedbackFilter cannot find any matching feedbacks.", nameof(feedbackFilter));
         }
+
+
+
+
+
+
+
+        ///// <summary>
+        ///// Gets Feedbacks By Admin ProfileId.
+        ///// </summary>
+        ///// <param name="countrycode">The Countrycode. Defaults to admin countrycode.</param>
+        ///// <param name="languagecode">The Languagecode. Defaults to admin languagecode.</param>
+        ///// <param name="profileId">The profile identifier.</param>
+        ///// <param name="type"> The FeedbackType.</param>
+        ///// <exception cref="ArgumentException">Admin ProfileId is null.</exception>
+        ///// <exception cref="ArgumentException">Current user is null or does not have admin status.</exception>
+        ///// <returns></returns>
+        //[NoCache]
+        //[HttpGet("~/GetFeedbacksByAdminProfileId/")]
+        //public async Task<IEnumerable<Feedback>> GetFeedbacksByAdminProfileId(string countrycode, string languagecode, string profileId, FeedbackType type = FeedbackType.Any)
+        //{
+        //    if (string.IsNullOrEmpty(profileId)) throw new ArgumentException($"Admin ProfileId is null.", nameof(profileId));
+
+        //    var currentUser = await _helper.GetCurrentUserProfile(User);
+
+        //    if (currentUser == null || !currentUser.Admin)
+        //    {
+        //        throw new ArgumentException($"Current user is null or does not have admin status.");
+        //    }
+
+        //    if (string.IsNullOrEmpty(countrycode))
+        //        countrycode = currentUser.Countrycode;
+
+        //    if (string.IsNullOrEmpty(languagecode))
+        //        languagecode = currentUser.Languagecode;
+
+        //    var feedbacks = await _reedbackRepository.GetFeedbacksByAdminProfileId(countrycode, languagecode, profileId, type);
+
+        //    foreach (var feedback in feedbacks)
+        //    {
+        //        feedback.Message = _cryptography.Decrypt(feedback.Message);
+        //    }
+
+        //    return feedbacks;
+        //}
+
+        ///// <summary>
+        ///// Gets Feedbacks By Admin ProfileId and Status.
+        ///// </summary>
+        ///// <param name="countrycode">The Countrycode. Defaults to admin countrycode.</param>
+        ///// <param name="languagecode">The Languagecode. Defaults to admin languagecode.</param>
+        ///// <param name="status">The Feedback status (true = open, false = closed, default = false).</param>
+        ///// <param name="profileId">The profile identifier.</param>
+        ///// <param name="type"> The FeedbackType.</param>
+        ///// <exception cref="ArgumentException">Admin ProfileId is null.</exception>
+        ///// <exception cref="ArgumentException">Current user is null or does not have admin status.</exception>
+        ///// <returns></returns>
+        //[NoCache]
+        //[HttpGet("~/GetFeedbacksByAdminProfileIdAndStatus/")]
+        //public async Task<IEnumerable<Feedback>> GetFeedbacksByAdminProfileIdAndStatus(string countrycode, string languagecode, bool status, string profileId, FeedbackType type = FeedbackType.Any)
+        //{
+        //    if (string.IsNullOrEmpty(profileId)) throw new ArgumentException($"Admin ProfileId is null.", nameof(profileId));
+
+        //    var currentUser = await _helper.GetCurrentUserProfile(User);
+
+        //    if (currentUser == null || !currentUser.Admin)
+        //    {
+        //        throw new ArgumentException($"Current user is null or does not have admin status.");
+        //    }
+
+        //    if (string.IsNullOrEmpty(countrycode))
+        //        countrycode = currentUser.Countrycode;
+
+        //    if (string.IsNullOrEmpty(languagecode))
+        //        languagecode = currentUser.Languagecode;
+
+        //    var feedbacks = await _reedbackRepository.GetFeedbacksByAdminProfileIdAndStatus(countrycode, languagecode, status, profileId, type);
+
+        //    foreach (var feedback in feedbacks)
+        //    {
+        //        feedback.Message = _cryptography.Decrypt(feedback.Message);
+        //    }
+
+        //    return feedbacks;
+        //}
+
+        ///// <summary>
+        ///// Gets Feedbacks By ProfileId.
+        ///// </summary>
+        ///// <param name="countrycode">The Countrycode. Defaults to admin countrycode.</param>
+        ///// <param name="languagecode">The Languagecode. Defaults to admin languagecode.</param>
+        ///// <param name="profileId">The profile identifier.</param>
+        ///// <param name="type"> The FeedbackType.</param>
+        ///// <exception cref="ArgumentException">ProfileId is null.</exception>
+        ///// <exception cref="ArgumentException">Current user is null or does not have admin status.</exception>
+        ///// <returns></returns>
+        //[NoCache]
+        //[HttpGet("~/GetFeedbacksByProfileId/")]
+        //public async Task<IEnumerable<Feedback>> GetFeedbacksByProfileId(string countrycode, string languagecode, string profileId, FeedbackType type = FeedbackType.Any)
+        //{
+        //    if (string.IsNullOrEmpty(profileId)) throw new ArgumentException($"ProfileId is null.", nameof(profileId));
+
+        //    var currentUser = await _helper.GetCurrentUserProfile(User);
+
+        //    if (currentUser == null || !currentUser.Admin)
+        //    {
+        //        throw new ArgumentException($"Current user is null or does not have admin status.");
+        //    }
+
+        //    if (string.IsNullOrEmpty(countrycode))
+        //        countrycode = currentUser.Countrycode;
+
+        //    if (string.IsNullOrEmpty(languagecode))
+        //        languagecode = currentUser.Languagecode;
+
+        //    var feedbacks = await _reedbackRepository.GetFeedbacksByProfileId(countrycode, languagecode, profileId, type);
+
+        //    foreach (var feedback in feedbacks)
+        //    {
+        //        feedback.Message = _cryptography.Decrypt(feedback.Message);
+        //    }
+
+        //    return feedbacks;
+        //}
+
+        ///// <summary>
+        ///// Gets Feedbacks By ProfileId and Status.
+        ///// </summary>
+        ///// <param name="countrycode">The Countrycode. Defaults to admin countrycode.</param>
+        ///// <param name="languagecode">The Languagecode. Defaults to admin languagecode.</param>
+        ///// <param name="status">The Feedback status (true = open, false = closed, default = false).</param>
+        ///// <param name="profileId">The profile identifier.</param>
+        ///// <param name="type"> The FeedbackType.</param>
+        ///// <exception cref="ArgumentException">Admin ProfileId is null.</exception>
+        ///// <exception cref="ArgumentException">Current user is null or does not have admin status.</exception>
+        ///// <returns></returns>
+        //[NoCache]
+        //[HttpGet("~/GetFeedbacksByProfileIdAndStatus/")]
+        //public async Task<IEnumerable<Feedback>> GetFeedbacksByProfileIdAndStatus(string countrycode, string languagecode, bool status, string profileId, FeedbackType type = FeedbackType.Any)
+        //{
+        //    if (string.IsNullOrEmpty(profileId)) throw new ArgumentException($"ProfileId is null.", nameof(profileId));
+
+        //    var currentUser = await _helper.GetCurrentUserProfile(User);
+
+        //    if (currentUser == null || !currentUser.Admin)
+        //    {
+        //        throw new ArgumentException($"Current user is null or does not have admin status.");
+        //    }
+
+        //    if (string.IsNullOrEmpty(countrycode))
+        //        countrycode = currentUser.Countrycode;
+
+        //    if (string.IsNullOrEmpty(languagecode))
+        //        languagecode = currentUser.Languagecode;
+
+        //    var feedbacks = await _reedbackRepository.GetFeedbacksByProfileIdAndStatus(countrycode, languagecode, status, profileId, type);
+
+        //    foreach (var feedback in feedbacks)
+        //    {
+        //        feedback.Message = _cryptography.Decrypt(feedback.Message);
+        //    }
+
+        //    return feedbacks;
+        //}
+
+        ///// <summary>
+        ///// Gets Feedbacks By Status.
+        ///// </summary>
+        ///// <param name="countrycode">The Countrycode. Defaults to admin countrycode.</param>
+        ///// <param name="languagecode">The Languagecode. Defaults to admin languagecode.</param>
+        ///// <param name="status">The Feedback status (true = open, false = closed, default = false).</param>
+        ///// <param name="type"> The FeedbackType.</param>
+        ///// <exception cref="ArgumentException">Current user is null or does not have admin status.</exception>
+        ///// <returns></returns>
+        //[NoCache]
+        //[HttpGet("~/GetFeedbacksByStatus/")]
+        //public async Task<IEnumerable<Feedback>> GetFeedbacksByStatus(string countrycode, string languagecode, bool status, FeedbackType type = FeedbackType.Any)
+        //{
+        //    var currentUser = await _helper.GetCurrentUserProfile(User);
+
+        //    if (currentUser == null || !currentUser.Admin)
+        //    {
+        //        throw new ArgumentException($"Current user is null or does not have admin status.");
+        //    }
+
+        //    if (string.IsNullOrEmpty(countrycode))
+        //        countrycode = currentUser.Countrycode;
+
+        //    if (string.IsNullOrEmpty(languagecode))
+        //        languagecode = currentUser.Languagecode;
+
+        //    var feedbacks = await _reedbackRepository.GetFeedbacksByStatus(countrycode, languagecode, status, type);
+
+        //    foreach (var feedback in feedbacks)
+        //    {
+        //        feedback.Message = _cryptography.Decrypt(feedback.Message);
+        //    }
+
+        //    return feedbacks;
+        //}
 
         /// <summary>Deletes Feedbacks that are greater  than 1 year old (DateSeen) and closed.</summary>
         /// <returns></returns>

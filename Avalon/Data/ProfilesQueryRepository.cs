@@ -263,9 +263,8 @@ namespace Avalon.Data
         }
 
         /// <summary>Applies definitions to filter.</summary>
-        /// <param name="currentUser">The current user.</param>
         /// <param name="profileFilter">The profileFilter.</param>
-        /// <param name="filterDefinition">The filterDefinition.</param>
+        /// <param name="filters">The filterDefinition.</param>
         private List<FilterDefinition<Profile>> ApplyProfileFilter(ProfileFilter profileFilter, List<FilterDefinition<Profile>> filters)
         {
             try
