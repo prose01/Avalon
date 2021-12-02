@@ -135,7 +135,7 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpPost("~/GetFeedbacksByFilter")]
-        public async Task<IEnumerable<Feedback>> GetFeedbacksByFilter([FromBody] FeedbackFilter feedbackFilter)
+        public async Task<IEnumerable<Feedback>> GetFeedbacksByFilter([FromBody] RequestBody requestBody)
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
@@ -144,7 +144,7 @@ namespace Avalon.Controllers
                 throw new ArgumentException($"Current user is null or does not have admin status.");
             }
 
-            return await _reedbackRepository.GetFeedbacksByFilter(feedbackFilter) ?? throw new ArgumentException($"Current feedbackFilter cannot find any matching feedbacks.", nameof(feedbackFilter));
+            return await _reedbackRepository.GetFeedbacksByFilter(requestBody.FeedbackFilter) ?? throw new ArgumentException($"Current feedbackFilter cannot find any matching feedbacks.", nameof(requestBody.FeedbackFilter));
         }
 
 
