@@ -144,7 +144,14 @@ namespace Avalon.Controllers
                 throw new ArgumentException($"Current user is null or does not have admin status.");
             }
 
-            return await _reedbackRepository.GetFeedbacksByFilter(requestBody.FeedbackFilter) ?? throw new ArgumentException($"Current feedbackFilter cannot find any matching feedbacks.", nameof(requestBody.FeedbackFilter));
+            var feedbacks = await _reedbackRepository.GetFeedbacksByFilter(requestBody.FeedbackFilter) ?? throw new ArgumentException($"Current feedbackFilter cannot find any matching feedbacks.", nameof(requestBody.FeedbackFilter));
+
+            foreach (var feedback in feedbacks)
+            {
+                feedback.Message = _cryptography.Decrypt(feedback.Message);
+            }
+
+            return feedbacks;
         }
 
 

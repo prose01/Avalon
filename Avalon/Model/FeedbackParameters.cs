@@ -4,6 +4,5 @@
     {
         public string Countrycode { get; set; }
         public string Languagecode { get; set; }
-        public FeedbackType FeedbackType { get; set; }
     }
 }

@@ -105,7 +105,7 @@ namespace Avalon.Data
                 filters.Add(Builders<Feedback>.Filter.Eq(f => f.Open, feedbackFilter.Open));
 
                 //Apply all FeedbackFilter criterias.
-                filters = this.ApplyProfileFilter(feedbackFilter, filters);
+                filters = this.ApplyFeedbackFilter(feedbackFilter, filters);
 
                 var combineFilters = Builders<Feedback>.Filter.And(filters);
 
@@ -123,7 +123,7 @@ namespace Avalon.Data
         /// <summary>Applies definitions to filter.</summary>
         /// <param name="feedbackFilter">The feedbackFilter.</param>
         /// <param name="filters">The filterDefinition.</param>
-        private List<FilterDefinition<Feedback>> ApplyProfileFilter(FeedbackFilter feedbackFilter, List<FilterDefinition<Feedback>> filters)
+        private List<FilterDefinition<Feedback>> ApplyFeedbackFilter(FeedbackFilter feedbackFilter, List<FilterDefinition<Feedback>> filters)
         {
             try
             {
