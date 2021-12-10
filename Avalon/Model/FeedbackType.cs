@@ -2,7 +2,6 @@
 {
     public enum FeedbackType
     {
-        Any,
         Comment,
         Error,
         Improvement,

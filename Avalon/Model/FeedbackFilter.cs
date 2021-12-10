@@ -23,7 +23,7 @@ namespace Avalon.Model
 
         public string AdminName { get; set; }
 
-        public FeedbackType FeedbackType { get; set; }
+        public FeedbackType? FeedbackType { get; set; }
 
         [StringLength(2000, ErrorMessage = "Message length cannot be more than 2000 characters long.")]
         public string Message { get; set; }
