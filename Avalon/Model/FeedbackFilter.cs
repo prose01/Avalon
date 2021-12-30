@@ -28,7 +28,7 @@ namespace Avalon.Model
         [StringLength(2000, ErrorMessage = "Message length cannot be more than 2000 characters long.")]
         public string Message { get; set; }
 
-        public bool Open { get; set; } = true;
+        public string Open { get; set; } = Boolean.TrueString;
 
         public string Countrycode { get; set; }
 

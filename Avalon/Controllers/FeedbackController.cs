@@ -47,7 +47,7 @@ namespace Avalon.Controllers
 
                 item.FeedbackId = Guid.NewGuid().ToString();
                 item.DateSent = DateTime.Now;
-                item.Open = true;
+                item.Open = Boolean.TrueString;
                 item.FromProfileId = currentUser.ProfileId;
                 item.FromName = currentUser.Name;
                 item.Countrycode = currentUser.Countrycode;

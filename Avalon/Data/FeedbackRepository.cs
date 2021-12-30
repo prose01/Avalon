@@ -26,7 +26,7 @@ namespace Avalon.Data
             try
             {
                 item.DateSent = DateTime.Now;
-                item.Open = true;
+                item.Open = Boolean.TrueString;
 
                 await _context.Feedbacks.InsertOneAsync(item);
             }
@@ -100,12 +100,8 @@ namespace Avalon.Data
         {
             try
             {
-                List<FilterDefinition<Feedback>> filters = new List<FilterDefinition<Feedback>>();
-
-                filters.Add(Builders<Feedback>.Filter.Eq(f => f.Open, feedbackFilter.Open));
-
                 //Apply all FeedbackFilter criterias.
-                filters = this.ApplyFeedbackFilter(feedbackFilter, filters);
+                var filters = this.ApplyFeedbackFilter(feedbackFilter);
 
                 var combineFilters = Builders<Feedback>.Filter.And(filters);
 
@@ -122,11 +118,12 @@ namespace Avalon.Data
 
         /// <summary>Applies definitions to filter.</summary>
         /// <param name="feedbackFilter">The feedbackFilter.</param>
-        /// <param name="filters">The filterDefinition.</param>
-        private List<FilterDefinition<Feedback>> ApplyFeedbackFilter(FeedbackFilter feedbackFilter, List<FilterDefinition<Feedback>> filters)
+        private List<FilterDefinition<Feedback>> ApplyFeedbackFilter(FeedbackFilter feedbackFilter)
         {
             try
             {
+                List<FilterDefinition<Feedback>> filters = new List<FilterDefinition<Feedback>>();
+
                 if (feedbackFilter.FeedbackId != null)
                     filters.Add(Builders<Feedback>.Filter.Eq(f => f.FeedbackId, feedbackFilter.FeedbackId));
 
@@ -158,28 +155,16 @@ namespace Avalon.Data
                     filters.Add(Builders<Feedback>.Filter.Eq(f => f.FeedbackType, feedbackFilter.FeedbackType));
 
                 if (feedbackFilter.Message != null)
-                    filters.Add(Builders<Feedback>.Filter.Regex(f => f.Message, new BsonRegularExpression(feedbackFilter.Message, "i"))); 
+                    filters.Add(Builders<Feedback>.Filter.Regex(f => f.Message, new BsonRegularExpression(feedbackFilter.Message, "i")));
+
+                if (feedbackFilter.Open != null && feedbackFilter.Open != "notChosen")
+                    filters.Add(Builders<Feedback>.Filter.Eq(f => f.Open, feedbackFilter.Open));
 
                 if (feedbackFilter.Countrycode != null)
                     filters.Add(Builders<Feedback>.Filter.Eq(f => f.Countrycode, feedbackFilter.Countrycode));
 
                 if (feedbackFilter.Languagecode != null)
                     filters.Add(Builders<Feedback>.Filter.Eq(f => f.Languagecode, feedbackFilter.Languagecode));
-
-
-                //if (profileFilter.Age != null && profileFilter.Age[0] > 0)
-                //    filters.Add(Builders<Profile>.Filter.Gte(p => p.Age, profileFilter.Age[0]));
-
-                //if (profileFilter.Age != null && profileFilter.Age[1] > 0)
-                //    filters.Add(Builders<Profile>.Filter.Lte(p => p.Age, profileFilter.Age[1]));
-
-
-                //if (profileFilter.Tags != null && profileFilter.Tags.Count > 0)
-                //    filters.Add(Builders<Profile>.Filter.AnyIn(p => p.Tags, profileFilter.Tags));
-
-                //if (profileFilter.Body != BodyType.NotChosen)
-                //    filters.Add(Builders<Profile>.Filter.Eq(p => p.Body, profileFilter.Body));
-
 
                 return filters;
             }
@@ -369,7 +354,7 @@ namespace Avalon.Data
 
                 filters.Add(Builders<Feedback>.Filter.Gt(f => f.DateSeen, DateTime.Now.AddYears(-_deleteFeedbacksOlderThan)));
 
-                filters.Add(Builders<Feedback>.Filter.Eq(f => f.Open, false));
+                filters.Add(Builders<Feedback>.Filter.Eq(f => f.Open, Boolean.FalseString));
 
                 var combineFilters = Builders<Feedback>.Filter.And(filters);
 
