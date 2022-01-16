@@ -47,7 +47,7 @@ namespace Avalon.Controllers
 
                 item.FeedbackId = Guid.NewGuid().ToString();
                 item.DateSent = DateTime.Now;
-                item.Open = Boolean.TrueString;
+                item.Open = true;
                 item.FromProfileId = currentUser.ProfileId;
                 item.FromName = currentUser.Name;
                 item.Countrycode = currentUser.Countrycode;
@@ -57,6 +57,60 @@ namespace Avalon.Controllers
                 item.Message = encryptedMessage;
 
                 await _reedbackRepository.AddFeedback(item);
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.ToString());
+            }
+        }
+
+        /// <summary>Open or close the specified feedback.</summary>
+        /// <param name="feedbackId">The feedback identifier.</param>
+        /// <exception cref="ArgumentException">Current user is null or does not have admin status.</exception>
+        [NoCache]
+        [HttpPost("~/OpenFeedbacks")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        public async Task<IActionResult> OpenFeedbacks([FromBody] string[] feedbackIds)
+        {
+            try
+            {
+                var currentUser = await _helper.GetCurrentUserProfile(User);
+
+                if (currentUser == null || !currentUser.Admin)
+                {
+                    throw new ArgumentException($"Current user is null or does not have admin status.");
+                }
+
+                await _reedbackRepository.ToggleFeedbackStatus(feedbackIds, true);
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.ToString());
+            }
+        }
+
+        /// <summary>Open or close the specified feedback.</summary>
+        /// <param name="feedbackId">The feedback identifier.</param>
+        /// <exception cref="ArgumentException">Current user is null or does not have admin status.</exception>
+        [NoCache]
+        [HttpPost("~/CloseFeedbacks")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        public async Task<IActionResult> CloseFeedbacks([FromBody] string[] feedbackIds)
+        {
+            try
+            {
+                var currentUser = await _helper.GetCurrentUserProfile(User);
+
+                if (currentUser == null || !currentUser.Admin)
+                {
+                    throw new ArgumentException($"Current user is null or does not have admin status.");
+                }
+
+                await _reedbackRepository.ToggleFeedbackStatus(feedbackIds, false);
 
                 return NoContent();
             }
