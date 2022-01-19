@@ -52,7 +52,13 @@ namespace Avalon.Data
             }
         }
 
-        public async Task<IEnumerable<Feedback>> GetUnassignedFeedbacks(string countrycode, string languagecode)
+        /// <summary>Gets Unassigned Feedbacks.</summary>
+        /// <param name="countrycode">The Countrycode. Defaults to admin countrycode.</param>
+        /// <param name="languagecode">The Languagecode. Defaults to admin languagecode.</param>
+        /// <param name="skip">The skip.</param>
+        /// <param name="limit">The limit.</param>
+        /// <returns></returns>
+        public async Task<IEnumerable<Feedback>> GetUnassignedFeedbacks(string countrycode, string languagecode, int skip, int limit)
         {
             try
             {
@@ -73,7 +79,7 @@ namespace Avalon.Data
                 SortDefinition<Feedback> sortDefinition = Builders<Feedback>.Sort.Descending(f => f.DateSent);
 
                 return await _context.Feedbacks
-                            .Find(combineFilters).Sort(sortDefinition).ToListAsync();
+                            .Find(combineFilters).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -113,20 +119,32 @@ namespace Avalon.Data
         // Search for anything in filter - eg. { FromName: 'someone' }
         /// <summary>Gets the feedbacks by filter.</summary>
         /// <param name="feedbackFilter">The feedbackFilter.</param>
+        /// <param name="skip">The skip.</param>
+        /// <param name="limit">The limit.</param>
         /// <returns></returns>
-        public async Task<IEnumerable<Feedback>> GetFeedbacksByFilter(FeedbackFilter feedbackFilter)
+        public async Task<IEnumerable<Feedback>> GetFeedbacksByFilter(FeedbackFilter feedbackFilter, int skip, int limit)
         {
             try
             {
-                //Apply all FeedbackFilter criterias.
+                SortDefinition<Feedback> sortDefinition = Builders<Feedback>.Sort.Descending(f => f.DateSent);
+
+                // Apply all FeedbackFilter criterias.
                 var filters = this.ApplyFeedbackFilter(feedbackFilter);
+
+                // If we do not have any filters just return all records
+                if (filters.Count == 0 )
+                {
+                    // Empty filter to get all records
+                    var emptyFilter = Builders<Feedback>.Filter.Empty;
+
+                    return await _context.Feedbacks
+                                .Find(emptyFilter).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
+                }
 
                 var combineFilters = Builders<Feedback>.Filter.And(filters);
 
-                SortDefinition<Feedback> sortDefinition = Builders<Feedback>.Sort.Descending(f => f.DateSent);
-
                 return await _context.Feedbacks
-                                .Find(combineFilters).Sort(sortDefinition).ToListAsync();
+                                .Find(combineFilters).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -163,10 +181,10 @@ namespace Avalon.Data
                 if (feedbackFilter.FromName != null)
                     filters.Add(Builders<Feedback>.Filter.Regex(f => f.FromName, new BsonRegularExpression(feedbackFilter.FromName, "i")));
 
-                if (feedbackFilter.AdminProfileId != null)
+                if (!string.IsNullOrEmpty(feedbackFilter.AdminProfileId))
                     filters.Add(Builders<Feedback>.Filter.Eq(f => f.AdminProfileId, feedbackFilter.AdminProfileId));
 
-                if (feedbackFilter.AdminName != null)
+                if (!string.IsNullOrEmpty(feedbackFilter.AdminName))
                     filters.Add(Builders<Feedback>.Filter.Regex(f => f.AdminName, new BsonRegularExpression(feedbackFilter.AdminName, "i")));
 
                 if (feedbackFilter.FeedbackType != null)
@@ -197,174 +215,6 @@ namespace Avalon.Data
         }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        //public async Task<IEnumerable<Feedback>> GetFeedbacksByAdminProfileId(string countrycode, string languagecode, string profileId, FeedbackType type = FeedbackType.Any)
-        //{
-        //    try
-        //    {
-        //        List<FilterDefinition<Feedback>> filters = new List<FilterDefinition<Feedback>>();
-
-        //        filters.Add(Builders<Feedback>.Filter.Eq(f => f.Countrycode, countrycode));
-
-        //        filters.Add(Builders<Feedback>.Filter.Eq(f => f.Languagecode, languagecode));
-
-        //        filters.Add(Builders<Feedback>.Filter.Eq(f => f.AdminProfileId, profileId));
-
-        //        if (type != FeedbackType.Any)
-        //        {
-        //            filters.Add(Builders<Feedback>.Filter.Eq(f => f.FeedbackType, type));
-        //        }
-
-        //        var combineFilters = Builders<Feedback>.Filter.And(filters);
-
-        //        SortDefinition<Feedback> sortDefinition = Builders<Feedback>.Sort.Descending(f => f.DateSent);
-
-        //        return await _context.Feedbacks
-        //                    .Find(combineFilters).Sort(sortDefinition).ToListAsync();
-        //    }
-        //    catch
-        //    {
-        //        throw;
-        //    }
-        //}
-
-        //public async Task<IEnumerable<Feedback>> GetFeedbacksByAdminProfileIdAndStatus(string countrycode, string languagecode, bool status, string profileId, FeedbackType type = FeedbackType.Any)
-        //{
-        //    try
-        //    {
-        //        List<FilterDefinition<Feedback>> filters = new List<FilterDefinition<Feedback>>();
-
-        //        filters.Add(Builders<Feedback>.Filter.Eq(f => f.Countrycode, countrycode));
-
-        //        filters.Add(Builders<Feedback>.Filter.Eq(f => f.Languagecode, languagecode));
-
-        //        filters.Add(Builders<Feedback>.Filter.Eq(f => f.AdminProfileId, profileId));
-
-        //        filters.Add(Builders<Feedback>.Filter.Eq(f => f.Open, status));
-
-        //        if(type != FeedbackType.Any)
-        //        {
-        //            filters.Add(Builders<Feedback>.Filter.Eq(f => f.FeedbackType, type));
-        //        }
-
-        //        var combineFilters = Builders<Feedback>.Filter.And(filters);
-
-        //        SortDefinition<Feedback> sortDefinition = Builders<Feedback>.Sort.Descending(f => f.DateSent);
-
-        //        return await _context.Feedbacks
-        //                    .Find(combineFilters).Sort(sortDefinition).ToListAsync();
-        //    }
-        //    catch
-        //    {
-        //        throw;
-        //    }
-        //}
-
-        //public async Task<IEnumerable<Feedback>> GetFeedbacksByProfileId(string countrycode, string languagecode, string profileId, FeedbackType type = FeedbackType.Any)
-        //{
-        //    try
-        //    {
-        //        List<FilterDefinition<Feedback>> filters = new List<FilterDefinition<Feedback>>();
-
-        //        filters.Add(Builders<Feedback>.Filter.Eq(f => f.Countrycode, countrycode));
-
-        //        filters.Add(Builders<Feedback>.Filter.Eq(f => f.Languagecode, languagecode));
-
-        //        filters.Add(Builders<Feedback>.Filter.Eq(f => f.FromProfileId, profileId));
-
-        //        if (type != FeedbackType.Any)
-        //        {
-        //            filters.Add(Builders<Feedback>.Filter.Eq(f => f.FeedbackType, type));
-        //        }
-
-        //        var combineFilters = Builders<Feedback>.Filter.And(filters);
-
-        //        SortDefinition<Feedback> sortDefinition = Builders<Feedback>.Sort.Descending(f => f.DateSent);
-
-        //        return await _context.Feedbacks
-        //                    .Find(combineFilters).Sort(sortDefinition).ToListAsync();
-        //    }
-        //    catch
-        //    {
-        //        throw;
-        //    }
-        //}
-
-        //public async Task<IEnumerable<Feedback>> GetFeedbacksByProfileIdAndStatus(string countrycode, string languagecode, bool status, string profileId, FeedbackType type = FeedbackType.Any)
-        //{
-        //    try
-        //    {
-        //        List<FilterDefinition<Feedback>> filters = new List<FilterDefinition<Feedback>>();
-
-        //        filters.Add(Builders<Feedback>.Filter.Eq(f => f.Countrycode, countrycode));
-
-        //        filters.Add(Builders<Feedback>.Filter.Eq(f => f.Languagecode, languagecode));
-
-        //        filters.Add(Builders<Feedback>.Filter.Eq(f => f.FromProfileId, profileId));
-
-        //        filters.Add(Builders<Feedback>.Filter.Eq(f => f.Open, status));
-
-        //        if (type != FeedbackType.Any)
-        //        {
-        //            filters.Add(Builders<Feedback>.Filter.Eq(f => f.FeedbackType, type));
-        //        }
-
-        //        var combineFilters = Builders<Feedback>.Filter.And(filters);
-
-        //        SortDefinition<Feedback> sortDefinition = Builders<Feedback>.Sort.Descending(f => f.DateSent);
-
-        //        return await _context.Feedbacks
-        //                    .Find(combineFilters).Sort(sortDefinition).ToListAsync();
-        //    }
-        //    catch
-        //    {
-        //        throw;
-        //    }
-        //}
-
-        //public async Task<IEnumerable<Feedback>> GetFeedbacksByStatus(string countrycode, string languagecode, bool status, FeedbackType type = FeedbackType.Any)
-        //{
-        //    try
-        //    {
-        //        List<FilterDefinition<Feedback>> filters = new List<FilterDefinition<Feedback>>();
-
-        //        filters.Add(Builders<Feedback>.Filter.Eq(f => f.Countrycode, countrycode));
-
-        //        filters.Add(Builders<Feedback>.Filter.Eq(f => f.Languagecode, languagecode));
-
-        //        filters.Add(Builders<Feedback>.Filter.Eq(f => f.Open, status));
-
-        //        if (type != FeedbackType.Any)
-        //        {
-        //            filters.Add(Builders<Feedback>.Filter.Eq(f => f.FeedbackType, type));
-        //        }
-
-        //        var combineFilters = Builders<Feedback>.Filter.And(filters);
-
-        //        SortDefinition<Feedback> sortDefinition = Builders<Feedback>.Sort.Descending(f => f.DateSent);
-
-        //        return await _context.Feedbacks
-        //                    .Find(combineFilters).Sort(sortDefinition).ToListAsync();
-        //    }
-        //    catch
-        //    {
-        //        throw;
-        //    }
-        //}
 
         /// <summary>Deletes Feedbacks that are greater  than 1 year old (DateSeen) and closed.</summary>
         /// <returns></returns>

@@ -721,6 +721,24 @@ namespace Avalon.Data
             }
         }
 
+        private ProjectionDefinition<Profile> GetProjection()
+        {
+            ProjectionDefinition<Profile> projection = "{ " +
+                "_id: 0, " +
+                "Auth0Id: 0, " +
+                "Admin:0, " +
+                "Gender: 0, " +
+                "SexualOrientation: 0, " +
+                "Bookmarks: 0, " +
+                "ChatMemberslist: 0, " +
+                "ProfileFilter: 0, " +
+                "IsBookmarked: 0, " +
+                "Languagecode: 0, " +
+                "}";
+
+            return projection;
+        }
+
         #endregion
 
         #region Maintenance
@@ -740,23 +758,5 @@ namespace Avalon.Data
         }
 
         #endregion
-
-        private ProjectionDefinition<Profile> GetProjection()
-        {
-            ProjectionDefinition<Profile> projection = "{ " +
-                "_id: 0, " +
-                "Auth0Id: 0, " +
-                "Admin:0, " +
-                "Gender: 0, " +
-                "SexualOrientation: 0, " +
-                "Bookmarks: 0, " +
-                "ChatMemberslist: 0, " +
-                "ProfileFilter: 0, " +
-                "IsBookmarked: 0, " +
-                "Languagecode: 0, " +
-                "}";
-
-            return projection;
-        }
     }
 }
