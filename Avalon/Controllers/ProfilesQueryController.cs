@@ -364,7 +364,7 @@ namespace Avalon.Controllers
 
             var skip = parameterFilter.PageIndex == 0 ? parameterFilter.PageIndex : parameterFilter.PageIndex * parameterFilter.PageSize;
 
-            return await _profilesQueryRepository.GetProfileByFilter(currentUser, requestBody.ProfileFilter, requestBody.OrderByType, skip, parameterFilter.PageSize) ?? throw new ArgumentException($"Current users profileFilter cannot find any matching profiles.", nameof(requestBody.ProfileFilter));
+            return await _profilesQueryRepository.GetProfileByFilter(currentUser, requestBody.ProfileFilter, parameterFilter.OrderByType, skip, parameterFilter.PageSize) ?? throw new ArgumentException($"Current users profileFilter cannot find any matching profiles.", nameof(requestBody.ProfileFilter));
         }
 
         /// <summary>Gets the specified profiles based on the CurrentUser's filter.</summary>
