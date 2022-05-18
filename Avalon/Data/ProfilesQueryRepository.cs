@@ -228,7 +228,7 @@ namespace Avalon.Data
                 {
                     filters.Add(Builders<Profile>.Filter.Eq(p => p.Gender, currentUser.ProfileFilter.Gender));
                 }
-                else
+                else if(profileFilter.Gender != null)
                 {
                     filters.Add(Builders<Profile>.Filter.Eq(p => p.Gender, profileFilter.Gender));
                 }

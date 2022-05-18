@@ -15,7 +15,7 @@ namespace Avalon.Model
         [StringLength(2000, ErrorMessage = "Description length cannot be more than 2000.")]
         public string Description { get; set; }
         public List<string> Tags { get; set; }
-        public GenderType Gender { get; set; }
+        public GenderType? Gender { get; set; }
         public BodyType Body { get; set; }
         public SmokingHabitsType SmokingHabits { get; set; }
         public HasChildrenType HasChildren { get; set; }

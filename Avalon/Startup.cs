@@ -1,5 +1,6 @@
 using Avalon.Data;
 using Avalon.Helpers;
+using Avalon.Infrastructure;
 using Avalon.Interfaces;
 using Avalon.Model;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using System;
 using System.Collections.Generic;
@@ -17,7 +19,7 @@ namespace Avalon
 {
     public class Startup
     {
-        public Startup(IHostingEnvironment env)
+        public Startup(IHostEnvironment env)
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
@@ -33,22 +35,24 @@ namespace Avalon
         public void ConfigureServices(IServiceCollection services)
         {
             // Add service and create Policy with options
-            //services.AddCors(options =>
-            //{
-            //    options.AddPolicy("CorsPolicy",
-            //        builder => builder.WithOrigins("http://localhost:4200")
-            //                    .WithMethods("GET", "POST", "PUT", "PATCH", "DELETE", "HEAD")
-            //                    .AllowAnyHeader()
-            //                    .AllowCredentials()
-            //        );
-            //});
+            // TODO: Remember to remove Cors for production.
+            services.AddCors(options =>
+            {
+                options.AddPolicy("CorsPolicy",
+                    builder => builder.WithOrigins("http://localhost:4200")
+                                .WithMethods("GET", "POST", "PUT", "PATCH", "DELETE", "HEAD")
+                                .AllowAnyHeader()
+                                .AllowCredentials()
+                    );
+            });
 
             // Add framework services.
             services.AddMvc().AddJsonOptions(options => {
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 
                 // TODO: https://www.ryadel.com/en/jsonserializationexception-self-referencing-loop-detected-error-fix-entity-framework-asp-net-core/
-                //options.JsonSerializerOptions.ReferenceHandling = ReferenceHandling.Preserve; 
+                // https://makolyte.com/system-text-json-jsonexception-a-possible-object-cycle-was-detected-which-is-not-supported/
+                //options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
             });
 
             // Add authentication.
@@ -70,8 +74,10 @@ namespace Avalon
             // Add our repository type(s)
             services.AddSingleton<ICurrentUserRepository, CurrentUserRepository>();
             services.AddSingleton<IProfilesQueryRepository, ProfilesQueryRepository>();
+            services.AddSingleton<IFeedbackRepository, FeedbackRepository>();
 
             // Add our helper method(s)
+            services.AddSingleton<ICryptography, Cryptography>();
             services.AddSingleton<IHelperMethods, HelperMethods>();
 
             // Register the Swagger generator, defining one or more Swagger documents
@@ -113,6 +119,8 @@ namespace Avalon
                 options.Auth0Id = Configuration.GetSection("Auth0_Claims_nameidentifier").Value;
                 options.Auth0ApiIdentifier = Configuration.GetSection("Auth0_ApiIdentifier").Value;
                 options.Auth0TokenAddress = Configuration.GetSection("Auth0_TokenAddress").Value;
+                options.Client_id = Configuration.GetSection("Auth0_Client_id").Value;
+                options.Client_secret = Configuration.GetSection("Auth0_Client_secret").Value;
             });
 
             //TODO: Out maybe?
@@ -120,7 +128,7 @@ namespace Avalon
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostEnvironment env)
         {
             // Enable routing
             app.UseRouting();
@@ -138,8 +146,8 @@ namespace Avalon
             //}
 
             // Shows UseCors with CorsPolicyBuilder.
-            // Remember to remove Cors for production.
-            //app.UseCors("CorsPolicy");
+            // TODO: Remember to remove Cors for production.
+            app.UseCors("CorsPolicy");
 
             app.UseHttpsRedirection();
 

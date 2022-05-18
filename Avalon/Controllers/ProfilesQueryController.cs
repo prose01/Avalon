@@ -360,8 +360,6 @@ namespace Avalon.Controllers
 
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            // TODO: skip & limit should either come from RequestBody or ParameterFilter
-
             var skip = parameterFilter.PageIndex == 0 ? parameterFilter.PageIndex : parameterFilter.PageIndex * parameterFilter.PageSize;
 
             return await _profilesQueryRepository.GetProfileByFilter(currentUser, requestBody.ProfileFilter, parameterFilter.OrderByType, skip, parameterFilter.PageSize) ?? throw new ArgumentException($"Current users profileFilter cannot find any matching profiles.", nameof(requestBody.ProfileFilter));
