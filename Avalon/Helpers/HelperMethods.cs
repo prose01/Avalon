@@ -6,7 +6,6 @@ using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Avalon.Helpers
@@ -20,6 +19,7 @@ namespace Avalon.Helpers
         private readonly string _auth0TokenAddress;
         private readonly string _auth0_Client_id;
         private readonly string _auth0_Client_secret;
+        private string token;
 
         public HelperMethods(IOptions<Settings> settings, ICurrentUserRepository profileRepository, IProfilesQueryRepository profilesQueryRepository)
         {
@@ -70,36 +70,17 @@ namespace Avalon.Helpers
         {
             try
             {
-                //var profile = await _profilesQueryRepository.GetProfileById(profileId);
+                var profile = await _profilesQueryRepository.GetProfileById(profileId);
 
-                //if (profile == null) return;
+                if (profile == null) return;
 
-                var token = GetAuth0Token();
+                var accessToken = string.IsNullOrEmpty(token) ? await GetAuth0Token() : token;
 
-
-                //var options = new RestClientOptions(_auth0ApiIdentifier + "users/" + profile.Auth0Id)
-                //{
-                //    ThrowOnAnyError = true,
-                //    Timeout = 1000
-                //};
-                //var client = new RestClient(options);
-                //var request = new RestRequest();
-                ////request.AddHeader("content-type", "application/json");
-                //request.AddHeader("authorization", "Bearer " + token);
-                //var response = await client.ExecuteAsync(request, CancellationToken.None);
-
-
-                //var client = new RestClient(_auth0ApiIdentifier + "users/" + "auth0|621905a4da3b50006861f00e");
-                //var request = new RestRequest(_auth0ApiIdentifier + "users/" + "auth0|621905a4da3b50006861f00e", Method.Delete);
-                //request.AddHeader("content-type", "application/json");
-                //request.AddHeader("authorization", "Bearer " + token);
-                //var response = await client.ExecuteAsync(request, CancellationToken.None);
-
-                var url = _auth0ApiIdentifier + "users/" + "auth0|621905a4da3b50006861f00e";
+                var url = _auth0ApiIdentifier + "users/" + profile.Auth0Id;
                 var client = new RestClient(url);
                 var request = new RestRequest(url, Method.Delete);
-                request.AddHeader("authorization", "Bearer " + token.Result);
-                var response = await client.ExecuteAsync(request, CancellationToken.None);
+                request.AddHeader("authorization", "Bearer " + accessToken);
+                //var response = await client.ExecuteAsync(request, CancellationToken.None);
             }
             catch (Exception ex)
             {
@@ -112,85 +93,20 @@ namespace Avalon.Helpers
 
         /// <summary>Gets the auth0 token.</summary>
         /// <returns></returns>
-        private async Task<string> GetAuth0Token()  // TODO: Move id, secret etc. to appsettings.json and KeyVault.
+        private async Task<string> GetAuth0Token()
         {
             try
             {
-                //var options = new RestClientOptions(_auth0TokenAddress)
-                //{
-                //    ThrowOnAnyError = true,
-                //    Timeout = 1000000
-                //};
-
-                //var client = new RestClient(options);
-
-                //var request = new RestRequest()
-                //    .AddHeader("content-type", "application/x-www-form-urlencoded")
-                //    .AddQueryParameter("grant_type", "client_credentials")
-                //    .AddQueryParameter("client_id", _auth0_Client_id)
-                //    .AddQueryParameter("client_secret", _auth0_Client_secret)
-                //    .AddQueryParameter("audience", _auth0ApiIdentifier);
-
-                //var response = await client.PostAsync(request);
-                //return JsonSerializer.Deserialize<AccessToken>(response.Content).access_token;
-
                 // TODO: Save token until it expires, to minimize the number of tokens requested. Auth0 customers are billed based on the number of Machine to Machine Access Tokens issued by Auth0. 
                 var client = new RestClient(_auth0TokenAddress);
-                var request = new RestRequest();
+                var request = new RestRequest(_auth0TokenAddress, Method.Post);
                 request.AddHeader("content-type", "application/json");
                 request.AddParameter("application/json", $"{{\"client_id\":\"{_auth0_Client_id}\",\"client_secret\":\"{_auth0_Client_secret}\",\"audience\":\"{_auth0ApiIdentifier}\",\"grant_type\":\"client_credentials\"}}", ParameterType.RequestBody);
-                var response = client.ExecutePost(request);
+                var response = await client.ExecuteAsync(request);
 
-                return JsonSerializer.Deserialize<AccessToken>(response.Content).access_token;
+                token = JsonSerializer.Deserialize<AccessToken>(response.Content).access_token;
 
-                //var client = new RestClient(_auth0TokenAddress);
-                //var request = new RestRequest();
-                //request.AddHeader("content-type", "application/x-www-form-urlencoded");
-                //request.AddParameter(
-                //          "application/x-www-form-urlencoded",
-                //            $"grant_type=client_credentials&" +
-                //            $"client_id={_auth0_Client_id}&" +
-                //            $"client_secret={_auth0_Client_secret}&" +
-                //            $"audience={_auth0ApiIdentifier}",
-                //          ParameterType.RequestBody);
-
-                ////request.AddParameter("application/x-www-form-urlencoded", "{\"client_id\":\"ZKHIqFGxgm9OBc5Bxn1226pT9kXHLknW\",\"client_secret\":\"OpIPkn9Y4Ctoh9UuUbUpGzHybTNVEFevel0yQneY6X5ITKyaRwJEMbHYB3mNofkN\",\"audience\":\"https://bluepenguin.eu.auth0.com/api/v2/\",\"grant_type\":\"client_credentials\"}", ParameterType.RequestBody);
-                //var response = await client.ExecuteAsync(request);
-
-                //var tt = response.Content;
-
-                //return JsonSerializer.Deserialize<AccessToken>(response.Content).access_token;
-
-
-
-                //var options = new RestClientOptions(_auth0TokenAddress)
-                //{
-                //    ThrowOnAnyError = true,
-                //    Timeout = 1000
-                //};
-                //var client = new RestClient(options);
-                //var request = new RestRequest();
-                ////request.AddHeader("content-type", "application/json");
-                ////request.AddParameter("application/json", "{\"client_id\":\"ZKHIqFGxgm9OBc5Bxn1226pT9kXHLknW\",\"client_secret\":\"OpIPkn9Y4Ctoh9UuUbUpGzHybTNVEFevel0yQneY6X5ITKyaRwJEMbHYB3mNofkN\",\"audience\":\"https://bluepenguin.eu.auth0.com/api/v2/\",\"grant_type\":\"client_credentials\"}", ParameterType.RequestBody);
-                //request.AddParameter("application/x-www-form-urlencoded", "grant_type=client_credentials&client_id=%24%7Baccount.clientId%7D&client_secret=OpIPkn9Y4Ctoh9UuUbUpGzHybTNVEFevel0yQneY6X5ITKyaRwJEMbHYB3mNofkN&audience=ZKHIqFGxgm9OBc5Bxn1226pT9kXHLknW", ParameterType.RequestBody);
-                ////request.AddParameter("application/json", $"{{\"client_id\":\"{_auth0_Client_id}\",\"client_secret\":\"{_auth0_Client_secret}\",\"audience\":\"{_auth0ApiIdentifier}\",\"grant_type\":\"client_credentials\"}}", ParameterType.RequestBody);
-                //var response = client.PostAsync(request);
-
-                //var client = new RestClient(_auth0TokenAddress);
-                //client.ThrowOnAnyError = true;
-                //var request = new RestRequest(Method.POST);
-                //request.AddHeader("content-type", "application/json");
-                //request.AddParameter("application/json", "{\"client_id\":\"ZKHIqFGxgm9OBc5Bxn1226pT9kXHLknW\",\"client_secret\":\"OpIPkn9Y4Ctoh9UuUbUpGzHybTNVEFevel0yQneY6X5ITKyaRwJEMbHYB3mNofkN\",\"audience\":\"https://bluepenguin.eu.auth0.com/api/v2/\",\"grant_type\":\"client_credentials\"}", ParameterType.RequestBody);
-                //IRestResponse response = client.Execute(request);
-
-
-                //var client = new RestClient("https://bluepenguin.eu.auth0.com/oauth/token");
-                //var request = new RestRequest(Method.POST);
-                //request.AddHeader("content-type", "application/x-www-form-urlencoded");
-                //request.AddParameter("application/x-www-form-urlencoded", "grant_type=client_credentials&client_id=%24%7Baccount.clientId%7D&client_secret=YOUR_CLIENT_SECRET&audience=YOUR_API_IDENTIFIER", ParameterType.RequestBody);
-                //IRestResponse response = client.Execute(request);
-
-                //return JsonSerializer.Deserialize<AccessToken>(response.Result.Content).access_token;
+                return token;
             }
             catch (Exception ex)
             {
