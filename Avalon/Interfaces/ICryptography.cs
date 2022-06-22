@@ -1,4 +1,4 @@
-﻿namespace Avalon.Infrastructure
+﻿namespace Avalon.Interfaces
 {
     public interface ICryptography
     {

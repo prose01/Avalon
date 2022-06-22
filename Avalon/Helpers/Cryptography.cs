@@ -1,4 +1,4 @@
-﻿using Avalon.Infrastructure;
+﻿using Avalon.Interfaces;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Security.Cryptography;

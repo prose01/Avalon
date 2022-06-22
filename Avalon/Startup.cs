@@ -1,6 +1,5 @@
 using Avalon.Data;
 using Avalon.Helpers;
-using Avalon.Infrastructure;
 using Avalon.Interfaces;
 using Avalon.Model;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
