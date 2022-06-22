@@ -47,7 +47,8 @@ namespace Avalon
             });
 
             // Add framework services.
-            services.AddMvc().AddJsonOptions(options => {
+            services.AddMvc().AddJsonOptions(options =>
+            {
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 
                 // TODO: https://www.ryadel.com/en/jsonserializationexception-self-referencing-loop-detected-error-fix-entity-framework-asp-net-core/
@@ -79,6 +80,7 @@ namespace Avalon
             // Add our helper method(s)
             services.AddSingleton<ICryptography, Cryptography>();
             services.AddSingleton<IHelperMethods, HelperMethods>();
+            //services.AddSingleton<ITwitterClient>(new DeleteProfileFromAuth0(Configuration["Twitter:ApiKey"],Configuration["Twitter:ApiKeySecret"]));
 
             // Register the Swagger generator, defining one or more Swagger documents
             services.AddSwaggerGen(c =>
@@ -92,23 +94,44 @@ namespace Avalon
                     //Contact = new Contact { Name = "Peter Rose", Email = "", Url = "http://Avalon.com/" },
                     //License = new Swashbuckle.AspNetCore.Swagger.License { Name = "Use under LICX", Url = "http://Avalon.com" }
                 });
-                
+
                 // Define the ApiKey scheme that's in use (i.e. Implicit Flow)
-                c.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+                //c.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+                //{
+                //    Type = SecuritySchemeType.ApiKey,
+                //    Flows = new OpenApiOAuthFlows
+                //    {
+                //        Implicit = new OpenApiOAuthFlow
+                //        {
+                //            AuthorizationUrl = new Uri("/auth-server/connect/authorize", UriKind.Relative),
+                //            Scopes = new Dictionary<string, string>
+                //            {
+                //                { "readAccess", "Access read operations" },
+                //                { "writeAccess", "Access write operations" }
+                //            }
+                //        }
+                //    }
+                //});
+
+                var securitySchema = new OpenApiSecurityScheme
                 {
-                    Type = SecuritySchemeType.ApiKey,
-                    Flows = new OpenApiOAuthFlows
+                    Description = "Using the Authorization header with the Bearer scheme.",
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer",
+                    Reference = new OpenApiReference
                     {
-                        Implicit = new OpenApiOAuthFlow
-                        {
-                            AuthorizationUrl = new Uri("/auth-server/connect/authorize", UriKind.Relative),
-                            Scopes = new Dictionary<string, string>
-                            {
-                                { "readAccess", "Access read operations" },
-                                { "writeAccess", "Access write operations" }
-                            }
-                        }
+                        Type = ReferenceType.SecurityScheme,
+                        Id = "Bearer"
                     }
+                };
+
+                c.AddSecurityDefinition("Bearer", securitySchema);
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    { securitySchema, new[] { "Bearer" } }
                 });
             });
 
@@ -158,7 +181,8 @@ namespace Avalon
             app.UseAuthorization();
 
             // Add endpoints 
-            app.UseEndpoints(endpoints => {
+            app.UseEndpoints(endpoints =>
+            {
                 endpoints.MapControllers();
             });
 
