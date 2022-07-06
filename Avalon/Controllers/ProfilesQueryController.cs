@@ -3,6 +3,7 @@ using Avalon.Interfaces;
 using Avalon.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -18,11 +19,13 @@ namespace Avalon.Controllers
     {
         private readonly IProfilesQueryRepository _profilesQueryRepository;
         private readonly IHelperMethods _helper;
+        private readonly bool _deleteOldProfiles;
 
-        public ProfilesQueryController(IProfilesQueryRepository profilesQueryRepository, IHelperMethods helperMethods)
+        public ProfilesQueryController(IProfilesQueryRepository profilesQueryRepository, IHelperMethods helperMethods, IConfiguration config)
         {
             _profilesQueryRepository = profilesQueryRepository;
             _helper = helperMethods;
+            _deleteOldProfiles = config.GetValue<bool>("DeleteOldProfiles");
         }
 
         /// <summary>
@@ -473,12 +476,15 @@ namespace Avalon.Controllers
         {
             try
             {
-                var oldProfiles = await _profilesQueryRepository.GetOldProfiles();
-
-                foreach (var profile in oldProfiles)
+                if(_deleteOldProfiles)
                 {
-                    //await _helper.DeleteProfileFromAuth0(profile.ProfileId);
-                    //await _profilesQueryRepository.DeleteProfile(profile.ProfileId);
+                    var oldProfiles = await _profilesQueryRepository.GetOldProfiles();
+
+                    foreach (var profile in oldProfiles)
+                    {
+                        //await _helper.DeleteProfileFromAuth0(profile.ProfileId);
+                        //await _profilesQueryRepository.DeleteProfile(profile.ProfileId);
+                    }
                 }
 
                 return NoContent();

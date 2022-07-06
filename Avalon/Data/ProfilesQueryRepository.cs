@@ -16,12 +16,16 @@ namespace Avalon.Data
         private readonly Context _context = null;
         private readonly long _maxIsBookmarked;
         private readonly long _maxVisited;
+        private readonly int _deleteProfileDaysBack;
+        private readonly int _deleteProfileLimit;
 
         public ProfilesQueryRepository(IOptions<Settings> settings, IConfiguration config)
         {
             _context = new Context(settings);
             _maxIsBookmarked = config.GetValue<long>("MaxIsBookmarked");
             _maxVisited = config.GetValue<long>("MaxVisited");
+            _deleteProfileDaysBack = config.GetValue<int>("DeleteProfileDaysBack");
+            _deleteProfileLimit = config.GetValue<int>("DeleteProfileLimit");
         }
 
         #region Admin stuff
@@ -749,7 +753,7 @@ namespace Avalon.Data
         {
             try
             {
-                return await _context.Profiles.Find(p => p.LastActive < DateTime.Now.AddDays(-30) && !p.Admin).Project<Profile>(this.GetProjection()).Limit(10).ToListAsync();
+                return await _context.Profiles.Find(p => p.LastActive < DateTime.Now.AddDays(-_deleteProfileDaysBack) && !p.Admin).Project<Profile>(this.GetProjection()).Limit(_deleteProfileLimit).ToListAsync();
             }
             catch
             {

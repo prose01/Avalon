@@ -82,7 +82,7 @@ namespace Avalon.Helpers
                 request.AddHeader("authorization", "Bearer " + accessToken);
                 //var response = await client.ExecuteAsync(request, CancellationToken.None);
             }
-            catch (Exception ex)
+            catch
             {
                 throw;
             }
@@ -108,7 +108,7 @@ namespace Avalon.Helpers
 
                 return token;
             }
-            catch (Exception ex)
+            catch
             {
                 throw;
             }
