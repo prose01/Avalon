@@ -2,7 +2,6 @@
 using Avalon.Model;
 using Microsoft.Extensions.Options;
 using RestSharp;
-using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Text.Json;
@@ -85,6 +84,18 @@ namespace Avalon.Helpers
             catch
             {
                 throw;
+            }
+        }
+
+        /// <summary>Deletes 10 old profiles that are more than 30 days since last active.</summary>
+        public async Task DeleteOldProfiles()
+        {
+            var oldProfiles = await _profilesQueryRepository.GetOldProfiles();
+
+            foreach (var profile in oldProfiles)
+            {
+                //await _helper.DeleteProfileFromAuth0(profile.ProfileId);
+                //await _profilesQueryRepository.DeleteProfile(profile.ProfileId);
             }
         }
 

@@ -468,7 +468,6 @@ namespace Avalon.Controllers
         #region Maintenance
 
         /// <summary>Deletes 10 old profiles that are more than 30 days since last active.</summary>
-        /// <returns></returns>
         [NoCache]
         [HttpDelete("~/DeleteOldProfiles")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
@@ -478,13 +477,16 @@ namespace Avalon.Controllers
             {
                 if(_deleteOldProfiles)
                 {
-                    var oldProfiles = await _profilesQueryRepository.GetOldProfiles();
+                    var currentUser = await _helper.GetCurrentUserProfile(User);
 
-                    foreach (var profile in oldProfiles)
+                    if (currentUser == null)
                     {
-                        //await _helper.DeleteProfileFromAuth0(profile.ProfileId);
-                        //await _profilesQueryRepository.DeleteProfile(profile.ProfileId);
+                        return NotFound();
                     }
+
+                    if (!currentUser.Admin) throw new ArgumentException($"Current user does not have admin status.");
+
+                    await _helper.DeleteOldProfiles();                    
                 }
 
                 return NoContent();
