@@ -143,6 +143,27 @@ namespace Avalon.Data
             }
         }
 
+        /// <summary>Gets profiles by identifiers.</summary>
+        /// <param name="profileId">The profile identifiers.</param>
+        /// <returns></returns>
+        public async Task<IEnumerable<Profile>> GetProfilIdsByIds(string[] profileIds)
+        {
+            try
+            {
+                var filter = Builders<Profile>
+                                .Filter.In(p => p.ProfileId, profileIds);
+
+                return await _context.Profiles
+                    .Find(filter)
+                    .Project<Profile>(GetProfileId())
+                    .ToListAsync();
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
         /// <summary>Gets curretUser's chatmember profiles.</summary>
         /// <param name="currentUser">The current user.</param>
         /// <param name="skip">The skip.</param>
@@ -182,26 +203,47 @@ namespace Avalon.Data
             }
         }
 
-        /// <summary>Gets the profile by name.</summary>
-        /// <param name="profileName">Name of the profile.</param>
-        /// <returns></returns>
-        public async Task<Profile> GetProfileByName(string profileName)
-        {
-            try
-            {
-                var filter = Builders<Profile>
-                                .Filter.Regex(p => p.Name, new BsonRegularExpression(profileName, "i"));
+        ///// <summary>Gets the profile by strict name.</summary>
+        ///// <param name="profileName">Name of the profile.</param>
+        ///// <returns></returns>
+        //public async Task<Profile> GetProfileByNameStrict(string profileName)
+        //{
+        //    try
+        //    {
+        //        var filter = Builders<Profile>
+        //                        .Filter.Eq(p => p.Name, profileName);
 
-                return await _context.Profiles
-                    .Find(filter)
-                    .Project<Profile>(this.GetProjection())
-                    .FirstOrDefaultAsync();
-            }
-            catch
-            {
-                throw;
-            }
-        }
+        //        return await _context.Profiles
+        //            .Find(filter)
+        //            .Project<Profile>(this.GetProjection())
+        //            .FirstOrDefaultAsync();
+        //    }
+        //    catch
+        //    {
+        //        throw;
+        //    }
+        //}
+
+        ///// <summary>Gets the profile by name.</summary>
+        ///// <param name="profileName">Name of the profile.</param>
+        ///// <returns></returns>
+        //public async Task<Profile> GetProfileByName(string profileName)
+        //{
+        //    try
+        //    {
+        //        var filter = Builders<Profile>
+        //                        .Filter.Regex(p => p.Name, new BsonRegularExpression(profileName, "i"));
+
+        //        return await _context.Profiles
+        //            .Find(filter)
+        //            .Project<Profile>(this.GetProjection())
+        //            .FirstOrDefaultAsync();
+        //    }
+        //    catch
+        //    {
+        //        throw;
+        //    }
+        //}
 
         // Search for anything in filter - eg. { Body: 'something' }
         /// <summary>Gets the profile by filter.</summary>
@@ -561,7 +603,7 @@ namespace Avalon.Data
         /// <summary>Add currentUser.profileId to IsBookmarked list of every profile in profileIds list.</summary>
         /// <param name="currentUser">The current user.</param>
         /// <param name="profileIds">The profile ids.</param>
-        public async Task AddIsBookmarkedToProfiles(CurrentUser currentUser, string[] profileIds)
+        public async Task AddIsBookmarkedToProfiles(CurrentUser currentUser, string[] profileIds) //TODO: create a remove Visited function that only removes no save currentUser
         {
             try
             {
@@ -607,7 +649,7 @@ namespace Avalon.Data
         /// <summary>Remove currentUser.profileId from IsBookmarked list of every profile in profileIds list.</summary>
         /// <param name="currentUser">The current user.</param>
         /// <param name="profileIds">The profile ids.</param>
-        public async Task RemoveIsBookmarkedFromProfiles(CurrentUser currentUser, string[] profileIds)
+        public async Task RemoveIsBookmarkedFromProfiles(CurrentUser currentUser, string[] profileIds) //TODO: create a remove Visited function that only removes no save currentUser
         {
             try
             {
@@ -738,6 +780,50 @@ namespace Avalon.Data
                 "ProfileFilter: 0, " +
                 "IsBookmarked: 0, " +
                 "Languagecode: 0, " +
+                "}";
+
+            return projection;
+        }
+
+        private ProjectionDefinition<Profile> GetProfileId()
+        {
+            ProjectionDefinition<Profile> projection = "{ " +
+                "_id: 0, " +
+                "Auth0Id: 0, " +
+                "Admin: 0, " +
+                "Name: 0, " +
+                "CreatedOn: 0, " +
+                "UpdatedOn: 0, " +
+                "LastActive: 0, " +
+                //"Countrycode: 0, " +
+                "Age: 0, " +
+                "Height: 0, " +
+                "Contactable: 0, " +
+                "Description: 0, " +
+                "Images: 0, " +
+                "Tags: 0, " +
+                "Body: 0, " +
+                "SmokingHabits: 0, " +
+                "HasChildren: 0, " +
+                "WantChildren: 0, " +
+                "HasPets: 0, " +
+                "LivesIn: 0, " +
+                "Education: 0, " +
+                "EducationStatus: 0, " +
+                "EmploymentStatus: 0, " +
+                "SportsActivity: 0, " +
+                "EatingHabits: 0, " +
+                "ClotheStyle: 0, " +
+                "BodyArt: 0, " +
+                "Gender: 0, " +
+                "SexualOrientation: 0, " +
+                "Bookmarks: 0, " +
+                "ChatMemberslist: 0, " +
+                "ProfileFilter: 0, " +
+                "IsBookmarked: 0, " +
+                "Languagecode: 0, " +
+                "Visited: 0, " +
+                "Likes: 0, " +
                 "}";
 
             return projection;

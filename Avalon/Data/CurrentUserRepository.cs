@@ -241,7 +241,7 @@ namespace Avalon.Data
         /// <param name="currentUser">The current user.</param>
         /// <param name="profileIds">The profile ids.</param>
         /// <returns></returns>
-        public async Task RemoveProfilesFromChatMemberslist(CurrentUser currentUser, string[] profileIds)
+        public async Task RemoveProfilesFromChatMemberslist(CurrentUser currentUser, string[] profileIds) //TODO: create a remove Visited function that only removes no save currentUser
         {
             try
             {
@@ -310,7 +310,7 @@ namespace Avalon.Data
         /// <summary> Remove obsolete Profiles from Visited.</summary>
         /// <param name="currentUser">The current user.</param>
         /// <param name="profileIds">The profile identifiers.</param>
-        public async Task RemoveProfilesFromVisited(CurrentUser currentUser, string[] profileIds)
+        public async Task RemoveProfilesFromVisited(CurrentUser currentUser, string[] profileIds) //TODO: create a remove Visited function that only removes no save currentUser
         {
             try
             {
@@ -339,7 +339,7 @@ namespace Avalon.Data
         /// <summary> Remove obsolete Profiles from IsBookmarked.</summary>
         /// <param name="currentUser">The current user.</param>
         /// <param name="profileIds">The profile identifiers.</param>
-        public async Task RemoveProfilesFromIsBookmarked(CurrentUser currentUser, string[] profileIds)
+        public async Task RemoveProfilesFromIsBookmarked(CurrentUser currentUser, string[] profileIds) //TODO: create a remove Visited function that only removes no save currentUser
         {
             try
             {
@@ -368,7 +368,7 @@ namespace Avalon.Data
         /// <summary> Remove obsolete Profiles from Likes.</summary>
         /// <param name="currentUser">The current user.</param>
         /// <param name="profileIds">The profile identifiers.</param>
-        public async Task RemoveProfilesFromLikes(CurrentUser currentUser, string[] profileIds)
+        public async Task RemoveProfilesFromLikes(CurrentUser currentUser, string[] profileIds) //TODO: create a remove Visited function that only removes no save currentUser
         {
             try
             {
@@ -400,116 +400,71 @@ namespace Avalon.Data
         {
             try
             {
-                if (currentUser.Visited != null)
+                string[] checkThesesProfiles = currentUser.Visited.Keys.ToArray<string>();
+
+                checkThesesProfiles = checkThesesProfiles.Union(currentUser.Bookmarks).ToArray();
+
+                checkThesesProfiles = checkThesesProfiles.Union(currentUser.IsBookmarked.Keys).ToArray();
+
+                checkThesesProfiles = checkThesesProfiles.Union(currentUser.ChatMemberslist.Select(i => i.ProfileId)).ToArray();
+
+                checkThesesProfiles = checkThesesProfiles.Union(currentUser.Likes).ToArray();
+
+
+                // Chech if our profiles exist
+                IEnumerable<Profile> exitingprofiles = await this._profilesQueryRepository.GetProfilIdsByIds(checkThesesProfiles);
+                
+                //List<string> newCountrycode = new List<string>();
+                List<string> exitingIds = new List<string>();
+                foreach (var profile in exitingprofiles)
                 {
-                    // Remove obsolete Profiles from Visited
-                    var visitedProfileIds = new List<string>();
-
-                    foreach (var visited in currentUser.Visited)
+                    // Remove all profiles not in currentUser.Countrycode i.e. if they have changed country.
+                    if (profile.Countrycode == currentUser.Countrycode)
                     {
-                        var item = await this._profilesQueryRepository.GetProfileById(visited.Key);
-
-                        if (item == null || currentUser.Countrycode != item.Countrycode)
-                        {
-                            visitedProfileIds.Add(visited.Key);
-                        }
-                    }
-
-                    if (visitedProfileIds.Count > 0)
-                    {
-                        await this.RemoveProfilesFromVisited(currentUser, visitedProfileIds.ToArray());
+                        exitingIds.Add(profile.ProfileId);
                     }
                 }
 
 
-                if (currentUser.Bookmarks != null)
+                var deleteTheseProfiles = checkThesesProfiles.Where(i => !exitingIds.Contains(i)).ToList();
+
+                if (deleteTheseProfiles.Count > 0)
                 {
-                    // Remove obsolete Profiles from Bookmarks
-                    var bookmarkedProfileIds = new List<string>();
-
-                    foreach (var bookmark in currentUser.Bookmarks)
+                    foreach (var deadProfile in deleteTheseProfiles)
                     {
-                        var item = await this._profilesQueryRepository.GetProfileById(bookmark);
-
-                        if (item == null || currentUser.Countrycode != item.Countrycode)
+                        if (currentUser.Visited.ContainsKey(deadProfile))
                         {
-                            bookmarkedProfileIds.Add(bookmark);
+                            currentUser.Visited.Remove(deadProfile);
+                        }
+
+                        if (currentUser.Bookmarks.Contains(deadProfile))
+                        {
+                            currentUser.Bookmarks.Remove(deadProfile);
+                        }
+
+                        if (currentUser.IsBookmarked.ContainsKey(deadProfile))
+                        {
+                            currentUser.IsBookmarked.Remove(deadProfile);
+                        }
+
+                        if (currentUser.ChatMemberslist.Any(i => i.ProfileId == deadProfile))
+                        {
+                            currentUser.ChatMemberslist.RemoveAll(i => i.ProfileId == deadProfile);
+                        }
+
+                        if (currentUser.Likes.Contains(deadProfile))
+                        {
+                            currentUser.Likes.Remove(deadProfile);
                         }
                     }
 
-                    if (bookmarkedProfileIds.Count > 0)
-                    {
-                        await this.RemoveProfilesFromBookmarks(currentUser, bookmarkedProfileIds.ToArray());
-                    }
-                }
+                    var filter = Builders<CurrentUser>
+                                    .Filter.Eq(c => c.ProfileId, currentUser.ProfileId);
 
-
-                if (currentUser.IsBookmarked != null)
-                {
-                    // Remove obsolete Profiles from IsBookmarked
-                    var isBookmarkedProfileIds = new List<string>();
-
-                    foreach (var isBookmark in currentUser.IsBookmarked)
-                    {
-                        var item = await this._profilesQueryRepository.GetProfileById(isBookmark.Key);
-
-                        if (item == null || currentUser.Countrycode != item.Countrycode)
-                        {
-                            isBookmarkedProfileIds.Add(isBookmark.Key);
-                        }
-                    }
-
-                    if (isBookmarkedProfileIds.Count > 0)
-                    {
-                        await this.RemoveProfilesFromIsBookmarked(currentUser, isBookmarkedProfileIds.ToArray());
-                    }
-                }
-
-
-                if (currentUser.ChatMemberslist != null)
-                {
-                    // Remove obsolete Profiles from ChatMemberslist
-                    var chatmemberProfileIds = new List<string>();
-
-                    foreach (var chatmember in currentUser.ChatMemberslist)
-                    {
-                        var item = await this._profilesQueryRepository.GetProfileById(chatmember.ProfileId);
-
-                        if (item == null || currentUser.Countrycode != item.Countrycode)
-                        {
-                            chatmemberProfileIds.Add(chatmember.ProfileId);
-                        }
-                    }
-
-                    if (chatmemberProfileIds.Count > 0)
-                    {
-                        await this.RemoveProfilesFromChatMemberslist(currentUser, chatmemberProfileIds.ToArray());
-                    }
-                }
-
-
-                if (currentUser.Likes != null)
-                {
-                    // Remove obsolete Profiles from Likes
-                    var likesProfileIds = new List<string>();
-
-                    foreach (var like in currentUser.Likes)
-                    {
-                        var item = await this._profilesQueryRepository.GetProfileById(like);
-
-                        if (item == null || currentUser.Countrycode != item.Countrycode)
-                        {
-                            likesProfileIds.Add(like);
-                        }
-                    }
-
-                    if (likesProfileIds.Count > 0)
-                    {
-                        await this.RemoveProfilesFromLikes(currentUser, likesProfileIds.ToArray());
-                    }
+                    await _context.CurrentUser.ReplaceOneAsync(filter, currentUser);
                 }
             }
-            catch
+            catch(Exception ex)
             {
                 throw;
             }

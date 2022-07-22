@@ -1,4 +1,5 @@
-﻿using Avalon.Infrastructure;
+﻿using Avalon.Helpers;
+using Avalon.Infrastructure;
 using Avalon.Interfaces;
 using Avalon.Model;
 using Microsoft.AspNetCore.Authorization;
@@ -36,22 +37,24 @@ namespace Avalon.Controllers
         [HttpGet("~/CurrentUser")]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<ActionResult<CurrentUser>> GetCurrentUserProfile()
+        public async Task<IActionResult> GetCurrentUserProfile()
         {
             try
             {
                 var currentUser = await _helper.GetCurrentUserProfile(User);
 
-                if (currentUser == null)
+                if (currentUser == null || currentUser.Name == null)
                 {
                     return NotFound();
                 }
 
-                // Clean obsolete profile info from CurrentUser if not admin.
-                if (!currentUser.Admin)
-                {
-                    await _currentUserRepository.CleanCurrentUser(currentUser);
-                }
+                //// Clean obsolete profile info from CurrentUser if not admin.
+                //if (!currentUser.Admin)
+                //{
+                //    await _currentUserRepository.CleanCurrentUser(currentUser);
+                //}
+
+                //await _currentUserRepository.CleanCurrentUser(currentUser);
 
                 return Ok(currentUser);
             }
@@ -76,9 +79,6 @@ namespace Avalon.Controllers
                 var auth0Id = _helper.GetCurrentUserAuth0Id(User);
 
                 if (string.IsNullOrEmpty(auth0Id)) return BadRequest();
-
-                // Check if Name already exists.
-                if (_profilesQueryRepository.GetProfileByName(item.Name).Result != null) return BadRequest("Name already exists.");
 
                 // Check if Auth0Id already exists.
                 if (_profilesQueryRepository.GetProfileByAuth0Id(auth0Id).Result != null) return BadRequest("User already exists.");
@@ -144,7 +144,7 @@ namespace Avalon.Controllers
             {
                 var currentUser = await _helper.GetCurrentUserProfile(User);
 
-                if (currentUser == null)
+                if (currentUser == null || currentUser.Name == null)
                 {
                     return NotFound();
                 }
@@ -204,7 +204,7 @@ namespace Avalon.Controllers
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            if (currentUser == null)
+            if (currentUser == null || currentUser.Name == null)
             {
                 return NotFound();
             }
@@ -240,7 +240,7 @@ namespace Avalon.Controllers
             {
                 var currentUser = await _helper.GetCurrentUserProfile(User);
 
-                if (currentUser == null)
+                if (currentUser == null || currentUser.Name == null)
                 {
                     return NotFound();
                 }
@@ -267,7 +267,7 @@ namespace Avalon.Controllers
             {
                 var currentUser = await _helper.GetCurrentUserProfile(User);
 
-                if (currentUser == null)
+                if (currentUser == null || currentUser.Name == null)
                 {
                     return NotFound();
                 }
@@ -296,7 +296,7 @@ namespace Avalon.Controllers
             {
                 var currentUser = await _helper.GetCurrentUserProfile(User);
 
-                if (currentUser == null)
+                if (currentUser == null || currentUser.Name == null)
                 {
                     return NotFound();
                 }
@@ -335,7 +335,7 @@ namespace Avalon.Controllers
             {
                 var currentUser = await _helper.GetCurrentUserProfile(User);
 
-                if (currentUser == null)
+                if (currentUser == null || currentUser.Name == null)
                 {
                     return NotFound();
                 }
@@ -369,7 +369,7 @@ namespace Avalon.Controllers
             {
                 var currentUser = await _helper.GetCurrentUserProfile(User);
 
-                if (currentUser == null)
+                if (currentUser == null || currentUser.Name == null)
                 {
                     return NotFound();
                 }
@@ -395,7 +395,7 @@ namespace Avalon.Controllers
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            if (currentUser == null)
+            if (currentUser == null || currentUser.Name == null)
             {
                 return NotFound();
             }
@@ -444,6 +444,35 @@ namespace Avalon.Controllers
 
             return filter;
         }
+
+        #endregion
+
+
+
+        #region Temp method for Dev. TODO: Please delete before release!
+
+        ///// <summary>
+        ///// Deletes the CurrentUser profile.
+        ///// </summary>
+        //[HttpPost("~/DeleteProfileFromAuth0")]
+        //[ProducesResponseType((int)HttpStatusCode.NoContent)]
+        //[ProducesResponseType((int)HttpStatusCode.NotFound)]
+        //public async Task<IActionResult> DeleteProfileFromAuth0([FromBody] string profileId)
+        //{
+
+        //    try
+        //    {
+        //        await _helper.DeleteProfileFromAuth0(profileId);
+
+        //        //var auth0 = new DeleteProfileFromAuth0();
+
+        //        return NoContent();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return Problem(ex.ToString());
+        //    }
+        //}
 
         #endregion
     }

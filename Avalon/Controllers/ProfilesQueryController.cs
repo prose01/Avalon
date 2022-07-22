@@ -46,7 +46,7 @@ namespace Avalon.Controllers
 
                 var currentUser = await _helper.GetCurrentUserProfile(User);
 
-                if (currentUser == null)
+                if (currentUser == null || currentUser.Name == null)
                 {
                     return NotFound();
                 }
@@ -96,7 +96,7 @@ namespace Avalon.Controllers
 
                 var currentUser = await _helper.GetCurrentUserProfile(User);
 
-                if (currentUser == null)
+                if (currentUser == null || currentUser.Name == null)
                 {
                     return NotFound();
                 }
@@ -133,7 +133,7 @@ namespace Avalon.Controllers
 
                 var currentUser = await _helper.GetCurrentUserProfile(User);
 
-                if (currentUser == null)
+                if (currentUser == null || currentUser.Name == null)
                 {
                     return NotFound();
                 }
@@ -209,7 +209,7 @@ namespace Avalon.Controllers
 
                 var currentUser = await _helper.GetCurrentUserProfile(User);
 
-                if (currentUser == null)
+                if (currentUser == null || currentUser.Name == null)
                 {
                     return NotFound();
                 }
@@ -256,7 +256,7 @@ namespace Avalon.Controllers
 
                 var currentUser = await _helper.GetCurrentUserProfile(User);
 
-                if (currentUser == null)
+                if (currentUser == null || currentUser.Name == null)
                 {
                     return NotFound();
                 }
@@ -305,7 +305,7 @@ namespace Avalon.Controllers
 
                 var currentUser = await _helper.GetCurrentUserProfile(User);
 
-                if (currentUser == null)
+                if (currentUser == null || currentUser.Name == null)
                 {
                     return NotFound();
                 }
@@ -479,7 +479,7 @@ namespace Avalon.Controllers
                 {
                     var currentUser = await _helper.GetCurrentUserProfile(User);
 
-                    if (currentUser == null)
+                    if (currentUser == null || currentUser.Name == null)
                     {
                         return NotFound();
                     }
