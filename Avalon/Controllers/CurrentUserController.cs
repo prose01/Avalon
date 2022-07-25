@@ -48,14 +48,6 @@ namespace Avalon.Controllers
                     return NotFound();
                 }
 
-                //// Clean obsolete profile info from CurrentUser if not admin.
-                //if (!currentUser.Admin)
-                //{
-                //    await _currentUserRepository.CleanCurrentUser(currentUser);
-                //}
-
-                //await _currentUserRepository.CleanCurrentUser(currentUser);
-
                 return Ok(currentUser);
             }
             catch (Exception ex)

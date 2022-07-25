@@ -203,48 +203,6 @@ namespace Avalon.Data
             }
         }
 
-        ///// <summary>Gets the profile by strict name.</summary>
-        ///// <param name="profileName">Name of the profile.</param>
-        ///// <returns></returns>
-        //public async Task<Profile> GetProfileByNameStrict(string profileName)
-        //{
-        //    try
-        //    {
-        //        var filter = Builders<Profile>
-        //                        .Filter.Eq(p => p.Name, profileName);
-
-        //        return await _context.Profiles
-        //            .Find(filter)
-        //            .Project<Profile>(this.GetProjection())
-        //            .FirstOrDefaultAsync();
-        //    }
-        //    catch
-        //    {
-        //        throw;
-        //    }
-        //}
-
-        ///// <summary>Gets the profile by name.</summary>
-        ///// <param name="profileName">Name of the profile.</param>
-        ///// <returns></returns>
-        //public async Task<Profile> GetProfileByName(string profileName)
-        //{
-        //    try
-        //    {
-        //        var filter = Builders<Profile>
-        //                        .Filter.Regex(p => p.Name, new BsonRegularExpression(profileName, "i"));
-
-        //        return await _context.Profiles
-        //            .Find(filter)
-        //            .Project<Profile>(this.GetProjection())
-        //            .FirstOrDefaultAsync();
-        //    }
-        //    catch
-        //    {
-        //        throw;
-        //    }
-        //}
-
         // Search for anything in filter - eg. { Body: 'something' }
         /// <summary>Gets the profile by filter.</summary>
         /// <param name="currentUser">The current user.</param>
@@ -463,7 +421,7 @@ namespace Avalon.Data
                 }
 
                 return await _context.Profiles
-                                    .Find(p => currentUser.Bookmarks.Contains(p.ProfileId)).Project<Profile>(this.GetProjection()).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
+                            .Find(p => currentUser.Bookmarks.Contains(p.ProfileId)).Project<Profile>(this.GetProjection()).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
             }
             catch
             {
@@ -603,7 +561,7 @@ namespace Avalon.Data
         /// <summary>Add currentUser.profileId to IsBookmarked list of every profile in profileIds list.</summary>
         /// <param name="currentUser">The current user.</param>
         /// <param name="profileIds">The profile ids.</param>
-        public async Task AddIsBookmarkedToProfiles(CurrentUser currentUser, string[] profileIds) //TODO: create a remove Visited function that only removes no save currentUser
+        public async Task AddIsBookmarkedToProfiles(CurrentUser currentUser, string[] profileIds) //TODO: Try replacing this with UpdateMany to only make one call.
         {
             try
             {
@@ -649,7 +607,7 @@ namespace Avalon.Data
         /// <summary>Remove currentUser.profileId from IsBookmarked list of every profile in profileIds list.</summary>
         /// <param name="currentUser">The current user.</param>
         /// <param name="profileIds">The profile ids.</param>
-        public async Task RemoveIsBookmarkedFromProfiles(CurrentUser currentUser, string[] profileIds) //TODO: create a remove Visited function that only removes no save currentUser
+        public async Task RemoveIsBookmarkedFromProfiles(CurrentUser currentUser, string[] profileIds) //TODO: Try replacing this with UpdateMany to only make one call.
         {
             try
             {
