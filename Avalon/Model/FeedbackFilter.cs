@@ -7,13 +7,13 @@ namespace Avalon.Model
     {
         public string FeedbackId { get; set; }
 
-        public DateTime? DateSentStart { get; set; } = DateTime.Now;
-
-        public DateTime? DateSeenEnd { get; set; }
-
-        public DateTime? DateSeenStart { get; set; } = DateTime.Now;
+        public DateTime? DateSentStart { get; set; }
 
         public DateTime? DateSentEnd { get; set; }
+
+        public DateTime? DateSeenStart { get; set; }
+
+        public DateTime? DateSeenEnd { get; set; }
 
         public string FromProfileId { get; set; }
 

@@ -163,17 +163,20 @@ namespace Avalon.Data
                 if (feedbackFilter.FeedbackId != null)
                     filters.Add(Builders<Feedback>.Filter.Eq(f => f.FeedbackId, feedbackFilter.FeedbackId));
 
-                if (feedbackFilter.DateSentStart != null)
+
+                if (feedbackFilter.DateSentStart != null || feedbackFilter.DateSentEnd != null)
+                {
+                    feedbackFilter.DateSentEnd = feedbackFilter.DateSentEnd.Value.AddDays(1);
                     filters.Add(Builders<Feedback>.Filter.Gt(f => f.DateSent, feedbackFilter.DateSentStart));
+                    filters.Add(Builders<Feedback>.Filter.Lte(f => f.DateSent, feedbackFilter.DateSentEnd));
+                }
 
-                if (feedbackFilter.DateSeenEnd != null)
-                    filters.Add(Builders<Feedback>.Filter.Lte(f => f.DateSent, feedbackFilter.DateSeenEnd));
-
-                if (feedbackFilter.DateSeenStart != null)
+                if (feedbackFilter.DateSeenStart != null || feedbackFilter.DateSeenEnd != null)
+                {
+                    feedbackFilter.DateSeenEnd = feedbackFilter.DateSeenEnd.Value.AddDays(1);
                     filters.Add(Builders<Feedback>.Filter.Gt(f => f.DateSeen, feedbackFilter.DateSeenStart));
-
-                if (feedbackFilter.DateSentEnd != null)
-                    filters.Add(Builders<Feedback>.Filter.Lte(f => f.DateSeen, feedbackFilter.DateSentEnd));
+                    filters.Add(Builders<Feedback>.Filter.Lte(f => f.DateSeen, feedbackFilter.DateSeenEnd));
+                }
 
                 if (feedbackFilter.FromProfileId != null)
                     filters.Add(Builders<Feedback>.Filter.Eq(f => f.FromProfileId, feedbackFilter.FromProfileId));

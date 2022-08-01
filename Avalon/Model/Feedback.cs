@@ -16,7 +16,7 @@ namespace Avalon.Model
         public DateTime? DateSent { get; set; } = DateTime.Now;
 
         [DataType(DataType.DateTime)]
-        public DateTime? DateSeen { get; set; }
+        public DateTime? DateSeen { get; set; } = DateTime.Now;
 
         public string FromProfileId { get; set; }
 
@@ -32,7 +32,7 @@ namespace Avalon.Model
         [StringLength(2000, ErrorMessage = "Message length cannot be more than 2000 characters long.")]
         public string Message { get; set; }
 
-        public bool Open { get; set; }
+        public bool Open { get; set; } = true;
 
         public string Countrycode { get; set; }
 

@@ -34,29 +34,29 @@ namespace Avalon.Controllers
         [HttpPost("~/AddFeedback")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> Post([FromBody] Feedback item)
+        public async Task<IActionResult> Post([FromBody] Feedback feedback)
         {
             try
             {
                 var currentUser = await _helper.GetCurrentUserProfile(User);
 
-                if (currentUser == null)
+                if (currentUser == null || currentUser.Name == null)
                 {
                     return NotFound();
                 }
 
-                item.FeedbackId = Guid.NewGuid().ToString();
-                item.DateSent = DateTime.Now;
-                item.Open = true;
-                item.FromProfileId = currentUser.ProfileId;
-                item.FromName = currentUser.Name;
-                item.Countrycode = currentUser.Countrycode;
-                item.Languagecode = currentUser.Languagecode;
+                feedback.FeedbackId = Guid.NewGuid().ToString();
+                feedback.DateSent = DateTime.Now;
+                feedback.Open = true;
+                feedback.FromProfileId = currentUser.ProfileId;
+                feedback.FromName = currentUser.Name;
+                feedback.Countrycode = currentUser.Countrycode;
+                feedback.Languagecode = currentUser.Languagecode;
 
-                var encryptedMessage = _cryptography.Encrypt(item.Message);
-                item.Message = encryptedMessage;
+                var encryptedMessage = _cryptography.Encrypt(feedback.Message);
+                feedback.Message = encryptedMessage;
 
-                await _reedbackRepository.AddFeedback(item);
+                await _reedbackRepository.AddFeedback(feedback);
 
                 return NoContent();
             }
