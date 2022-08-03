@@ -28,6 +28,6 @@ namespace Avalon.Interfaces
         Task AddVisitedToProfiles(CurrentUser currentUser, Profile profile);
         Task AddLikeToProfile(CurrentUser currentUser, Profile profile);
         Task RemoveLikeFromProfile(CurrentUser currentUser, Profile profile);
-        Task<IEnumerable<Profile>> GetOldProfiles();
+        Task<IEnumerable<Profile>> GetOldProfiles(int daysBack, int limit);
     }
 }

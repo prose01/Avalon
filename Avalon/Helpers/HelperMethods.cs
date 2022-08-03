@@ -88,9 +88,9 @@ namespace Avalon.Helpers
         }
 
         /// <summary>Deletes 10 old profiles that are more than 30 days since last active.</summary>
-        public async Task DeleteOldProfiles()
+        public async Task DeleteOldProfiles(int daysBack, int limit)
         {
-            var oldProfiles = await _profilesQueryRepository.GetOldProfiles();
+            var oldProfiles = await _profilesQueryRepository.GetOldProfiles(daysBack, limit);
 
             foreach (var profile in oldProfiles)
             {

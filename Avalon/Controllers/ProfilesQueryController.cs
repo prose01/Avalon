@@ -471,7 +471,7 @@ namespace Avalon.Controllers
         [NoCache]
         [HttpDelete("~/DeleteOldProfiles")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
-        public async Task<IActionResult> DeleteOldProfiles()
+        public async Task<IActionResult> DeleteOldProfiles(int daysBack, int limit)
         {
             try
             {
@@ -486,7 +486,7 @@ namespace Avalon.Controllers
 
                     if (!currentUser.Admin) throw new ArgumentException($"Current user does not have admin status.");
 
-                    await _helper.DeleteOldProfiles();                    
+                    await _helper.DeleteOldProfiles(daysBack, limit);                    
                 }
 
                 return NoContent();

@@ -16,8 +16,8 @@ namespace Avalon.Data
         private readonly Context _context = null;
         private readonly long _maxIsBookmarked;
         private readonly long _maxVisited;
-        private readonly int _deleteProfileDaysBack;
-        private readonly int _deleteProfileLimit;
+        private int _deleteProfileDaysBack;
+        private int _deleteProfileLimit;
 
         public ProfilesQueryRepository(IOptions<Settings> settings, IConfiguration config)
         {
@@ -103,6 +103,22 @@ namespace Avalon.Data
                 throw;
             }
         }
+
+        ///// <summary>Delete list of profiles. There is no going back!</summary>
+        ///// <param name="profileIds">The profile identifiers.</param>
+        ///// <returns></returns>
+        //public async Task<DeleteResult> DeleteProfiles(string[] profileIds)     // TODO: Cannot be used until we have a delete many version of DeleteProfileFromAuth0!
+        //{
+        //    try
+        //    {
+        //        return await _context.Profiles.DeleteManyAsync(
+        //            Builders<Profile>.Filter.Eq("ProfileId", profileIds));
+        //    }
+        //    catch
+        //    {
+        //        throw;
+        //    }
+        //}
 
         /////// <summary>Deletes the profiles.</summary>
         /////// <param name="profileIds">The profile identifiers.</param>
@@ -793,10 +809,13 @@ namespace Avalon.Data
 
         /// <summary>Gets 10 old profiles that are more than 30 days since last active.</summary>
         /// <returns></returns>
-        public async Task<IEnumerable<Profile>> GetOldProfiles()
+        public async Task<IEnumerable<Profile>> GetOldProfiles(int daysBack, int limit)
         {
             try
             {
+                _deleteProfileDaysBack = daysBack > 0 ? daysBack : _deleteProfileDaysBack;
+                _deleteProfileLimit = limit > 0 ? limit : _deleteProfileLimit;
+
                 return await _context.Profiles.Find(p => p.LastActive < DateTime.Now.AddDays(-_deleteProfileDaysBack) && !p.Admin).Project<Profile>(this.GetProjection()).Limit(_deleteProfileLimit).ToListAsync();
             }
             catch
