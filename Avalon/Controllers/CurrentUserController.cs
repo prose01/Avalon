@@ -88,7 +88,6 @@ namespace Avalon.Controllers
                 item.IsBookmarked = new Dictionary<string, DateTime>();
                 item.Visited = new Dictionary<string, DateTime>();
                 item.Likes = new List<string>();
-                item.ProfileFilter = CreateBasicProfileFilter(item);
 
                 await _currentUserRepository.AddProfile(item);
 
@@ -168,12 +167,6 @@ namespace Avalon.Controllers
                     item.IsBookmarked = currentUser.IsBookmarked;
                     item.Visited = currentUser.Visited;
                     item.Likes = currentUser.Likes;
-                }
-
-                // Update ProfileFilter Gender when CurrentUser is updated.
-                if (currentUser.SexualOrientation != item.SexualOrientation || currentUser.Gender != item.Gender)
-                {
-                    item.ProfileFilter.Gender = CreateBasicProfileFilter(item).Gender;
                 }
 
                 await _currentUserRepository.UpdateProfile(item);
@@ -407,38 +400,6 @@ namespace Avalon.Controllers
                 return Problem(ex.ToString());
             }
         }
-
-        #region Helper methods
-
-        /// <summary>Creates the basic profile filter.</summary>
-        /// <param name="currentUser">The current user.</param>
-        /// <returns></returns>
-        private static ProfileFilter CreateBasicProfileFilter(CurrentUser currentUser)
-        {
-            var filter = new ProfileFilter();
-
-            switch (currentUser.SexualOrientation)
-            {
-                case SexualOrientationType.Heterosexual:
-                    filter.Gender = currentUser.Gender == GenderType.Male ? GenderType.Female : GenderType.Male;
-                    break;
-                case SexualOrientationType.Homosexual:
-                    filter.Gender = currentUser.Gender;
-                    break;
-                case SexualOrientationType.Bisexual:
-                    break;
-                case SexualOrientationType.Asexual:
-                    break;
-                default:
-                    filter.Gender = currentUser.Gender == GenderType.Male ? GenderType.Female : GenderType.Male;
-                    break;
-            }
-
-            return filter;
-        }
-
-        #endregion
-
 
 
         #region Temp method for Dev. TODO: Please delete before release!

@@ -108,14 +108,6 @@
         Other
     }
 
-    public enum SexualOrientationType
-    {
-        Heterosexual,
-        Homosexual,
-        Bisexual,
-        Asexual
-    }
-
     public enum SmokingHabitsType
     {
         NotChosen,

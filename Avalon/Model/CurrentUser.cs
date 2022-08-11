@@ -10,10 +10,10 @@ namespace Avalon.Model
         #region special properties
 
         [BsonRepresentation(BsonType.String)]
-        public SexualOrientationType SexualOrientation { get; set; }
+        public GenderType Gender { get; set; }
 
         [BsonRepresentation(BsonType.String)]
-        public GenderType Gender { get; set; }
+        public List<GenderType> Seeking { get; set; }
 
         public string Languagecode { get; set; }
         public List<string> Bookmarks { get; set; } 

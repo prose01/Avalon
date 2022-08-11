@@ -239,19 +239,11 @@ namespace Avalon.Data
                 //Remove admins from the list.
                 filters.Add(Builders<Profile>.Filter.Ne(p => p.Admin, true));
 
-                //Add basic search criteria.
-                filters.Add(Builders<Profile>.Filter.Eq(p => p.SexualOrientation, currentUser.SexualOrientation));
-
                 filters.Add(Builders<Profile>.Filter.Eq(p => p.Countrycode, currentUser.Countrycode));
 
-                if (currentUser.SexualOrientation == SexualOrientationType.Heterosexual || currentUser.SexualOrientation == SexualOrientationType.Homosexual)
-                {
-                    filters.Add(Builders<Profile>.Filter.Eq(p => p.Gender, currentUser.ProfileFilter.Gender));
-                }
-                else if(profileFilter.Gender != null)
-                {
-                    filters.Add(Builders<Profile>.Filter.Eq(p => p.Gender, profileFilter.Gender));
-                }
+                filters.Add(Builders<Profile>.Filter.In(p => p.Gender, currentUser.Seeking));
+
+                filters.Add(Builders<Profile>.Filter.Where(p => p.Seeking.Contains(currentUser.Gender)));
 
                 //Apply all other ProfileFilter criterias.
                 filters = this.ApplyProfileFilter(profileFilter, filters);
@@ -375,15 +367,11 @@ namespace Avalon.Data
                 //Remove admins from the list.
                 filters.Add(Builders<Profile>.Filter.Ne(p => p.Admin, true));
 
-                //Add basic search criteria.
-                filters.Add(Builders<Profile>.Filter.Eq(p => p.SexualOrientation, currentUser.SexualOrientation));
                 filters.Add(Builders<Profile>.Filter.Eq(p => p.Countrycode, currentUser.Countrycode));
 
-                if (currentUser.SexualOrientation == SexualOrientationType.Heterosexual)
-                    filters.Add(Builders<Profile>.Filter.Ne(p => p.Gender, currentUser.Gender));
+                filters.Add(Builders<Profile>.Filter.In(p => p.Gender, currentUser.Seeking));
 
-                if (currentUser.SexualOrientation == SexualOrientationType.Homosexual)
-                    filters.Add(Builders<Profile>.Filter.Eq(p => p.Gender, currentUser.Gender));
+                filters.Add(Builders<Profile>.Filter.Where(p => p.Seeking.Contains(currentUser.Gender)));
 
                 var combineFilters = Builders<Profile>.Filter.And(filters);
 
@@ -748,7 +736,7 @@ namespace Avalon.Data
                 "Auth0Id: 0, " +
                 "Admin:0, " +
                 "Gender: 0, " +
-                "SexualOrientation: 0, " +
+                "Seeking: 0, " +
                 "Bookmarks: 0, " +
                 "ChatMemberslist: 0, " +
                 "ProfileFilter: 0, " +
@@ -790,7 +778,7 @@ namespace Avalon.Data
                 "ClotheStyle: 0, " +
                 "BodyArt: 0, " +
                 "Gender: 0, " +
-                "SexualOrientation: 0, " +
+                "Seeking: 0, " +
                 "Bookmarks: 0, " +
                 "ChatMemberslist: 0, " +
                 "ProfileFilter: 0, " +
