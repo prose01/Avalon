@@ -127,16 +127,6 @@
         Other
     }
 
-    public enum MaritalStatusType
-    {
-        NotChosen,
-        Single,
-        Married,
-        Separated,
-        Divorced,
-        Other
-    }
-
 
     // Enum types used for other stuff than Profiles.
     public enum OrderByType
