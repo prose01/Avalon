@@ -333,20 +333,20 @@ namespace Avalon.Controllers
             }
         }
 
-        /// <summary>Gets the currentUser's chatMember profiles.</summary>
-        /// <param name="parameterFilter"></param>
-        /// <exception cref="ArgumentException">There are no ChatMembers for current user.</exception>
-        /// <returns></returns>
-        [NoCache]
-        [HttpGet("~/GetChatMemberProfiles")]
-        public async Task<IEnumerable<Profile>> GetChatMemberProfiles([FromQuery] ParameterFilter parameterFilter)
-        {
-            var currentUser = await _helper.GetCurrentUserProfile(User);
+        ///// <summary>Gets the currentUser's chatMember profiles.</summary>
+        ///// <param name="parameterFilter"></param>
+        ///// <exception cref="ArgumentException">There are no ChatMembers for current user.</exception>
+        ///// <returns></returns>
+        //[NoCache]
+        //[HttpGet("~/GetChatMemberProfiles")]
+        //public async Task<IEnumerable<Profile>> GetChatMemberProfiles([FromQuery] ParameterFilter parameterFilter)
+        //{
+        //    var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            var skip = parameterFilter.PageIndex == 0 ? parameterFilter.PageIndex : parameterFilter.PageIndex * parameterFilter.PageSize;
+        //    var skip = parameterFilter.PageIndex == 0 ? parameterFilter.PageIndex : parameterFilter.PageIndex * parameterFilter.PageSize;
 
-            return await _profilesQueryRepository.GetChatMemberProfiles(currentUser, skip, parameterFilter.PageSize) ?? throw new ArgumentException($"There are no ChatMembers for current user.");
-        }
+        //    return await _profilesQueryRepository.GetChatMemberProfiles(currentUser, skip, parameterFilter.PageSize) ?? throw new ArgumentException($"There are no ChatMembers for current user.");
+        //}
 
         /// <summary>
         /// Gets the specified profile based on a filter. Eg. { Body: 'something' }
