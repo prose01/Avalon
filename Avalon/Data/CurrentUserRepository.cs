@@ -311,89 +311,89 @@ namespace Avalon.Data
         /// <summary> Remove obsolete Profiles from Visited.</summary>
         /// <param name="currentUser">The current user.</param>
         /// <param name="profileIds">The profile identifiers.</param>
-        public async Task RemoveProfilesFromVisited(CurrentUser currentUser, string[] profileIds)
-        {
-            try
-            {
-                foreach (var profileId in profileIds)
-                {
-                    if (currentUser.Visited.ContainsKey(profileId))
-                    {
-                        currentUser.Visited.Remove(profileId);
-                    }
-                }
+        //public async Task RemoveProfilesFromVisited(CurrentUser currentUser, string[] profileIds)
+        //{
+        //    try
+        //    {
+        //        foreach (var profileId in profileIds)
+        //        {
+        //            if (currentUser.Visited.ContainsKey(profileId))
+        //            {
+        //                currentUser.Visited.Remove(profileId);
+        //            }
+        //        }
 
-                var filter = Builders<CurrentUser>
-                           .Filter.Eq(c => c.ProfileId, currentUser.ProfileId);
+        //        var filter = Builders<CurrentUser>
+        //                   .Filter.Eq(c => c.ProfileId, currentUser.ProfileId);
 
-                var update = Builders<CurrentUser>
-                            .Update.Set(c => c.Visited, currentUser.Visited);
+        //        var update = Builders<CurrentUser>
+        //                    .Update.Set(c => c.Visited, currentUser.Visited);
 
-                await _context.CurrentUser.FindOneAndUpdateAsync(filter, update);
-            }
-            catch
-            {
-                throw;
-            }
-        }
+        //        await _context.CurrentUser.FindOneAndUpdateAsync(filter, update);
+        //    }
+        //    catch
+        //    {
+        //        throw;
+        //    }
+        //}
 
         /// <summary> Remove obsolete Profiles from IsBookmarked.</summary>
         /// <param name="currentUser">The current user.</param>
         /// <param name="profileIds">The profile identifiers.</param>
-        public async Task RemoveProfilesFromIsBookmarked(CurrentUser currentUser, string[] profileIds)
-        {
-            try
-            {
-                foreach (var profileId in profileIds)
-                {
-                    if (currentUser.IsBookmarked.ContainsKey(profileId))
-                    {
-                        currentUser.IsBookmarked.Remove(profileId);
-                    }
-                }
+        //public async Task RemoveProfilesFromIsBookmarked(CurrentUser currentUser, string[] profileIds)
+        //{
+        //    try
+        //    {
+        //        foreach (var profileId in profileIds)
+        //        {
+        //            if (currentUser.IsBookmarked.ContainsKey(profileId))
+        //            {
+        //                currentUser.IsBookmarked.Remove(profileId);
+        //            }
+        //        }
 
-                var filter = Builders<CurrentUser>
-                           .Filter.Eq(c => c.ProfileId, currentUser.ProfileId);
+        //        var filter = Builders<CurrentUser>
+        //                   .Filter.Eq(c => c.ProfileId, currentUser.ProfileId);
 
-                var update = Builders<CurrentUser>
-                            .Update.Set(c => c.IsBookmarked, currentUser.IsBookmarked);
+        //        var update = Builders<CurrentUser>
+        //                    .Update.Set(c => c.IsBookmarked, currentUser.IsBookmarked);
 
-                await _context.CurrentUser.FindOneAndUpdateAsync(filter, update);
-            }
-            catch
-            {
-                throw;
-            }
-        }
+        //        await _context.CurrentUser.FindOneAndUpdateAsync(filter, update);
+        //    }
+        //    catch
+        //    {
+        //        throw;
+        //    }
+        //}
 
         /// <summary> Remove obsolete Profiles from Likes.</summary>
         /// <param name="currentUser">The current user.</param>
         /// <param name="profileIds">The profile identifiers.</param>
-        public async Task RemoveProfilesFromLikes(CurrentUser currentUser, string[] profileIds)
-        {
-            try
-            {
-                foreach (var profileId in profileIds)
-                {
-                    if (currentUser.Likes.Contains(profileId))
-                    {
-                        currentUser.Likes.Remove(profileId);
-                    }
-                }
+        //public async Task RemoveProfilesFromLikes(CurrentUser currentUser, string[] profileIds)
+        //{
+        //    try
+        //    {
+        //        foreach (var profileId in profileIds)
+        //        {
+        //            if (currentUser.Likes.Contains(profileId))
+        //            {
+        //                currentUser.Likes.Remove(profileId);
+        //            }
+        //        }
 
-                var filter = Builders<CurrentUser>
-                           .Filter.Eq(c => c.ProfileId, currentUser.ProfileId);
+        //        var filter = Builders<CurrentUser>
+        //                   .Filter.Eq(c => c.ProfileId, currentUser.ProfileId);
 
-                var update = Builders<CurrentUser>
-                            .Update.Set(c => c.Likes, currentUser.Likes);
+        //        var update = Builders<CurrentUser>
+        //                    .Update.Set(c => c.Likes, currentUser.Likes);
 
-                await _context.CurrentUser.FindOneAndUpdateAsync(filter, update);
-            }
-            catch
-            {
-                throw;
-            }
-        }
+        //        await _context.CurrentUser.FindOneAndUpdateAsync(filter, update);
+        //    }
+        //    catch
+        //    {
+        //        throw;
+        //    }
+        //}
 
         /// <summary>Clean CurrenProfile for obsolete profile info.</summary>
         /// <param name="currentUser">The current user.</param>

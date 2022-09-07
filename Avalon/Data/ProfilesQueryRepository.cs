@@ -185,19 +185,19 @@ namespace Avalon.Data
         /// <param name="skip">The skip.</param>
         /// <param name="limit">The limit.</param>
         /// <returns></returns>
-        public async Task<IEnumerable<Profile>> GetChatMemberProfiles(CurrentUser currentUser, int skip, int limit)
-        {
-            try
-            {
-                var chatMembers = currentUser.ChatMemberslist.Select(m => m.ProfileId);
+        //public async Task<IEnumerable<Profile>> GetChatMemberProfiles(CurrentUser currentUser, int skip, int limit)
+        //{
+        //    try
+        //    {
+        //        var chatMembers = currentUser.ChatMemberslist.Select(m => m.ProfileId);
 
-                return await _context.Profiles.Find(p => chatMembers.Contains(p.ProfileId)).Project<Profile>(this.GetProjection()).Skip(skip).Limit(limit).ToListAsync();
-            }
-            catch
-            {
-                throw;
-            }
-        }
+        //        return await _context.Profiles.Find(p => chatMembers.Contains(p.ProfileId)).Project<Profile>(this.GetProjection()).Skip(skip).Limit(limit).ToListAsync();
+        //    }
+        //    catch
+        //    {
+        //        throw;
+        //    }
+        //}
 
         /// <summary>Gets the profile by Auth0Id.</summary>
         /// <param name="auth0Id">Auth0Id of the profile.</param>
@@ -596,11 +596,49 @@ namespace Avalon.Data
                     var filter = Builders<Profile>
                                .Filter.Eq(p => p.ProfileId, profile.ProfileId);
 
-                    var update = Builders<Profile>
+                    UpdateDefinition<Profile> update = Builders<Profile>
                                 .Update.Set(p => p.IsBookmarked, profile.IsBookmarked);
 
                     await _context.Profiles.FindOneAndUpdateAsync(filter, update);
                 }
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        public async Task AddIsBookmarkedToProfiles2(CurrentUser currentUser, string[] profileIds) //TODO: Try replacing this with UpdateMany to only make one call.
+        {
+            try
+            {
+                var query = _context.Profiles.Find(p => profileIds.Contains(p.ProfileId));
+
+                var profiles = await Task.FromResult(query.ToList());
+
+                var update = Builders<Profile>.Update;
+                var updates = new List<UpdateDefinition<Profile>>();
+
+                foreach (var profile in profiles)
+                {
+                    var isBookmarkedPair = from pair in profile.IsBookmarked
+                                           orderby pair.Value descending
+                                           select pair;
+
+                    if (isBookmarkedPair.Count() > _maxIsBookmarked)
+                    {
+                        profile.IsBookmarked.Remove(isBookmarkedPair.Last().Key);
+                    }
+
+                    profile.IsBookmarked.Add(currentUser.ProfileId, DateTime.Now);
+
+                    updates.Add(update.Set(p => p.IsBookmarked, profile.IsBookmarked));
+                }
+
+                var filter = Builders<Profile>
+                                .Filter.In(p => p.ProfileId, profileIds);
+
+                await _context.Profiles.UpdateManyAsync(filter, update.Combine(updates));
             }
             catch
             {
