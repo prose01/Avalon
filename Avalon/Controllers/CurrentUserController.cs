@@ -1,5 +1,4 @@
-﻿using Avalon.Helpers;
-using Avalon.Infrastructure;
+﻿using Avalon.Infrastructure;
 using Avalon.Interfaces;
 using Avalon.Model;
 using Microsoft.AspNetCore.Authorization;

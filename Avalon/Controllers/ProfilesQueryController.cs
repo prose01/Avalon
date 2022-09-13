@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -239,20 +240,20 @@ namespace Avalon.Controllers
 
 
         /// <summary>Adds like to profile.</summary>
-        /// <param name="profileId">The profile identifier.</param>
+        /// <param name="profileIds">The profile identifiers.</param>
         /// <exception cref="ArgumentException">ProfileId is null. {profileId}</exception>
         /// <exception cref="ArgumentException">ProfileId is similar to current user profileId. {profileId}</exception>
         /// <exception cref="ArgumentException">Profile is not found. {profileId}</exception>
         /// <returns> </returns>
         [NoCache]
-        [HttpGet("~/AddLikeToProfile/{profileId}")]
+        [HttpPost("~/AddLikeToProfiles")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> AddLikeToProfile(string profileId)
+        public async Task<IActionResult> AddLikeToProfiles([FromBody] string[] profileIds)
         {
             try
             {
-                if (string.IsNullOrEmpty(profileId)) throw new ArgumentException($"ProfileId is null.", nameof(profileId));
+                if (profileIds == null || profileIds.Length < 1) throw new ArgumentException($"ProfileIds is either null {profileIds} or length is < 1 {profileIds.Length}.", nameof(profileIds));
 
                 var currentUser = await _helper.GetCurrentUserProfile(User);
 
@@ -264,20 +265,9 @@ namespace Avalon.Controllers
                 // Cannot Like profile if currentUser is admin.
                 if (currentUser.Admin) return NoContent();
 
-                if (currentUser.ProfileId == profileId) throw new ArgumentException($"ProfileId is similar to current user profileId.", nameof(profileId));
+                if(profileIds.Contains(currentUser.ProfileId)) throw new ArgumentException($"ProfileId is similar to current user profileId.", nameof(profileIds));
 
-                var profile = await _profilesQueryRepository.GetProfileById(profileId);
-
-                if (profile == null)
-                {
-                    throw new ArgumentException($"Profile is not found.", nameof(profileId));
-                }
-
-                // If already added just leave.
-                if (profile.Likes.Contains(currentUser.ProfileId))
-                    return NoContent();
-
-                await _profilesQueryRepository.AddLikeToProfile(currentUser, profile);
+                await _profilesQueryRepository.AddLikeToProfiles(currentUser, profileIds);
 
                 return NoContent();
             }
@@ -288,20 +278,20 @@ namespace Avalon.Controllers
         }
 
         /// <summary>Removes like from profile.</summary>
-        /// <param name="profileId">The profile identifier.</param>
+        /// <param name="profileId">The profile identifiers.</param>
         /// <exception cref="ArgumentException">ProfileId is null. {profileId}</exception>
         /// <exception cref="ArgumentException">ProfileId is similar to current user profileId. {profileId}</exception>
         /// <exception cref="ArgumentException">Profile is not found. {profileId}</exception>
         /// <returns> </returns>
         [NoCache]
-        [HttpGet("~/RemoveLikeFromProfile/{profileId}")]
+        [HttpPost("~/RemoveLikeFromProfiles")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> RemoveLikeFromProfile(string profileId)
+        public async Task<IActionResult> RemoveLikeFromProfiles([FromBody] string[] profileIds)
         {
             try
             {
-                if (string.IsNullOrEmpty(profileId)) throw new ArgumentException($"ProfileId is null.", nameof(profileId));
+                if (profileIds == null || profileIds.Length < 1) throw new ArgumentException($"ProfileIds is either null {profileIds} or length is < 1 {profileIds.Length}.", nameof(profileIds));
 
                 var currentUser = await _helper.GetCurrentUserProfile(User);
 
@@ -310,20 +300,9 @@ namespace Avalon.Controllers
                     return NotFound();
                 }
 
-                if (currentUser.ProfileId == profileId) throw new ArgumentException($"ProfileId is similar to current user profileId.", nameof(profileId));
+                if (profileIds.Contains(currentUser.ProfileId)) throw new ArgumentException($"ProfileId is similar to current user profileId.", nameof(profileIds));
 
-                var profile = await _profilesQueryRepository.GetProfileById(profileId);
-
-                if (profile == null)
-                {
-                    throw new ArgumentException($"Profile is not found.", nameof(profileId));
-                }
-
-                // If not added just leave.
-                if (!profile.Likes.Contains(currentUser.ProfileId))
-                    return NoContent();
-
-                await _profilesQueryRepository.RemoveLikeFromProfile(currentUser, profile);
+                await _profilesQueryRepository.RemoveLikeFromProfiles(currentUser, profileIds);
 
                 return NoContent();
             }

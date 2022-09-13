@@ -20,15 +20,14 @@ namespace Avalon.Interfaces
         Task<IEnumerable<Profile>> GetProfileByFilter(CurrentUser currentUser, ProfileFilter profileFilter, OrderByType orderByType, int skip, int limit);
         Task<IEnumerable<Profile>> GetLatestProfiles(CurrentUser currentUser, OrderByType orderByType, int skip, int limit);
         Task AddIsBookmarkedToProfiles(CurrentUser currentUser, string[] profileIds);
-        Task AddIsBookmarkedToProfiles2(CurrentUser currentUser, string[] profileIds);
         Task RemoveIsBookmarkedFromProfiles(CurrentUser currentUser, string[] profileIds);
         Task<IEnumerable<Profile>> GetBookmarkedProfiles(CurrentUser profile, OrderByType orderByType, int skip, int limit);
         Task<IEnumerable<Profile>> GetProfilesWhoVisitedMe(CurrentUser currentUser, OrderByType orderByType, int skip, int limit);
         Task<IEnumerable<Profile>> GetProfilesWhoBookmarkedMe(CurrentUser currentUser, OrderByType orderByType, int skip, int limit);
         Task<IEnumerable<Profile>> GetProfilesWhoLikesMe(CurrentUser currentUser, OrderByType orderByType, int skip, int limit);
         Task AddVisitedToProfiles(CurrentUser currentUser, Profile profile);
-        Task AddLikeToProfile(CurrentUser currentUser, Profile profile);
-        Task RemoveLikeFromProfile(CurrentUser currentUser, Profile profile);
+        Task AddLikeToProfiles(CurrentUser currentUser, string[] profileIds);
+        Task RemoveLikeFromProfiles(CurrentUser currentUser, string[] profileIds);
         Task<IEnumerable<Profile>> GetOldProfiles(int daysBack, int limit);
     }
 }

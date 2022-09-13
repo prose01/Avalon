@@ -34,7 +34,6 @@ namespace Avalon
         public void ConfigureServices(IServiceCollection services)
         {
             // Add service and create Policy with options
-            // TODO: Remember to remove Cors for production.
             services.AddCors(options =>
             {
                 options.AddPolicy("CorsPolicy",
@@ -50,7 +49,7 @@ namespace Avalon
             {
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 
-                // TODO: https://www.ryadel.com/en/jsonserializationexception-self-referencing-loop-detected-error-fix-entity-framework-asp-net-core/
+                // https://www.ryadel.com/en/jsonserializationexception-self-referencing-loop-detected-error-fix-entity-framework-asp-net-core/
                 // https://makolyte.com/system-text-json-jsonexception-a-possible-object-cycle-was-detected-which-is-not-supported/
                 //options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
             });
@@ -144,9 +143,6 @@ namespace Avalon
                 options.Client_id = Configuration.GetSection("Auth0_Client_id").Value;
                 options.Client_secret = Configuration.GetSection("Auth0_Client_secret").Value;
             });
-
-            //TODO: Out maybe?
-            //services.AddTransient<ICurrentUserRepository, CurrentUserRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline
@@ -168,7 +164,7 @@ namespace Avalon
             //}
 
             // Shows UseCors with CorsPolicyBuilder.
-            // TODO: Remember to remove Cors for production.
+            
             app.UseCors("CorsPolicy");
 
             app.UseHttpsRedirection();

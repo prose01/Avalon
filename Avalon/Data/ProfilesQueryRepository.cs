@@ -120,24 +120,6 @@ namespace Avalon.Data
         //    }
         //}
 
-        /////// <summary>Deletes the profiles.</summary>
-        /////// <param name="profileIds">The profile identifiers.</param>
-        /////// <returns></returns>
-        ////public async Task<DeleteResult> DeleteProfiles(string[] profileIds)
-        ////{
-        ////    try
-        ////    {
-        ////        //return await _context.Profiles.DeleteManyAsync(
-        ////        //    Builders<Profile>.Filter.Eq("ProfileId", profileIds));
-
-        ////        return null;
-        ////    }
-        ////    catch (Exception ex)
-        ////    {
-        ////        throw ex;
-        ////    }
-        ////}
-
         /// <summary>Gets the profile by identifier.</summary>
         /// <param name="profileId">The profile identifier.</param>
         /// <returns></returns>
@@ -565,50 +547,7 @@ namespace Avalon.Data
         /// <summary>Add currentUser.profileId to IsBookmarked list of every profile in profileIds list.</summary>
         /// <param name="currentUser">The current user.</param>
         /// <param name="profileIds">The profile ids.</param>
-        public async Task AddIsBookmarkedToProfiles(CurrentUser currentUser, string[] profileIds) //TODO: Try replacing this with UpdateMany to only make one call.
-        {
-            try
-            {
-                var query = _context.Profiles.Find(p => profileIds.Contains(p.ProfileId));
-
-                var profiles = await Task.FromResult(query.ToList());
-
-                foreach (var profile in profiles)
-                {
-                    if (profile.IsBookmarked.ContainsKey(currentUser.ProfileId))
-                    {
-                        profile.IsBookmarked[currentUser.ProfileId] = DateTime.Now;
-                    }
-                    else
-                    {
-                        var isBookmarkedPair = from pair in profile.IsBookmarked
-                                               orderby pair.Value descending
-                                               select pair;
-
-                        if (isBookmarkedPair.Count() > _maxIsBookmarked)
-                        {
-                            profile.IsBookmarked.Remove(isBookmarkedPair.Last().Key);
-                        }
-
-                        profile.IsBookmarked.Add(currentUser.ProfileId, DateTime.Now);
-                    }
-
-                    var filter = Builders<Profile>
-                               .Filter.Eq(p => p.ProfileId, profile.ProfileId);
-
-                    UpdateDefinition<Profile> update = Builders<Profile>
-                                .Update.Set(p => p.IsBookmarked, profile.IsBookmarked);
-
-                    await _context.Profiles.FindOneAndUpdateAsync(filter, update);
-                }
-            }
-            catch
-            {
-                throw;
-            }
-        }
-
-        public async Task AddIsBookmarkedToProfiles2(CurrentUser currentUser, string[] profileIds) //TODO: Try replacing this with UpdateMany to only make one call.
+        public async Task AddIsBookmarkedToProfiles(CurrentUser currentUser, string[] profileIds)
         {
             try
             {
@@ -649,7 +588,7 @@ namespace Avalon.Data
         /// <summary>Remove currentUser.profileId from IsBookmarked list of every profile in profileIds list.</summary>
         /// <param name="currentUser">The current user.</param>
         /// <param name="profileIds">The profile ids.</param>
-        public async Task RemoveIsBookmarkedFromProfiles(CurrentUser currentUser, string[] profileIds) //TODO: Try replacing this with UpdateMany to only make one call.
+        public async Task RemoveIsBookmarkedFromProfiles(CurrentUser currentUser, string[] profileIds)
         {
             try
             {
@@ -657,21 +596,23 @@ namespace Avalon.Data
 
                 var profiles = await Task.FromResult(query.ToList());
 
+                var update = Builders<Profile>.Update;
+                var updates = new List<UpdateDefinition<Profile>>();
+
                 foreach (var profile in profiles)
                 {
                     if (profile.IsBookmarked.ContainsKey(currentUser.ProfileId))
                     {
                         profile.IsBookmarked.Remove(currentUser.ProfileId);
 
-                        var filter = Builders<Profile>
-                                   .Filter.Eq(p => p.ProfileId, profile.ProfileId);
-
-                        var update = Builders<Profile>
-                                    .Update.Set(p => p.IsBookmarked, profile.IsBookmarked);
-
-                        await _context.Profiles.FindOneAndUpdateAsync(filter, update);
+                        updates.Add(update.Set(p => p.IsBookmarked, profile.IsBookmarked));
                     }
                 }
+
+                var filter = Builders<Profile>
+                                .Filter.In(p => p.ProfileId, profileIds);
+
+                await _context.Profiles.UpdateManyAsync(filter, update.Combine(updates));
             }
             catch
             {
@@ -718,22 +659,36 @@ namespace Avalon.Data
             }
         }
 
-        /// <summary>Add currentUser.profileId to likes list of profile.</summary>
+        /// <summary>Add currentUser.profileId to likes list of profiles.</summary>
         /// <param name="currentUser">The current user.</param>
-        /// <param name="profile">The profile.</param>
-        public async Task AddLikeToProfile(CurrentUser currentUser, Profile profile)
+        /// <param name="profileIds">The profile ids.</param>
+
+        public async Task AddLikeToProfiles(CurrentUser currentUser, string[] profileIds)
         {
             try
             {
-                profile.Likes.Add(currentUser.ProfileId);
+                var query = _context.Profiles.Find(p => profileIds.Contains(p.ProfileId));
+
+                var profiles = await Task.FromResult(query.ToList());
+
+                var update = Builders<Profile>.Update;
+                var updates = new List<UpdateDefinition<Profile>>();
+
+                foreach (var profile in profiles)
+                {
+                    // If already added just leave.
+                    if (profile.Likes.Contains(currentUser.ProfileId))
+                        continue;
+
+                    profile.Likes.Add(currentUser.ProfileId);
+
+                    updates.Add(update.Set(p => p.Likes, profile.Likes));
+                }
 
                 var filter = Builders<Profile>
-                           .Filter.Eq(p => p.ProfileId, profile.ProfileId);
+                                .Filter.In(p => p.ProfileId, profileIds);
 
-                var update = Builders<Profile>
-                            .Update.Set(p => p.Likes, profile.Likes);
-
-                await _context.Profiles.FindOneAndUpdateAsync(filter, update);
+                await _context.Profiles.UpdateManyAsync(filter, update.Combine(updates));
             }
             catch
             {
@@ -741,25 +696,35 @@ namespace Avalon.Data
             }
         }
 
-        /// <summary>Removes currentUser.profileId from likes list of profile.</summary>
+        /// <summary>Removes currentUser.profileId from likes list of profiles.</summary>
         /// <param name="currentUser">The current user.</param>
-        /// <param name="profile">The profile.</param>
-        public async Task RemoveLikeFromProfile(CurrentUser currentUser, Profile profile)
+        /// <param name="profileIds">The profile ids.</param>
+
+        public async Task RemoveLikeFromProfiles(CurrentUser currentUser, string[] profileIds)
         {
             try
             {
-                if (profile.Likes.Contains(currentUser.ProfileId))
+                var query = _context.Profiles.Find(p => profileIds.Contains(p.ProfileId));
+
+                var profiles = await Task.FromResult(query.ToList());
+
+                var update = Builders<Profile>.Update;
+                var updates = new List<UpdateDefinition<Profile>>();
+
+                foreach (var profile in profiles)
                 {
-                    profile.Likes.Remove(currentUser.ProfileId);
+                    if (profile.Likes.Contains(currentUser.ProfileId))
+                    {
+                        profile.Likes.Remove(currentUser.ProfileId);
 
-                    var filter = Builders<Profile>
-                               .Filter.Eq(p => p.ProfileId, profile.ProfileId);
-
-                    var update = Builders<Profile>
-                                .Update.Set(p => p.Likes, profile.Likes);
-
-                    await _context.Profiles.FindOneAndUpdateAsync(filter, update);
+                        updates.Add(update.Set(p => p.Likes, profile.Likes));
+                    }
                 }
+
+                var filter = Builders<Profile>
+                                .Filter.In(p => p.ProfileId, profileIds);
+
+                await _context.Profiles.UpdateManyAsync(filter, update.Combine(updates));
             }
             catch
             {
@@ -795,7 +760,6 @@ namespace Avalon.Data
                 "CreatedOn: 0, " +
                 "UpdatedOn: 0, " +
                 "LastActive: 0, " +
-                //"Countrycode: 0, " +
                 "Age: 0, " +
                 "Height: 0, " +
                 "Contactable: 0, " +
