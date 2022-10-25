@@ -120,7 +120,7 @@ namespace Avalon.Controllers
         //}
 
 
-        /// TODO: "SLET denne metode når Patch virker"
+        /// NOTE: "Delete this method when Patch works"
         /// <summary>Update the specified profile identifier.</summary>
         /// <param name="item">The profile</param>
         [NoCache]
