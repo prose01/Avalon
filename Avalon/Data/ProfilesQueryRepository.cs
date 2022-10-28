@@ -14,6 +14,10 @@ namespace Avalon.Data
     public class ProfilesQueryRepository : IProfilesQueryRepository
     {
         private readonly Context _context = null;
+        private readonly long _minAge;
+        private readonly long _maxAge;
+        private readonly long _minHeight;
+        private readonly long _maxHeight;
         private readonly long _maxIsBookmarked;
         private readonly long _maxVisited;
         private int _deleteProfileDaysBack;
@@ -22,6 +26,10 @@ namespace Avalon.Data
         public ProfilesQueryRepository(IOptions<Settings> settings, IConfiguration config)
         {
             _context = new Context(settings);
+            _minAge = config.GetValue<long>("MinAge");
+            _maxAge = config.GetValue<long>("MaxAge");
+            _minHeight = config.GetValue<long>("MinHeight");
+            _maxHeight = config.GetValue<long>("MaxHeight");
             _maxIsBookmarked = config.GetValue<long>("MaxIsBookmarked");
             _maxVisited = config.GetValue<long>("MaxVisited");
             _deleteProfileDaysBack = config.GetValue<int>("DeleteProfileDaysBack");
@@ -266,16 +274,16 @@ namespace Avalon.Data
                 if (profileFilter.Name != null)
                     filters.Add(Builders<Profile>.Filter.Regex(p => p.Name, new BsonRegularExpression(profileFilter.Name, "i")));
 
-                if (profileFilter.Age != null && profileFilter.Age[0] > 0)
+                if (profileFilter.Age != null && profileFilter.Age[0] > this._minAge)
                     filters.Add(Builders<Profile>.Filter.Gte(p => p.Age, profileFilter.Age[0]));
 
-                if (profileFilter.Age != null && profileFilter.Age[1] > 0)
+                if (profileFilter.Age != null && profileFilter.Age[1] < this._maxAge)
                     filters.Add(Builders<Profile>.Filter.Lte(p => p.Age, profileFilter.Age[1]));
 
-                if (profileFilter.Height != null && profileFilter.Height[0] > 0)
+                if (profileFilter.Height != null && profileFilter.Height[0] > this._minHeight)
                     filters.Add(Builders<Profile>.Filter.Gte(p => p.Height, profileFilter.Height[0]));
 
-                if (profileFilter.Height != null && profileFilter.Height[1] > 0)
+                if (profileFilter.Height != null && profileFilter.Height[1] < this._maxHeight)
                     filters.Add(Builders<Profile>.Filter.Lte(p => p.Height, profileFilter.Height[1]));
 
                 if (profileFilter.Description != null)
