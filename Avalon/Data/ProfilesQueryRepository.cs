@@ -740,6 +740,32 @@ namespace Avalon.Data
             }
         }
 
+        /// <summary>Add currentUser.profileId to complains list of profile.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <param name="profileIds">The profile.</param>
+        public async Task AddComplainToProfile(CurrentUser currentUser, Profile profile)
+        {
+            try
+            {
+                if (!profile.Complains.ContainsKey(currentUser.ProfileId))
+                {
+                    profile.Complains.Add(currentUser.ProfileId, DateTime.Now);
+
+                    var filter = Builders<Profile>
+                               .Filter.Eq(p => p.ProfileId, profile.ProfileId);
+
+                    var update = Builders<Profile>
+                                .Update.Set(p => p.Complains, profile.Complains);
+
+                    await _context.Profiles.FindOneAndUpdateAsync(filter, update);
+                }
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
         private ProjectionDefinition<Profile> GetProjection()
         {
             ProjectionDefinition<Profile> projection = "{ " +

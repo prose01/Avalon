@@ -191,7 +191,6 @@ namespace Avalon.Controllers
             }
         }
 
-
         /// <summary>Adds the visited to profiles.</summary>
         /// <param name="profileId">The profile identifier.</param>
         /// <exception cref="ArgumentException">ProfileId is null. {profileId}</exception>
@@ -303,6 +302,51 @@ namespace Avalon.Controllers
                 if (profileIds.Contains(currentUser.ProfileId)) throw new ArgumentException($"ProfileId is similar to current user profileId.", nameof(profileIds));
 
                 await _profilesQueryRepository.RemoveLikeFromProfiles(currentUser, profileIds);
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.ToString());
+            }
+        }
+
+        /// <summary>Add a complain to profile.</summary>
+        /// <param name="profileId">The profile identifier.</param>
+        /// <exception cref="ArgumentException">ProfileId is null. {profileId}</exception>
+        /// <exception cref="ArgumentException">ProfileId is similar to current user profileId. {profileId}</exception>
+        /// <exception cref="ArgumentException">Profile is not found. {profileId}</exception>
+        /// <returns> </returns>
+        [NoCache]
+        [HttpPost("~/AddComplainToProfile")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> AddComplainToProfile([FromBody] string profileId)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(profileId)) throw new ArgumentException($"ProfileId is null.", nameof(profileId));
+
+                var currentUser = await _helper.GetCurrentUserProfile(User);
+
+                if (currentUser == null || currentUser.Name == null)
+                {
+                    return NotFound();
+                }
+
+                // An admin cannot complain.
+                if (currentUser.Admin) return NoContent();
+
+                if (currentUser.ProfileId == profileId) throw new ArgumentException($"ProfileId is similar to current user profileId.", nameof(profileId));
+
+                var profile = await _profilesQueryRepository.GetProfileById(profileId);
+
+                if (profile == null)
+                {
+                    throw new ArgumentException($"Profile is not found.", nameof(profileId));
+                }
+
+                await _profilesQueryRepository.AddComplainToProfile(currentUser, profile);
 
                 return NoContent();
             }

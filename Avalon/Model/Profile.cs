@@ -22,6 +22,7 @@ namespace Avalon.Model
         public Dictionary<string, DateTime> Visited { internal get; set; }
         public Dictionary<string, DateTime> IsBookmarked { internal get; set; }
         public List<string> Likes { get; set; }
+        public Dictionary<string, DateTime> Complains { internal get; set; }
         #endregion
 
         internal override ObjectId _id { get; set; }
