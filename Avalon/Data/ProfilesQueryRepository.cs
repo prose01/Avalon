@@ -831,7 +831,7 @@ namespace Avalon.Data
 
         #region Maintenance
 
-        /// <summary>Gets 10 old profiles that are more than 30 days since last active.</summary>
+        /// <summary>Gets 10 old profiles (limit) that are more than 30 days (daysBack) since last active.</summary>
         /// <returns></returns>
         public async Task<IEnumerable<Profile>> GetOldProfiles(int daysBack, int limit)
         {

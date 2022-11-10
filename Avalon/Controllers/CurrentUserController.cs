@@ -369,7 +369,7 @@ namespace Avalon.Controllers
         }
 
         /// <summary>
-        /// Clean CurrenProfile for obsolete profile info.
+        /// Clean CurrentUser for obsolete profile info.
         /// </summary>
         [NoCache]
         [HttpGet("~/CleanCurrentUser")]

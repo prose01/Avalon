@@ -1,5 +1,6 @@
 ﻿using Avalon.Interfaces;
 using Avalon.Model;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using System;
@@ -13,11 +14,13 @@ namespace Avalon.Data
     {
         private readonly Context _context = null;
         private readonly IProfilesQueryRepository _profilesQueryRepository;
+        private int _complainsDaysBack;
 
-        public CurrentUserRepository(IOptions<Settings> settings, IProfilesQueryRepository profilesQueryRepository)
+        public CurrentUserRepository(IOptions<Settings> settings, IConfiguration config, IProfilesQueryRepository profilesQueryRepository)
         {
             _context = new Context(settings);
             _profilesQueryRepository = profilesQueryRepository;
+            _complainsDaysBack = config.GetValue<int>("ComplainsDaysBack");
         }
 
         /// <summary>Adds a new profile.</summary>
@@ -308,12 +311,28 @@ namespace Avalon.Data
             }
         }
 
-        /// <summary>Clean CurrenProfile for obsolete profile info.</summary>
+        /// <summary>Clean CurrentUser for obsolete profile info.</summary>
         /// <param name="currentUser">The current user.</param>
         public async Task CleanCurrentUser(CurrentUser currentUser)
         {
             try
             {
+                // Remove old complains.
+
+                var tt = currentUser.Complains.Select(c => c.Value < DateTime.Now.AddDays(-_complainsDaysBack));
+
+                if (tt.Any())
+                {
+                    var rr = 123;
+                }
+
+                // Check if has too many complains.
+
+
+
+
+                // Clean CurrentUser for obsolete profile info.
+
                 string[] checkThesesProfiles = currentUser.Visited.Keys.ToArray<string>();
 
                 checkThesesProfiles = checkThesesProfiles.Union(currentUser.Bookmarks).ToArray();
@@ -323,6 +342,8 @@ namespace Avalon.Data
                 checkThesesProfiles = checkThesesProfiles.Union(currentUser.ChatMemberslist.Select(i => i.ProfileId)).ToArray();
 
                 checkThesesProfiles = checkThesesProfiles.Union(currentUser.Likes).ToArray();
+
+                checkThesesProfiles = checkThesesProfiles.Union(currentUser.Complains.Keys).ToArray();
 
 
                 // Chech if our profiles exist
@@ -369,6 +390,16 @@ namespace Avalon.Data
                         if (currentUser.Likes.Contains(deadProfile))
                         {
                             currentUser.Likes.Remove(deadProfile);
+                        }
+
+                        if (currentUser.IsBookmarked.ContainsKey(deadProfile))
+                        {
+                            currentUser.IsBookmarked.Remove(deadProfile);
+                        }
+
+                        if (currentUser.Complains.ContainsKey(deadProfile))
+                        {
+                            currentUser.Complains.Remove(deadProfile);
                         }
                     }
 
