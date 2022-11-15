@@ -15,12 +15,16 @@ namespace Avalon.Data
         private readonly Context _context = null;
         private readonly IProfilesQueryRepository _profilesQueryRepository;
         private int _complainsDaysBack;
+        private int _complainsWarnUser;
+        private int _complainsDeleteUser;
 
         public CurrentUserRepository(IOptions<Settings> settings, IConfiguration config, IProfilesQueryRepository profilesQueryRepository)
         {
             _context = new Context(settings);
             _profilesQueryRepository = profilesQueryRepository;
             _complainsDaysBack = config.GetValue<int>("ComplainsDaysBack");
+            _complainsWarnUser = config.GetValue<int>("ComplainsWarnUser");
+            _complainsDeleteUser = config.GetValue<int>("ComplainsDeleteUser");
         }
 
         /// <summary>Adds a new profile.</summary>
@@ -248,7 +252,7 @@ namespace Avalon.Data
             try
             {
                 //Filter out ChatMembers not on list.
-                if(currentUser.ChatMemberslist.Where(i => profileIds.Contains(i.ProfileId)).ToList().Count == 0)
+                if (currentUser.ChatMemberslist.Where(i => profileIds.Contains(i.ProfileId)).ToList().Count == 0)
                 {
                     return;
                 }
@@ -292,7 +296,7 @@ namespace Avalon.Data
 
                 foreach (var member in currentUser.ChatMemberslist)
                 {
-                    if(profileIds.Any(m => member.ProfileId == m))
+                    if (profileIds.Any(m => member.ProfileId == m))
                     {
                         member.Blocked = !member.Blocked;
                     }
@@ -317,20 +321,6 @@ namespace Avalon.Data
         {
             try
             {
-                // Remove old complains.
-
-                var tt = currentUser.Complains.Select(c => c.Value < DateTime.Now.AddDays(-_complainsDaysBack));
-
-                if (tt.Any())
-                {
-                    var rr = 123;
-                }
-
-                // Check if has too many complains.
-
-
-
-
                 // Clean CurrentUser for obsolete profile info.
 
                 string[] checkThesesProfiles = currentUser.Visited.Keys.ToArray<string>();
@@ -348,7 +338,7 @@ namespace Avalon.Data
 
                 // Chech if our profiles exist
                 IEnumerable<Profile> exitingprofiles = await this._profilesQueryRepository.GetProfilIdsByIds(checkThesesProfiles);
-                
+
                 //List<string> newCountrycode = new List<string>();
                 List<string> exitingIds = new List<string>();
                 foreach (var profile in exitingprofiles)
@@ -408,6 +398,51 @@ namespace Avalon.Data
 
                     await _context.CurrentUser.ReplaceOneAsync(filter, currentUser);
                 }
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        /// <summary>Check if CurrentUser has too many complains.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <returns>Returns true if user should get a warning.</returns>
+        public async Task<bool> CheckForComplains(CurrentUser currentUser)
+        {
+            try
+            {
+                // Remove old complains.
+                var oldcomplains = currentUser.Complains.Where(i => i.Value < DateTime.Now.AddDays(-_complainsDaysBack)).ToArray();
+
+                if (oldcomplains.Length > 0)
+                {
+                    foreach (var oldcomplain in oldcomplains)
+                    {
+                        currentUser.Complains.Remove(oldcomplain.Key.ToString());
+                    }
+
+                    var filter = Builders<CurrentUser>
+                                    .Filter.Eq(c => c.ProfileId, currentUser.ProfileId);
+
+                    await _context.CurrentUser.ReplaceOneAsync(filter, currentUser);
+                }
+
+                // Check if CurrentUser has too many complains and should be deleted.
+                if (currentUser.Complains.Count >= _complainsDeleteUser)
+                {
+                    await this.DeleteCurrentUser(currentUser.ProfileId);
+                    return true;
+                }
+
+                // Check if CurrentUser has too many complains and should receive a warning.
+                if (currentUser.Complains.Count >= _complainsWarnUser)
+                {
+                    return true;
+                }
+
+                return false;
+
             }
             catch
             {

@@ -288,7 +288,7 @@ namespace Avalon.Controllers
                 await _currentUserRepository.AddProfilesToBookmarks(currentUser, profileIds);
                 await _currentUserRepository.AddProfilesToChatMemberslist(currentUser, profileIds);
 
-                // Notify other profiles that currentUser has bookmarked their profile unless currentUser is admin.
+                // Notify other profiles that currentUser has bookmarked their profile, unless currentUser is admin.
                 if (!currentUser.Admin)
                 {
                     await _profilesQueryRepository.AddIsBookmarkedToProfiles(currentUser, profileIds);
@@ -358,7 +358,11 @@ namespace Avalon.Controllers
                     return NotFound();
                 }
 
-                await _currentUserRepository.BlockChatMembers(currentUser, profileIds);
+                // Blocks or unblocks chatMembers if not admin.
+                if (!currentUser.Admin)
+                {
+                    await _currentUserRepository.BlockChatMembers(currentUser, profileIds);
+                }
 
                 return NoContent();
             }
@@ -386,13 +390,46 @@ namespace Avalon.Controllers
 
             try
             {
-                // Clean obsolete profile info from CurrentUser if not admin.
+                // Clean obsolete profile info from CurrentUser, unless currentUser is admin.
                 if (!currentUser.Admin)
                 {
                     await _currentUserRepository.CleanCurrentUser(currentUser);
                 }
 
                 return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.ToString());
+            }
+        }
+
+        /// <summary>
+        /// Check if CurrentUser has too many complains.
+        /// </summary>
+        /// <returns>Returns true if user should get a warning.</returns>
+        [NoCache]
+        [HttpGet("~/CheckForComplains")]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<ActionResult<bool>> CheckForComplains()
+        {
+            var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            if (currentUser == null || currentUser.Name == null)
+            {
+                return NotFound();
+            }
+
+            try
+            {
+                // Check if CurrentUser has too many complains, unless currentUser is admin.
+                if (!currentUser.Admin)
+                {
+                    return Ok(await _currentUserRepository.CheckForComplains(currentUser));
+                }
+
+                return Ok(false);
             }
             catch (Exception ex)
             {
