@@ -13,12 +13,12 @@ namespace Avalon.Data
     public class FeedbackRepository : IFeedbackRepository
     {
         private readonly Context _context = null;
-        private readonly int _deleteFeedbacksOlderThan;
+        private readonly int _deleteFeedbacksOlderThanYear;
 
         public FeedbackRepository(IOptions<Settings> settings, IConfiguration config)
         {
             _context = new Context(settings);
-            _deleteFeedbacksOlderThan = config.GetValue<int>("DeleteFeedbacksOlderThan");
+            _deleteFeedbacksOlderThanYear = config.GetValue<int>("DeleteFeedbacksOlderThanYear");
         }
 
         public async Task AddFeedback(Feedback item)
@@ -227,7 +227,7 @@ namespace Avalon.Data
             {
                 List<FilterDefinition<Feedback>> filters = new List<FilterDefinition<Feedback>>();
 
-                filters.Add(Builders<Feedback>.Filter.Gt(f => f.DateSeen, DateTime.Now.AddYears(-_deleteFeedbacksOlderThan)));
+                filters.Add(Builders<Feedback>.Filter.Gt(f => f.DateSeen, DateTime.Now.AddYears(-_deleteFeedbacksOlderThanYear)));
 
                 filters.Add(Builders<Feedback>.Filter.Eq(f => f.Open, false));
 
