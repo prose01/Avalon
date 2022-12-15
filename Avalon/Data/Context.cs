@@ -4,11 +4,11 @@ using MongoDB.Driver;
 
 namespace Avalon.Data
 {
-    public class ProfileContext
+    public class Context
     {
         private readonly IMongoDatabase _database = null;
 
-        public ProfileContext(IOptions<Settings> settings)
+        public Context(IOptions<Settings> settings)
         {
             var client = new MongoClient(settings.Value.ConnectionString);
             if (client != null)
@@ -17,5 +17,7 @@ namespace Avalon.Data
 
         public IMongoCollection<CurrentUser> CurrentUser => _database.GetCollection<CurrentUser>("Profile");
         public IMongoCollection<Profile> Profiles => _database.GetCollection<Profile>("Profile");
+
+        public IMongoCollection<Feedback> Feedbacks => _database.GetCollection<Feedback>("Feedback");
     }
 }

@@ -8,14 +8,16 @@ namespace Avalon.Interfaces
     {
         Task AddProfile(CurrentUser item);
         Task<DeleteResult> DeleteCurrentUser(string profileId);
-        Task<ReplaceOneResult> UpdateProfile(CurrentUser item);
+        Task UpdateProfile(CurrentUser item);
         Task<CurrentUser> GetCurrentProfileByAuth0Id(string auth0Id);
-        Task<CurrentUser> SaveProfileFilter(CurrentUser currentUser, ProfileFilter profileFilter);
+        Task SaveProfileFilter(CurrentUser currentUser, ProfileFilter profileFilter);
         Task<ProfileFilter> LoadProfileFilter(CurrentUser currentUser);
-        Task<CurrentUser> AddProfilesToBookmarks(CurrentUser currentUser, string[] profileIds);
-        Task<CurrentUser> RemoveProfilesFromBookmarks(CurrentUser currentUser, string[] profileIds);
-        Task<CurrentUser> AddProfilesToChatMemberslist(CurrentUser currentUser, string[] profileIds);
-        Task<CurrentUser> BlockChatMembers(CurrentUser currentUser, string[] profileIds);
-        Task<CurrentUser> RemoveProfilesFromChatMemberslist(CurrentUser currentUser, string[] profileIds);
+        Task AddProfilesToBookmarks(CurrentUser currentUser, string[] profileIds);
+        Task RemoveProfilesFromBookmarks(CurrentUser currentUser, string[] profileIds);
+        Task AddProfilesToChatMemberslist(CurrentUser currentUser, string[] profileIds);
+        Task RemoveProfilesFromChatMemberslist(CurrentUser currentUser, string[] profileIds);
+        Task BlockChatMembers(CurrentUser currentUser, string[] profileIds);
+        Task CleanCurrentUser(CurrentUser currentUser);
+        Task<bool> CheckForComplains(CurrentUser currentUser);
     }
 }

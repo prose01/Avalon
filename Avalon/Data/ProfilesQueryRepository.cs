@@ -1,5 +1,6 @@
 ﻿using Avalon.Interfaces;
 using Avalon.Model;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -12,11 +13,27 @@ namespace Avalon.Data
 {
     public class ProfilesQueryRepository : IProfilesQueryRepository
     {
-        private readonly ProfileContext _context = null;
+        private readonly Context _context = null;
+        private readonly long _minAge;
+        private readonly long _maxAge;
+        private readonly long _minHeight;
+        private readonly long _maxHeight;
+        private readonly long _maxIsBookmarked;
+        private readonly long _maxVisited;
+        private int _deleteProfileDaysBack;
+        private int _deleteProfileLimit;
 
-        public ProfilesQueryRepository(IOptions<Settings> settings)
+        public ProfilesQueryRepository(IOptions<Settings> settings, IConfiguration config)
         {
-            _context = new ProfileContext(settings);
+            _context = new Context(settings);
+            _minAge = config.GetValue<long>("MinAge");
+            _maxAge = config.GetValue<long>("MaxAge");
+            _minHeight = config.GetValue<long>("MinHeight");
+            _maxHeight = config.GetValue<long>("MaxHeight");
+            _maxIsBookmarked = config.GetValue<long>("MaxIsBookmarked");
+            _maxVisited = config.GetValue<long>("MaxVisited");
+            _deleteProfileDaysBack = config.GetValue<int>("DeleteProfileDaysBack");
+            _deleteProfileLimit = config.GetValue<int>("DeleteProfileLimit");
         }
 
         #region Admin stuff
@@ -42,9 +59,9 @@ namespace Avalon.Data
 
                 return await _context.Profiles.FindOneAndUpdateAsync(filter, update, options);
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -69,9 +86,9 @@ namespace Avalon.Data
 
                 return await _context.Profiles.FindOneAndUpdateAsync(filter, update, options);
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -89,29 +106,27 @@ namespace Avalon.Data
                 return await _context.Profiles.DeleteOneAsync(
                     Builders<Profile>.Filter.Eq("ProfileId", profileId));
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
-        /////// <summary>Deletes the profiles.</summary>
-        /////// <param name="profileIds">The profile identifiers.</param>
-        /////// <returns></returns>
-        ////public async Task<DeleteResult> DeleteProfiles(string[] profileIds)
-        ////{
-        ////    try
-        ////    {
-        ////        //return await _context.Profiles.DeleteManyAsync(
-        ////        //    Builders<Profile>.Filter.Eq("ProfileId", profileIds));
-
-        ////        return null;
-        ////    }
-        ////    catch (Exception ex)
-        ////    {
-        ////        throw ex;
-        ////    }
-        ////}
+        ///// <summary>Delete list of profiles. There is no going back!</summary>
+        ///// <param name="profileIds">The profile identifiers.</param>
+        ///// <returns></returns>
+        //public async Task<DeleteResult> DeleteProfiles(string[] profileIds)     // TODO: Cannot be used until we have a delete many version of DeleteProfileFromAuth0!
+        //{
+        //    try
+        //    {
+        //        return await _context.Profiles.DeleteManyAsync(
+        //            Builders<Profile>.Filter.Eq("ProfileId", profileIds));
+        //    }
+        //    catch
+        //    {
+        //        throw;
+        //    }
+        //}
 
         /// <summary>Gets the profile by identifier.</summary>
         /// <param name="profileId">The profile identifier.</param>
@@ -125,30 +140,54 @@ namespace Avalon.Data
 
                 return await _context.Profiles
                     .Find(filter)
+                    .Project<Profile>(this.GetProjection())
                     .FirstOrDefaultAsync();
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
+            }
+        }
+
+        /// <summary>Gets profiles by identifiers.</summary>
+        /// <param name="profileId">The profile identifiers.</param>
+        /// <returns></returns>
+        public async Task<IEnumerable<Profile>> GetProfilIdsByIds(string[] profileIds)
+        {
+            try
+            {
+                var filter = Builders<Profile>
+                                .Filter.In(p => p.ProfileId, profileIds);
+
+                return await _context.Profiles
+                    .Find(filter)
+                    .Project<Profile>(GetProfileId())
+                    .ToListAsync();
+            }
+            catch
+            {
+                throw;
             }
         }
 
         /// <summary>Gets curretUser's chatmember profiles.</summary>
-        /// <param name="currentUser"></param>
+        /// <param name="currentUser">The current user.</param>
+        /// <param name="skip">The skip.</param>
+        /// <param name="limit">The limit.</param>
         /// <returns></returns>
-        public async Task<IEnumerable<Profile>> GetChatMemberProfiles(CurrentUser currentUser, int skip, int limit)
-        {
-            try
-            {
-                var chatMembers = currentUser.ChatMemberslist.Select(m => m.ProfileId);
+        //public async Task<IEnumerable<Profile>> GetChatMemberProfiles(CurrentUser currentUser, int skip, int limit)
+        //{
+        //    try
+        //    {
+        //        var chatMembers = currentUser.ChatMemberslist.Select(m => m.ProfileId);
 
-                return await _context.Profiles.Find(p => chatMembers.Contains(p.ProfileId)).Skip(skip).Limit(limit).ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
+        //        return await _context.Profiles.Find(p => chatMembers.Contains(p.ProfileId)).Project<Profile>(this.GetProjection()).Skip(skip).Limit(limit).ToListAsync();
+        //    }
+        //    catch
+        //    {
+        //        throw;
+        //    }
+        //}
 
         /// <summary>Gets the profile by Auth0Id.</summary>
         /// <param name="auth0Id">Auth0Id of the profile.</param>
@@ -161,38 +200,22 @@ namespace Avalon.Data
                                 .Filter.Eq(p => p.Auth0Id, auth0Id);
                 return await _context.Profiles
                     .Find(filter)
+                    .Project<Profile>(this.GetProjection())
                     .FirstOrDefaultAsync();
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
-            }
-        }
-
-        /// <summary>Gets the profile by name.</summary>
-        /// <param name="profileName">Name of the profile.</param>
-        /// <returns></returns>
-        public async Task<Profile> GetProfileByName(string profileName)
-        {
-            try
-            {
-                var filter = Builders<Profile>
-                                .Filter.Regex(p => p.Name, new BsonRegularExpression(profileName, "i")); 
-
-                return await _context.Profiles
-                    .Find(filter)
-                    .FirstOrDefaultAsync();
-            }
-            catch (Exception ex)
-            {
-                throw ex;
+                throw;
             }
         }
 
         // Search for anything in filter - eg. { Body: 'something' }
         /// <summary>Gets the profile by filter.</summary>
-        /// <param name="filter">The filter.</param>
+        /// <param name="currentUser">The current user.</param>
+        /// <param name="profileFilter">The profileFilter.</param>
         /// <param name="orderByType">The OrderByDescending column type.</param>
+        /// <param name="skip">The skip.</param>
+        /// <param name="limit">The limit.</param>
         /// <returns></returns>
         public async Task<IEnumerable<Profile>> GetProfileByFilter(CurrentUser currentUser, ProfileFilter profileFilter, OrderByType orderByType, int skip, int limit)
         {
@@ -203,37 +226,47 @@ namespace Avalon.Data
                 //Remove currentUser from the list.
                 filters.Add(Builders<Profile>.Filter.Ne(p => p.ProfileId, currentUser.ProfileId));
 
-                //Add basic search criteria.
-                filters.Add(Builders<Profile>.Filter.Eq(p => p.SexualOrientation, currentUser.SexualOrientation));
-                filters.Add(Builders<Profile>.Filter.Eq(p => p.Gender, profileFilter.Gender));
+                //Remove admins from the list.
+                filters.Add(Builders<Profile>.Filter.Ne(p => p.Admin, true));
+
+                filters.Add(Builders<Profile>.Filter.Eq(p => p.Countrycode, currentUser.Countrycode));
+
+                filters.Add(Builders<Profile>.Filter.In(p => p.Gender, currentUser.Seeking));
+
+                filters.Add(Builders<Profile>.Filter.Where(p => p.Seeking.Contains(currentUser.Gender)));
 
                 //Apply all other ProfileFilter criterias.
                 filters = this.ApplyProfileFilter(profileFilter, filters);
 
                 var combineFilters = Builders<Profile>.Filter.And(filters);
 
+                SortDefinition<Profile> sortDefinition;
+
                 switch (orderByType)
                 {
-                    case OrderByType.CreatedOn:
-                        return _context.Profiles
-                                .Find(combineFilters).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.CreatedOn);
                     case OrderByType.UpdatedOn:
-                        return _context.Profiles
-                                .Find(combineFilters).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.UpdatedOn);
+                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.UpdatedOn);
+                        break;
                     case OrderByType.LastActive:
-                        return _context.Profiles
-                                .Find(combineFilters).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.UpdatedOn);
+                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.LastActive);
+                        break;
                     default:
-                        return _context.Profiles
-                                .Find(combineFilters).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.CreatedOn);
+                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.CreatedOn);
+                        break;
                 }
+
+                return await _context.Profiles
+                                .Find(combineFilters).Project<Profile>(this.GetProjection()).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
+        /// <summary>Applies definitions to filter.</summary>
+        /// <param name="profileFilter">The profileFilter.</param>
+        /// <param name="filters">The filterDefinition.</param>
         private List<FilterDefinition<Profile>> ApplyProfileFilter(ProfileFilter profileFilter, List<FilterDefinition<Profile>> filters)
         {
             try
@@ -241,16 +274,16 @@ namespace Avalon.Data
                 if (profileFilter.Name != null)
                     filters.Add(Builders<Profile>.Filter.Regex(p => p.Name, new BsonRegularExpression(profileFilter.Name, "i")));
 
-                if (profileFilter.Age != null && profileFilter.Age[0] > 0)
+                if (profileFilter.Age != null && profileFilter.Age[0] > this._minAge)
                     filters.Add(Builders<Profile>.Filter.Gte(p => p.Age, profileFilter.Age[0]));
 
-                if (profileFilter.Age != null && profileFilter.Age[1] > 0)
+                if (profileFilter.Age != null && profileFilter.Age[1] < this._maxAge)
                     filters.Add(Builders<Profile>.Filter.Lte(p => p.Age, profileFilter.Age[1]));
 
-                if (profileFilter.Height != null && profileFilter.Height[0] > 0)
+                if (profileFilter.Height != null && profileFilter.Height[0] > this._minHeight)
                     filters.Add(Builders<Profile>.Filter.Gte(p => p.Height, profileFilter.Height[0]));
 
-                if (profileFilter.Height != null && profileFilter.Height[1] > 0)
+                if (profileFilter.Height != null && profileFilter.Height[1] < this._maxHeight)
                     filters.Add(Builders<Profile>.Filter.Lte(p => p.Height, profileFilter.Height[1]));
 
                 if (profileFilter.Description != null)
@@ -300,16 +333,15 @@ namespace Avalon.Data
 
                 return filters;
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
         /// <summary>Gets the latest profiles.</summary>
         /// <param name="currentUser">The current user.</param>
         /// <param name="orderByType">The OrderByDescending column type.</param>
-        /// <param name="sortDirection">The sort direction.</param>
         /// <param name="skip">The skip.</param>
         /// <param name="limit">The limit.</param>
         /// <returns></returns>
@@ -321,38 +353,204 @@ namespace Avalon.Data
 
                 //Remove currentUser from the list.
                 filters.Add(Builders<Profile>.Filter.Ne(p => p.ProfileId, currentUser.ProfileId));
-                filters.Add(Builders<Profile>.Filter.Eq(p => p.SexualOrientation, currentUser.SexualOrientation));
 
-                if (currentUser.SexualOrientation == SexualOrientationType.Heterosexual)
-                    filters.Add(Builders<Profile>.Filter.Ne(p => p.Gender, currentUser.Gender));
+                //Remove admins from the list.
+                filters.Add(Builders<Profile>.Filter.Ne(p => p.Admin, true));
 
-                if (currentUser.SexualOrientation == SexualOrientationType.Homosexual)
-                    filters.Add(Builders<Profile>.Filter.Eq(p => p.Gender, currentUser.Gender));
+                filters.Add(Builders<Profile>.Filter.Eq(p => p.Countrycode, currentUser.Countrycode));
+
+                filters.Add(Builders<Profile>.Filter.In(p => p.Gender, currentUser.Seeking));
+
+                filters.Add(Builders<Profile>.Filter.Where(p => p.Seeking.Contains(currentUser.Gender)));
 
                 var combineFilters = Builders<Profile>.Filter.And(filters);
 
+                SortDefinition<Profile> sortDefinition;
+
                 switch (orderByType)
                 {
-                    case OrderByType.CreatedOn:
-                        return _context.Profiles
-                                    .Find(combineFilters).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.CreatedOn);
                     case OrderByType.UpdatedOn:
-                        return _context.Profiles
-                                    .Find(combineFilters).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.UpdatedOn);
+                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.UpdatedOn);
+                        break;
                     case OrderByType.LastActive:
-                        return _context.Profiles
-                                    .Find(combineFilters).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.LastActive);
+                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.LastActive);
+                        break;
                     default:
-                        return _context.Profiles
-                                    .Find(combineFilters).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.CreatedOn);
+                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.CreatedOn);
+                        break;
                 }
+
+                return await _context.Profiles
+                            .Find(combineFilters).Project<Profile>(this.GetProjection()).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
+        /// <summary>Gets the bookmarked profiles.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <param name="orderByType">The OrderByDescending column type.</param>
+        /// <param name="skip">The skip.</param>
+        /// <param name="limit">The limit.</param>
+        /// <returns></returns>
+        public async Task<IEnumerable<Profile>> GetBookmarkedProfiles(CurrentUser currentUser, OrderByType orderByType, int skip, int limit)
+        {
+            try
+            {
+                SortDefinition<Profile> sortDefinition;
+
+                switch (orderByType)
+                {
+                    case OrderByType.UpdatedOn:
+                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.UpdatedOn);
+                        break;
+                    case OrderByType.LastActive:
+                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.LastActive);
+                        break;
+                    default:
+                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.CreatedOn);
+                        break;
+                }
+
+                return await _context.Profiles
+                            .Find(p => currentUser.Bookmarks.Contains(p.ProfileId)).Project<Profile>(this.GetProjection()).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        /// <summary>Gets Profiles who has visited my profile.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <param name="orderByType">The OrderByDescending column type.</param>
+        /// <param name="skip">The skip.</param>
+        /// <param name="limit">The limit.</param>
+        /// <returns></returns>
+        public async Task<IEnumerable<Profile>> GetProfilesWhoVisitedMe(CurrentUser currentUser, OrderByType orderByType, int skip, int limit)
+        {
+            try
+            {
+                List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>();
+
+                filters.Add(Builders<Profile>.Filter.In(p => p.ProfileId, currentUser.Visited.Keys));
+
+                //Remove admins from the list.
+                filters.Add(Builders<Profile>.Filter.Ne(p => p.Admin, true));
+
+                var combineFilters = Builders<Profile>.Filter.And(filters);
+
+                SortDefinition<Profile> sortDefinition;
+
+                switch (orderByType)
+                {
+                    case OrderByType.UpdatedOn:
+                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.UpdatedOn);
+                        break;
+                    case OrderByType.LastActive:
+                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.LastActive);
+                        break;
+                    default:
+                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.CreatedOn);
+                        break;
+                }
+
+                return await _context.Profiles
+                            .Find(combineFilters).Project<Profile>(this.GetProjection()).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        /// <summary>Gets Profiles who has bookmarked my profile.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <param name="orderByType">The OrderByDescending column type.</param>
+        /// <param name="skip">The skip.</param>
+        /// <param name="limit">The limit.</param>
+        /// <returns></returns>
+        public async Task<IEnumerable<Profile>> GetProfilesWhoBookmarkedMe(CurrentUser currentUser, OrderByType orderByType, int skip, int limit)
+        {
+            try
+            {
+                List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>();
+
+                filters.Add(Builders<Profile>.Filter.In(p => p.ProfileId, currentUser.IsBookmarked.Keys));
+
+                //Remove admins from the list.
+                filters.Add(Builders<Profile>.Filter.Ne(p => p.Admin, true));
+
+                var combineFilters = Builders<Profile>.Filter.And(filters);
+
+                SortDefinition<Profile> sortDefinition;
+
+                switch (orderByType)
+                {
+                    case OrderByType.UpdatedOn:
+                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.UpdatedOn);
+                        break;
+                    case OrderByType.LastActive:
+                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.LastActive);
+                        break;
+                    default:
+                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.CreatedOn);
+                        break;
+                }
+
+                return await _context.Profiles
+                            .Find(combineFilters).Project<Profile>(this.GetProjection()).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        /// <summary>Gets Profiles who likes my profile.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <param name="orderByType">The OrderByDescending column type.</param>
+        /// <param name="skip">The skip.</param>
+        /// <param name="limit">The limit.</param>
+        /// <returns></returns>
+        public async Task<IEnumerable<Profile>> GetProfilesWhoLikesMe(CurrentUser currentUser, OrderByType orderByType, int skip, int limit)
+        {
+            try
+            {
+                List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>();
+
+                filters.Add(Builders<Profile>.Filter.In(p => p.ProfileId, currentUser.Likes));
+
+                //Remove admins from the list.
+                filters.Add(Builders<Profile>.Filter.Ne(p => p.Admin, true));
+
+                var combineFilters = Builders<Profile>.Filter.And(filters);
+
+                SortDefinition<Profile> sortDefinition;
+
+                switch (orderByType)
+                {
+                    case OrderByType.UpdatedOn:
+                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.UpdatedOn);
+                        break;
+                    case OrderByType.LastActive:
+                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.LastActive);
+                        break;
+                    default:
+                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.CreatedOn);
+                        break;
+                }
+
+                return await _context.Profiles
+                            .Find(combineFilters).Project<Profile>(this.GetProjection()).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
+            }
+            catch
+            {
+                throw;
+            }
+        }
 
         /// <summary>Add currentUser.profileId to IsBookmarked list of every profile in profileIds list.</summary>
         /// <param name="currentUser">The current user.</param>
@@ -364,39 +562,34 @@ namespace Avalon.Data
                 var query = _context.Profiles.Find(p => profileIds.Contains(p.ProfileId));
 
                 var profiles = await Task.FromResult(query.ToList());
-                
+
+                var update = Builders<Profile>.Update;
+                var updates = new List<UpdateDefinition<Profile>>();
+
                 foreach (var profile in profiles)
                 {
-                    if (profile.IsBookmarked.ContainsKey(currentUser.ProfileId))
-                    {
-                        profile.IsBookmarked[currentUser.ProfileId] = DateTime.Now;
-                    }
-                    else
-                    {
-                        var isBookmarkedPair = from pair in profile.IsBookmarked
-                                               orderby pair.Value descending
-                                               select pair;
+                    var isBookmarkedPair = from pair in profile.IsBookmarked
+                                           orderby pair.Value descending
+                                           select pair;
 
-                        if (isBookmarkedPair.Count() == 10)
-                        {
-                            profile.IsBookmarked.Remove(isBookmarkedPair.Last().Key);
-                        }
-
-                        profile.IsBookmarked.Add(currentUser.ProfileId, DateTime.Now);
+                    if (isBookmarkedPair.Count() > _maxIsBookmarked)
+                    {
+                        profile.IsBookmarked.Remove(isBookmarkedPair.Last().Key);
                     }
 
-                    var filter = Builders<Profile>
-                               .Filter.Eq(p => p.ProfileId, profile.ProfileId);
+                    profile.IsBookmarked.Add(currentUser.ProfileId, DateTime.Now);
 
-                    var update = Builders<Profile>
-                                .Update.Set(p => p.IsBookmarked, profile.IsBookmarked);
-
-                    await _context.Profiles.FindOneAndUpdateAsync(filter, update);
+                    updates.Add(update.Set(p => p.IsBookmarked, profile.IsBookmarked));
                 }
+
+                var filter = Builders<Profile>
+                                .Filter.In(p => p.ProfileId, profileIds);
+
+                await _context.Profiles.UpdateManyAsync(filter, update.Combine(updates));
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -411,31 +604,33 @@ namespace Avalon.Data
 
                 var profiles = await Task.FromResult(query.ToList());
 
+                var update = Builders<Profile>.Update;
+                var updates = new List<UpdateDefinition<Profile>>();
+
                 foreach (var profile in profiles)
                 {
                     if (profile.IsBookmarked.ContainsKey(currentUser.ProfileId))
                     {
                         profile.IsBookmarked.Remove(currentUser.ProfileId);
+
+                        updates.Add(update.Set(p => p.IsBookmarked, profile.IsBookmarked));
                     }
-
-                    var filter = Builders<Profile>
-                               .Filter.Eq(p => p.ProfileId, profile.ProfileId);
-
-                    var update = Builders<Profile>
-                                .Update.Set(p => p.IsBookmarked, profile.IsBookmarked);
-
-                    await _context.Profiles.FindOneAndUpdateAsync(filter, update);
                 }
+
+                var filter = Builders<Profile>
+                                .Filter.In(p => p.ProfileId, profileIds);
+
+                await _context.Profiles.UpdateManyAsync(filter, update.Combine(updates));
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
         /// <summary>Add currentUser.profileId to visited list of profile.</summary>
         /// <param name="currentUser">The current user.</param>
-        /// <param name="profile"></param>
+        /// <param name="profile">The profile.</param>
         public async Task AddVisitedToProfiles(CurrentUser currentUser, Profile profile)
         {
             try
@@ -450,7 +645,7 @@ namespace Avalon.Data
                                       orderby pair.Value descending
                                       select pair;
 
-                    if (visitedPair.Count() == 10)
+                    if (visitedPair.Count() > _maxVisited)
                     {
                         profile.Visited.Remove(visitedPair.Last().Key);
                     }
@@ -466,60 +661,190 @@ namespace Avalon.Data
 
                 await _context.Profiles.FindOneAndUpdateAsync(filter, update);
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
-        #endregion
-
-        #region Bookmarked 
-
-        /// <summary>Gets the bookmarked profiles.</summary>
+        /// <summary>Add currentUser.profileId to likes list of profiles.</summary>
         /// <param name="currentUser">The current user.</param>
-        /// <returns></returns>
-        public async Task<IEnumerable<Profile>> GetBookmarkedProfiles(CurrentUser currentUser, OrderByType orderByType, int skip, int limit)
+        /// <param name="profileIds">The profile ids.</param>
+
+        public async Task AddLikeToProfiles(CurrentUser currentUser, string[] profileIds)
         {
             try
             {
-                switch (orderByType)
+                var query = _context.Profiles.Find(p => profileIds.Contains(p.ProfileId));
+
+                var profiles = await Task.FromResult(query.ToList());
+
+                var update = Builders<Profile>.Update;
+                var updates = new List<UpdateDefinition<Profile>>();
+
+                foreach (var profile in profiles)
                 {
-                    case OrderByType.CreatedOn:
-                        return _context.Profiles
-                                    .Find(p => currentUser.Bookmarks.Contains(p.ProfileId)).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.CreatedOn);
-                    case OrderByType.UpdatedOn:
-                        return _context.Profiles
-                                    .Find(p => currentUser.Bookmarks.Contains(p.ProfileId)).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.UpdatedOn);
-                    case OrderByType.LastActive:
-                        return _context.Profiles
-                                    .Find(p => currentUser.Bookmarks.Contains(p.ProfileId)).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.LastActive);
-                    default:
-                        return _context.Profiles
-                                    .Find(p => currentUser.Bookmarks.Contains(p.ProfileId)).Skip(skip).Limit(limit).ToList().OrderByDescending(p => p.CreatedOn);
+                    // If already added just leave.
+                    if (profile.Likes.Contains(currentUser.ProfileId))
+                        continue;
+
+                    profile.Likes.Add(currentUser.ProfileId);
+
+                    updates.Add(update.Set(p => p.Likes, profile.Likes));
+                }
+
+                var filter = Builders<Profile>
+                                .Filter.In(p => p.ProfileId, profileIds);
+
+                await _context.Profiles.UpdateManyAsync(filter, update.Combine(updates));
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        /// <summary>Removes currentUser.profileId from likes list of profiles.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <param name="profileIds">The profile ids.</param>
+
+        public async Task RemoveLikeFromProfiles(CurrentUser currentUser, string[] profileIds)
+        {
+            try
+            {
+                var query = _context.Profiles.Find(p => profileIds.Contains(p.ProfileId));
+
+                var profiles = await Task.FromResult(query.ToList());
+
+                var update = Builders<Profile>.Update;
+                var updates = new List<UpdateDefinition<Profile>>();
+
+                foreach (var profile in profiles)
+                {
+                    if (profile.Likes.Contains(currentUser.ProfileId))
+                    {
+                        profile.Likes.Remove(currentUser.ProfileId);
+
+                        updates.Add(update.Set(p => p.Likes, profile.Likes));
+                    }
+                }
+
+                var filter = Builders<Profile>
+                                .Filter.In(p => p.ProfileId, profileIds);
+
+                await _context.Profiles.UpdateManyAsync(filter, update.Combine(updates));
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        /// <summary>Add currentUser.profileId to complains list of profile.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <param name="profileIds">The profile.</param>
+        public async Task AddComplainToProfile(CurrentUser currentUser, Profile profile)
+        {
+            try
+            {
+                if (!profile.Complains.ContainsKey(currentUser.ProfileId))
+                {
+                    profile.Complains.Add(currentUser.ProfileId, DateTime.Now);
+
+                    var filter = Builders<Profile>
+                               .Filter.Eq(p => p.ProfileId, profile.ProfileId);
+
+                    var update = Builders<Profile>
+                                .Update.Set(p => p.Complains, profile.Complains);
+
+                    await _context.Profiles.FindOneAndUpdateAsync(filter, update);
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
+        }
+
+        private ProjectionDefinition<Profile> GetProjection()
+        {
+            ProjectionDefinition<Profile> projection = "{ " +
+                "_id: 0, " +
+                "Auth0Id: 0, " +
+                "Admin:0, " +
+                "Gender: 0, " +
+                "Seeking: 0, " +
+                "Bookmarks: 0, " +
+                "ChatMemberslist: 0, " +
+                "ProfileFilter: 0, " +
+                "IsBookmarked: 0, " +
+                "Languagecode: 0, " +
+                "}";
+
+            return projection;
+        }
+
+        private ProjectionDefinition<Profile> GetProfileId()
+        {
+            ProjectionDefinition<Profile> projection = "{ " +
+                "_id: 0, " +
+                "Auth0Id: 0, " +
+                "Admin: 0, " +
+                "Name: 0, " +
+                "CreatedOn: 0, " +
+                "UpdatedOn: 0, " +
+                "LastActive: 0, " +
+                "Age: 0, " +
+                "Height: 0, " +
+                "Contactable: 0, " +
+                "Description: 0, " +
+                "Images: 0, " +
+                "Tags: 0, " +
+                "Body: 0, " +
+                "SmokingHabits: 0, " +
+                "HasChildren: 0, " +
+                "WantChildren: 0, " +
+                "HasPets: 0, " +
+                "LivesIn: 0, " +
+                "Education: 0, " +
+                "EducationStatus: 0, " +
+                "EmploymentStatus: 0, " +
+                "SportsActivity: 0, " +
+                "EatingHabits: 0, " +
+                "ClotheStyle: 0, " +
+                "BodyArt: 0, " +
+                "Gender: 0, " +
+                "Seeking: 0, " +
+                "Bookmarks: 0, " +
+                "ChatMemberslist: 0, " +
+                "ProfileFilter: 0, " +
+                "IsBookmarked: 0, " +
+                "Languagecode: 0, " +
+                "Visited: 0, " +
+                "Likes: 0, " +
+                "}";
+
+            return projection;
         }
 
         #endregion
 
         #region Maintenance
 
-        /// <summary>Gets 10 old profiles that are more than 30 days since last active.</summary>
+        /// <summary>Gets 10 old profiles (limit) that are more than 30 days (daysBack) since last active.</summary>
         /// <returns></returns>
-        public async Task<IEnumerable<Profile>> GetOldProfiles()
+        public async Task<IEnumerable<Profile>> GetOldProfiles(int daysBack, int limit)
         {
             try
             {
-                return await _context.Profiles.Find(p => p.LastActive < DateTime.Now.AddDays(-30) && !p.Admin).Limit(10).ToListAsync();
+                _deleteProfileDaysBack = daysBack > 0 ? daysBack : _deleteProfileDaysBack;
+                _deleteProfileLimit = limit > 0 ? limit : _deleteProfileLimit;
+
+                return await _context.Profiles.Find(p => p.LastActive < DateTime.Now.AddDays(-_deleteProfileDaysBack) && !p.Admin).Project<Profile>(this.GetProjection()).Limit(_deleteProfileLimit).ToListAsync();
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 

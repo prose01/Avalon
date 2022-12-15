@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace Avalon.Controllers
@@ -33,9 +34,25 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpGet("~/CurrentUser")]
-        public async Task<CurrentUser> GetCurrentUserProfile()
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> GetCurrentUserProfile()
         {
-            return await _helper.GetCurrentUserProfile(User);
+            try
+            {
+                var currentUser = await _helper.GetCurrentUserProfile(User);
+
+                if (currentUser == null || currentUser.Name == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok(currentUser);
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.ToString());
+            }
         }
 
         /// <summary>
@@ -43,6 +60,8 @@ namespace Avalon.Controllers
         /// </summary>
         /// <param name="profile"> The value.</param>
         [HttpPost("~/CurrentUser")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> Post([FromBody] CurrentUser item)
         {
             try
@@ -52,11 +71,8 @@ namespace Avalon.Controllers
 
                 if (string.IsNullOrEmpty(auth0Id)) return BadRequest();
 
-                // Check if Name already exists.
-                if (_profilesQueryRepository.GetProfileByName(item.Name).Result != null) return BadRequest();
-
                 // Check if Auth0Id already exists.
-                if (_profilesQueryRepository.GetProfileByAuth0Id(auth0Id).Result != null) return BadRequest();
+                if (_profilesQueryRepository.GetProfileByAuth0Id(auth0Id).Result != null) return BadRequest("User already exists.");
 
                 // Set admin default to false! Only other admins can give this privilege.
                 item.Admin = false;
@@ -65,14 +81,16 @@ namespace Avalon.Controllers
 
                 // Initiate empty lists and other defaults
                 item.Tags ??= new List<string>();
-                item.Bookmarks = new List<string>(); 
+                item.Bookmarks = new List<string>();
                 item.ChatMemberslist = new List<ChatMember>();
                 item.Images = new List<ImageModel>();
                 item.IsBookmarked = new Dictionary<string, DateTime>();
                 item.Visited = new Dictionary<string, DateTime>();
-                item.ProfileFilter = this.CreateBasicProfileFilter(item);
+                item.Likes = new List<string>();
 
-                return Ok(_currentUserRepository.AddProfile(item));
+                await _currentUserRepository.AddProfile(item);
+
+                return NoContent();
             }
             catch (Exception ex)
             {
@@ -102,40 +120,57 @@ namespace Avalon.Controllers
         //}
 
 
-        /// TODO: "SLET denne metode når Patch virker"
+        /// NOTE: "Delete this method when Patch works"
         /// <summary>Update the specified profile identifier.</summary>
         /// <param name="item">The profile</param>
         [NoCache]
         [HttpPut("~/CurrentUser")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> Put([FromBody] CurrentUser item)
         {
-            //if (!ModelState.IsValid) return BadRequest(); unnecessary
-
             try
             {
                 var currentUser = await _helper.GetCurrentUserProfile(User);
+
+                if (currentUser == null || currentUser.Name == null)
+                {
+                    return NotFound();
+                }
 
                 if (currentUser.ProfileId != item.ProfileId) return BadRequest();
 
                 // Certain properties cannot be changed by the user.
                 item._id = currentUser._id; // _id is immutable and the type is unknow by BluePenguin.
+                item.Auth0Id = currentUser.Auth0Id; // No user is allowed to see Auth0Id and it is therefore unknow to BluePenguin.
                 item.Admin = currentUser.Admin; // No user is allowed to set themselves as Admin!
                 item.Name = currentUser.Name; // You cannot change your name after create.
-                item.Bookmarks = currentUser.Bookmarks;
-                item.ChatMemberslist = currentUser.ChatMemberslist;
-                item.IsBookmarked = currentUser.IsBookmarked;
-                item.Visited = currentUser.Visited;
                 item.ProfileFilter = currentUser.ProfileFilter;
                 item.Images = currentUser.Images;
                 item.CreatedOn = currentUser.CreatedOn;
 
-                // Update ProfileFilter Gender when CurrentUser is updated.
-                if(currentUser.SexualOrientation != item.SexualOrientation || currentUser.Gender != item.Gender)
+                // If currentUser has changed country reset all connections to other profiles.
+                if (item.Countrycode != currentUser.Countrycode)
                 {
-                    item.ProfileFilter.Gender = this.CreateBasicProfileFilter(item).Gender;
+                    item.Bookmarks = new List<string>();
+                    item.ChatMemberslist = new List<ChatMember>();
+                    item.IsBookmarked = new Dictionary<string, DateTime>();
+                    item.Visited = new Dictionary<string, DateTime>();
+                    item.Likes = new List<string>();
+                }
+                else
+                {
+                    item.Bookmarks = currentUser.Bookmarks;
+                    item.ChatMemberslist = currentUser.ChatMemberslist;
+                    item.IsBookmarked = currentUser.IsBookmarked;
+                    item.Visited = currentUser.Visited;
+                    item.Likes = currentUser.Likes;
                 }
 
-                return Ok(_currentUserRepository.UpdateProfile(item));
+                await _currentUserRepository.UpdateProfile(item);
+
+                return NoContent();
             }
             catch (Exception ex)
             {
@@ -147,19 +182,25 @@ namespace Avalon.Controllers
         /// Deletes the CurrentUser profile.
         /// </summary>
         [HttpDelete("~/CurrentUser")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> DeleteCurrentUser()
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            if (currentUser.Admin) return BadRequest(); // Admins cannot delete themseleves.
+            if (currentUser == null || currentUser.Name == null)
+            {
+                return NotFound();
+            }
+
+            if (currentUser.Admin) throw new ArgumentException($"Admins cannot delete themseleves.");
 
             try
             {
                 await _helper.DeleteProfileFromAuth0(currentUser.ProfileId);
                 await _currentUserRepository.DeleteCurrentUser(currentUser.ProfileId);
-                //await _helper.DeleteProfileFromArtemis(currentUser.ProfileId);        // TODO: Delete all photos for Profile in Artemis
 
-                return Ok();
+                return NoContent();
             }
             catch (Exception ex)
             {
@@ -172,7 +213,10 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpPost("~/SaveProfileFilter")]
-        public async Task<IActionResult> SaveProfileFilter([FromBody]ProfileFilter profileFilter)
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> SaveProfileFilter([FromBody] ProfileFilter profileFilter)
         {
             if (profileFilter == null) return BadRequest();
 
@@ -180,7 +224,14 @@ namespace Avalon.Controllers
             {
                 var currentUser = await _helper.GetCurrentUserProfile(User);
 
-                return Ok(_currentUserRepository.SaveProfileFilter(currentUser, profileFilter));
+                if (currentUser == null || currentUser.Name == null)
+                {
+                    return NotFound();
+                }
+
+                await _currentUserRepository.SaveProfileFilter(currentUser, profileFilter);
+
+                return NoContent();
             }
             catch (Exception ex)
             {
@@ -192,11 +243,25 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpGet("~/LoadProfileFilter")]
-        public async Task<ProfileFilter> LoadProfileFilter()
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<ActionResult<ProfileFilter>> LoadProfileFilter()
         {
-            var currentUser = await _helper.GetCurrentUserProfile(User);
+            try
+            {
+                var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            return await _currentUserRepository.LoadProfileFilter(currentUser);
+                if (currentUser == null || currentUser.Name == null)
+                {
+                    return NotFound();
+                }
+
+                return await _currentUserRepository.LoadProfileFilter(currentUser);
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.ToString());
+            }
         }
 
         /// <summary>Adds the profiles to currentUser bookmarks and ChatMemberslist.</summary>
@@ -204,6 +269,9 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpPost("~/AddProfilesToBookmarks")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> AddProfilesToBookmarks([FromBody] string[] profileIds)
         {
             if (profileIds == null || profileIds.Length < 1) return BadRequest();
@@ -212,13 +280,21 @@ namespace Avalon.Controllers
             {
                 var currentUser = await _helper.GetCurrentUserProfile(User);
 
+                if (currentUser == null || currentUser.Name == null)
+                {
+                    return NotFound();
+                }
+
                 await _currentUserRepository.AddProfilesToBookmarks(currentUser, profileIds);
                 await _currentUserRepository.AddProfilesToChatMemberslist(currentUser, profileIds);
 
-                // Notify other profiles that currentUser has bookmarked their profile.
-                await _profilesQueryRepository.AddIsBookmarkedToProfiles(currentUser, profileIds);
+                // Notify other profiles that currentUser has bookmarked their profile, unless currentUser is admin.
+                if (!currentUser.Admin)
+                {
+                    await _profilesQueryRepository.AddIsBookmarkedToProfiles(currentUser, profileIds);
+                }
 
-                return Ok();
+                return NoContent();
             }
             catch (Exception ex)
             {
@@ -229,9 +305,12 @@ namespace Avalon.Controllers
 
         /// <summary>Removes the profiles from currentUser bookmarks and ChatMemberslist.</summary>
         /// <param name="profileIds">The profile ids.</param>
+        /// <exception cref="ArgumentException">ProfileIds is either null {profileIds} or length is < 1 {profileIds.Length}. {profileIds}</exception>
         /// <returns></returns>
         [NoCache]
         [HttpPost("~/RemoveProfilesFromBookmarks")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> RemoveProfilesFromBookmarks([FromBody] string[] profileIds)
         {
             if (profileIds == null || profileIds.Length < 1) throw new ArgumentException($"ProfileIds is either null {profileIds} or length is < 1 {profileIds.Length}.", nameof(profileIds));
@@ -240,13 +319,18 @@ namespace Avalon.Controllers
             {
                 var currentUser = await _helper.GetCurrentUserProfile(User);
 
+                if (currentUser == null || currentUser.Name == null)
+                {
+                    return NotFound();
+                }
+
                 await _currentUserRepository.RemoveProfilesFromBookmarks(currentUser, profileIds);
                 await _currentUserRepository.RemoveProfilesFromChatMemberslist(currentUser, profileIds);
 
                 /// Remove currentUser.profileId from IsBookmarked list of every profile in profileIds list.
                 await _profilesQueryRepository.RemoveIsBookmarkedFromProfiles(currentUser, profileIds);
 
-                return Ok();
+                return NoContent();
             }
             catch (Exception ex)
             {
@@ -259,6 +343,8 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpPost("~/BlockChatMembers")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> BlockChatMembers([FromBody] string[] profileIds)
         {
             if (profileIds == null || profileIds.Length < 1) return BadRequest();
@@ -267,9 +353,18 @@ namespace Avalon.Controllers
             {
                 var currentUser = await _helper.GetCurrentUserProfile(User);
 
-                await _currentUserRepository.BlockChatMembers(currentUser, profileIds);
+                if (currentUser == null || currentUser.Name == null)
+                {
+                    return NotFound();
+                }
 
-                return Ok();
+                // Blocks or unblocks chatMembers if not admin.
+                if (!currentUser.Admin)
+                {
+                    await _currentUserRepository.BlockChatMembers(currentUser, profileIds);
+                }
+
+                return NoContent();
             }
             catch (Exception ex)
             {
@@ -277,34 +372,96 @@ namespace Avalon.Controllers
             }
         }
 
-        #region Helper methods
-
-        /// <summary>Creates the basic profile filter.</summary>
-        /// <param name="currentUser">The current user.</param>
-        /// <returns></returns>
-        private ProfileFilter CreateBasicProfileFilter(CurrentUser currentUser)
+        /// <summary>
+        /// Clean CurrentUser for obsolete profile info.
+        /// </summary>
+        [NoCache]
+        [HttpGet("~/CleanCurrentUser")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> CleanCurrentUser()
         {
-            var filter = new ProfileFilter();
+            var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            switch (currentUser.SexualOrientation)
+            if (currentUser == null || currentUser.Name == null)
             {
-                case SexualOrientationType.Heterosexual:
-                    filter.Gender = currentUser.Gender == GenderType.Male ? GenderType.Female : GenderType.Male;
-                    break;
-                case SexualOrientationType.Homosexual:
-                    filter.Gender = currentUser.Gender;
-                    break;
-                case SexualOrientationType.Bisexual:
-                    break;
-                case SexualOrientationType.Asexual:
-                    break;
-                default:
-                    filter.Gender = currentUser.Gender == GenderType.Male ? GenderType.Female : GenderType.Male;
-                    break;
+                return NotFound();
             }
 
-            return filter;
+            try
+            {
+                // Clean obsolete profile info from CurrentUser, unless currentUser is admin.
+                if (!currentUser.Admin)
+                {
+                    await _currentUserRepository.CleanCurrentUser(currentUser);
+                }
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.ToString());
+            }
         }
+
+        /// <summary>
+        /// Check if CurrentUser has too many complains.
+        /// </summary>
+        /// <returns>Returns true if user should get a warning.</returns>
+        [NoCache]
+        [HttpGet("~/CheckForComplains")]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<ActionResult<bool>> CheckForComplains()
+        {
+            var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            if (currentUser == null || currentUser.Name == null)
+            {
+                return NotFound();
+            }
+
+            try
+            {
+                // Check if CurrentUser has too many complains, unless currentUser is admin.
+                if (!currentUser.Admin)
+                {
+                    return Ok(await _currentUserRepository.CheckForComplains(currentUser));
+                }
+
+                return Ok(false);
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.ToString());
+            }
+        }
+
+
+        #region Temp method for Dev. TODO: Please delete before release!
+
+        ///// <summary>
+        ///// Deletes the CurrentUser profile.
+        ///// </summary>
+        //[HttpPost("~/DeleteProfileFromAuth0")]
+        //[ProducesResponseType((int)HttpStatusCode.NoContent)]
+        //[ProducesResponseType((int)HttpStatusCode.NotFound)]
+        //public async Task<IActionResult> DeleteProfileFromAuth0([FromBody] string profileId)
+        //{
+
+        //    try
+        //    {
+        //        await _helper.DeleteProfileFromAuth0(profileId);
+
+        //        //var auth0 = new DeleteProfileFromAuth0();
+
+        //        return NoContent();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return Problem(ex.ToString());
+        //    }
+        //}
 
         #endregion
     }

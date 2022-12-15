@@ -1,5 +1,5 @@
 pool:
-  vmImage: 'ubuntu-18.04'
+  vmImage: 'ubuntu-latest'
 
 variables:
   buildConfiguration: 'Release'
@@ -8,7 +8,7 @@ steps:
 - task: UseDotNet@2
   inputs:
     packageType: 'sdk'
-    version: '5.0.100'
+    version: '7.x'
 
 - task: UseDotNet@2
   displayName: 'NuGet restore'

@@ -6,7 +6,6 @@ using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Avalon.Helpers
@@ -18,12 +17,17 @@ namespace Avalon.Helpers
         private readonly string _nameidentifier;
         private readonly string _auth0ApiIdentifier;
         private readonly string _auth0TokenAddress;
+        private readonly string _auth0_Client_id;
+        private readonly string _auth0_Client_secret;
+        private string token;
 
         public HelperMethods(IOptions<Settings> settings, ICurrentUserRepository profileRepository, IProfilesQueryRepository profilesQueryRepository)
         {
             _nameidentifier = settings.Value.Auth0Id;
             _auth0ApiIdentifier = settings.Value.Auth0ApiIdentifier;
             _auth0TokenAddress = settings.Value.Auth0TokenAddress;
+            _auth0_Client_id = settings.Value.Client_id;
+            _auth0_Client_secret = settings.Value.Client_secret;
             _profileRepository = profileRepository;
             _profilesQueryRepository = profilesQueryRepository;
         }
@@ -33,9 +37,16 @@ namespace Avalon.Helpers
         /// <returns></returns>
         public async Task<CurrentUser> GetCurrentUserProfile(ClaimsPrincipal user)
         {
-            var auth0Id = user.Claims.FirstOrDefault(c => c.Type == _nameidentifier)?.Value;
+            try
+            {
+                var auth0Id = user.Claims.FirstOrDefault(c => c.Type == _nameidentifier)?.Value;
 
-            return await _profileRepository.GetCurrentProfileByAuth0Id(auth0Id) ?? new CurrentUser(); // TODO: Burde smide en fejl hvis bruger ikke findes.
+                return await _profileRepository.GetCurrentProfileByAuth0Id(auth0Id) ?? throw new ArgumentException($"User unkown.", nameof(user));
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         /// <summary>Gets the current auth0 identifier for the user.</summary>
@@ -43,50 +54,75 @@ namespace Avalon.Helpers
         /// <returns>Auth0Id</returns>
         public string GetCurrentUserAuth0Id(ClaimsPrincipal user)
         {
-            return user.Claims.FirstOrDefault(c => c.Type == _nameidentifier)?.Value;
+            try
+            {
+                return user.Claims.FirstOrDefault(c => c.Type == _nameidentifier)?.Value;
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         /// <summary>Deletes the profile from Auth0. There is no going back!</summary>
         /// <param name="profileId">The profile identifier.</param>
-        public async Task DeleteProfileFromAuth0(string profileId)
+        public async Task DeleteProfileFromAuth0(string profileId)      // TODO: Check that this still works after upgrading to RestSharp v107 https://restsharp.dev/v107/#restsharp-v107
         {
             try
             {
                 var profile = await _profilesQueryRepository.GetProfileById(profileId);
 
-                var token = GetAuth0Token();
+                if (profile == null) return;
 
-                var client = new RestClient(_auth0ApiIdentifier + "users/" + profile.Auth0Id);
-                client.ThrowOnAnyError = true;
-                var request = new RestRequest(Method.DELETE);
-                request.AddHeader("content-type", "application/json");
-                request.AddHeader("authorization", "Bearer " + token);
-                IRestResponse response = await client.ExecuteAsync(request, CancellationToken.None);
+                var accessToken = string.IsNullOrEmpty(token) ? await GetAuth0Token() : token;
+
+                var url = _auth0ApiIdentifier + "users/" + profile.Auth0Id;
+                var client = new RestClient(url);
+                var request = new RestRequest(url, Method.Delete);
+                request.AddHeader("authorization", "Bearer " + accessToken);
+                //var response = await client.ExecuteAsync(request, CancellationToken.None);
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
+        /// <summary>Deletes 10 old profiles that are more than 30 days since last active.</summary>
+        public async Task DeleteOldProfiles(int daysBack, int limit)
+        {
+            var oldProfiles = await _profilesQueryRepository.GetOldProfiles(daysBack, limit);
+
+            foreach (var profile in oldProfiles)
+            {
+                //await _helper.DeleteProfileFromAuth0(profile.ProfileId);
+                //await _profilesQueryRepository.DeleteProfile(profile.ProfileId);
+            }
+        }
+
+        // TODO: Auth0 customers are billed based on the number of Machine to Machine Access Tokens issued by Auth0.
+        // Once your application gets an Access Token it should keep using it until it expires, to minimize the number of tokens requested.
+
         /// <summary>Gets the auth0 token.</summary>
         /// <returns></returns>
-        private string GetAuth0Token()
+        private async Task<string> GetAuth0Token()
         {
             try
             {
+                // TODO: Save token until it expires, to minimize the number of tokens requested. Auth0 customers are billed based on the number of Machine to Machine Access Tokens issued by Auth0. 
                 var client = new RestClient(_auth0TokenAddress);
-                client.ThrowOnAnyError = true;
-                var request = new RestRequest(Method.POST);
+                var request = new RestRequest(_auth0TokenAddress, Method.Post);
                 request.AddHeader("content-type", "application/json");
-                request.AddParameter("application/json", "{\"client_id\":\"ZKHIqFGxgm9OBc5Bxn1226pT9kXHLknW\",\"client_secret\":\"OpIPkn9Y4Ctoh9UuUbUpGzHybTNVEFevel0yQneY6X5ITKyaRwJEMbHYB3mNofkN\",\"audience\":\"https://bluepenguin.eu.auth0.com/api/v2/\",\"grant_type\":\"client_credentials\"}", ParameterType.RequestBody);
-                IRestResponse response = client.Execute(request);
+                request.AddParameter("application/json", $"{{\"client_id\":\"{_auth0_Client_id}\",\"client_secret\":\"{_auth0_Client_secret}\",\"audience\":\"{_auth0ApiIdentifier}\",\"grant_type\":\"client_credentials\"}}", ParameterType.RequestBody);
+                var response = await client.ExecuteAsync(request);
 
-                return JsonSerializer.Deserialize<AccessToken>(response.Content).access_token;
+                token = JsonSerializer.Deserialize<AccessToken>(response.Content).access_token;
+
+                return token;
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
     }
