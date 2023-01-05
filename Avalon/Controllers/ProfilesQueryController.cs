@@ -299,6 +299,9 @@ namespace Avalon.Controllers
                     return NotFound();
                 }
 
+                // Cannot Like profile if currentUser is admin.
+                if (currentUser.Admin) return NoContent();
+
                 if (profileIds.Contains(currentUser.ProfileId)) throw new ArgumentException($"ProfileId is similar to current user profileId.", nameof(profileIds));
 
                 await _profilesQueryRepository.RemoveLikeFromProfiles(currentUser, profileIds);

@@ -620,6 +620,9 @@ namespace Avalon.Data
                 var filter = Builders<Profile>
                                 .Filter.In(p => p.ProfileId, profileIds);
 
+                if (updates.Count == 0)
+                    return;
+
                 await _context.Profiles.UpdateManyAsync(filter, update.Combine(updates));
             }
             catch
