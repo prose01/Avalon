@@ -16,7 +16,7 @@ namespace Avalon.Model
         public List<GenderType> Seeking { get; set; }
 
         public string Languagecode { get; set; }
-        public List<string> Bookmarks { get; set; } 
+        public List<string> Bookmarks { get; set; }
         public List<ChatMember> ChatMemberslist { get; set; }
         public ProfileFilter ProfileFilter { get; set; }
         public Dictionary<string, DateTime> Visited { get; set; }
@@ -30,6 +30,7 @@ namespace Avalon.Model
         public override string ProfileId { get; set; }
         public override bool Admin { get; set; } = false;
         public override string Name { get; set; }
+        public override Dictionary<string, string> Avatar { get; set; }
         public override DateTime CreatedOn { get; set; } = DateTime.Now;
         public override DateTime UpdatedOn { get; set; } = DateTime.Now;
         public override DateTime LastActive { get; set; } = DateTime.Now;

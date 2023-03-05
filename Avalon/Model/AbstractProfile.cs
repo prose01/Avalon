@@ -18,6 +18,8 @@ namespace Avalon.Model
         [StringLength(50, ErrorMessage = "Name length cannot be more than 50 characters long.")]
         public abstract string Name { get; set; }
 
+        public abstract Dictionary<string, string> Avatar { get; set; }
+
         [DataType(DataType.DateTime)]
         public abstract DateTime CreatedOn { get; set; }
 
