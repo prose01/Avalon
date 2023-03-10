@@ -30,7 +30,7 @@ namespace Avalon.Model
         public override string ProfileId { get; set; }
         public override bool Admin { get; set; } = false;
         public override string Name { get; set; }
-        public override Dictionary<string, string> Avatar { get; set; }
+        public override AvatarModel Avatar { get; set; }
         public override DateTime CreatedOn { get; set; } = DateTime.Now;
         public override DateTime UpdatedOn { get; set; } = DateTime.Now;
         public override DateTime LastActive { get; set; } = DateTime.Now;
