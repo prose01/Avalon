@@ -782,6 +782,7 @@ namespace Avalon.Data
                 "ProfileFilter: 0, " +
                 "IsBookmarked: 0, " +
                 "Languagecode: 0, " +
+                "Groups: 0, " +
                 "}";
 
             return projection;
