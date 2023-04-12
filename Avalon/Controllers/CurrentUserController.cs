@@ -87,6 +87,7 @@ namespace Avalon.Controllers
                 item.IsBookmarked = new Dictionary<string, DateTime>();
                 item.Visited = new Dictionary<string, DateTime>();
                 item.Likes = new List<string>();
+                item.Groups = new List<string>();
 
                 await _currentUserRepository.AddProfile(item);
 
@@ -158,6 +159,7 @@ namespace Avalon.Controllers
                     item.IsBookmarked = new Dictionary<string, DateTime>();
                     item.Visited = new Dictionary<string, DateTime>();
                     item.Likes = new List<string>();
+                    item.Groups = new List<string>();
                 }
                 else
                 {
@@ -166,6 +168,7 @@ namespace Avalon.Controllers
                     item.IsBookmarked = currentUser.IsBookmarked;
                     item.Visited = currentUser.Visited;
                     item.Likes = currentUser.Likes;
+                    item.Groups = currentUser.Groups;
                 }
 
                 await _currentUserRepository.UpdateProfile(item);

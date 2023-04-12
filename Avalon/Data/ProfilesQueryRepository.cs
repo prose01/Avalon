@@ -826,6 +826,7 @@ namespace Avalon.Data
                 "Languagecode: 0, " +
                 "Visited: 0, " +
                 "Likes: 0, " +
+                "Groups: 0, " +
                 "}";
 
             return projection;
