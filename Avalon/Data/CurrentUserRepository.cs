@@ -337,7 +337,7 @@ namespace Avalon.Data
 
 
                 // Chech if our profiles exist
-                IEnumerable<Profile> exitingprofiles = await this._profilesQueryRepository.GetProfilIdsByIds(checkThesesProfiles);
+                IEnumerable<Profile> exitingprofiles = await this._profilesQueryRepository.GetProfilesByIds(checkThesesProfiles);
 
                 //List<string> newCountrycode = new List<string>();
                 List<string> exitingIds = new List<string>();

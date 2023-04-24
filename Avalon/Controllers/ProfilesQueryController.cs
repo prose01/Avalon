@@ -191,6 +191,23 @@ namespace Avalon.Controllers
             }
         }
 
+        /// <summary>Gets profiles by identifiers.</summary>
+        /// <param name="profileIds">The profile identifiers.</param>
+        /// <exception cref="ArgumentException">ProfileIds is either null {profileIds} or length is < 1 {profileIds.Length}.</exception>
+        /// <returns></returns>
+        [NoCache]
+        [HttpPost("~/GetProfilesByIds")]
+        public async Task<IEnumerable<Profile>> GetProfilesByIds([FromBody] RequestBody requestBody, [FromQuery] ParameterFilter parameterFilter)
+        {
+            if (requestBody.ProfileIds == null) throw new ArgumentException($"ProfileIds is either null {requestBody.ProfileIds} or length is < 1 {requestBody.ProfileIds.Length}.", nameof(requestBody.ProfileIds));
+
+            var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            var skip = parameterFilter.PageIndex == 0 ? parameterFilter.PageIndex : parameterFilter.PageIndex * parameterFilter.PageSize;
+
+            return await _profilesQueryRepository.GetProfilesByIds(currentUser, requestBody.ProfileIds, skip, parameterFilter.PageSize);
+        }
+
         /// <summary>Adds the visited to profiles.</summary>
         /// <param name="profileId">The profile identifier.</param>
         /// <exception cref="ArgumentException">ProfileId is null. {profileId}</exception>
@@ -240,7 +257,7 @@ namespace Avalon.Controllers
 
         /// <summary>Adds like to profile.</summary>
         /// <param name="profileIds">The profile identifiers.</param>
-        /// <exception cref="ArgumentException">ProfileId is null. {profileId}</exception>
+        /// <exception cref="ArgumentException">ProfileIds is either null {profileIds} or length is < 1 {profileIds.Length}.</exception>
         /// <exception cref="ArgumentException">ProfileId is similar to current user profileId. {profileId}</exception>
         /// <exception cref="ArgumentException">Profile is not found. {profileId}</exception>
         /// <returns> </returns>

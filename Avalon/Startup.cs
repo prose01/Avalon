@@ -73,6 +73,7 @@ namespace Avalon
             // Add our repository type(s)
             services.AddSingleton<ICurrentUserRepository, CurrentUserRepository>();
             services.AddSingleton<IProfilesQueryRepository, ProfilesQueryRepository>();
+            services.AddSingleton<IGroupRepository, GroupRepository>();
             services.AddSingleton<IFeedbackRepository, FeedbackRepository>();
 
             // Add our helper method(s)

@@ -19,12 +19,14 @@ namespace Avalon.Controllers
     {
         private readonly ICurrentUserRepository _currentUserRepository;
         private readonly IProfilesQueryRepository _profilesQueryRepository;
+        private readonly IGroupRepository _groupRepository;
         private readonly IHelperMethods _helper;
 
-        public CurrentUserController(ICurrentUserRepository currentUserRepository, IProfilesQueryRepository profilesQueryRepository, IHelperMethods helperMethods)
+        public CurrentUserController(ICurrentUserRepository currentUserRepository, IProfilesQueryRepository profilesQueryRepository, IGroupRepository groupRepository, IHelperMethods helperMethods)
         {
             _currentUserRepository = currentUserRepository;
             _profilesQueryRepository = profilesQueryRepository;
+            _groupRepository = groupRepository;
             _helper = helperMethods;
         }
 
@@ -374,6 +376,19 @@ namespace Avalon.Controllers
                 return Problem(ex.ToString());
             }
         }
+
+        /// <summary>Get Groups that CurrentUser is member of.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <returns>Returns list of groups.</returns>
+        [NoCache]
+        [HttpGet("~/GetGroups")]
+        public async Task<IEnumerable<GroupModel>> GetGroups()
+        {
+            var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            return await _groupRepository.GetGroups(currentUser?.Groups.ToArray());
+        }
+
 
         /// <summary>
         /// Clean CurrentUser for obsolete profile info.

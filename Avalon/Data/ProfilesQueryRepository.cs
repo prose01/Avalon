@@ -150,9 +150,9 @@ namespace Avalon.Data
         }
 
         /// <summary>Gets profiles by identifiers.</summary>
-        /// <param name="profileId">The profile identifiers.</param>
+        /// <param name="profileId">The profile identifiers.</param>        // TODO: This can be moved to another application when CleanCurrentUser is moved!!!
         /// <returns></returns>
-        public async Task<IEnumerable<Profile>> GetProfilIdsByIds(string[] profileIds)
+        public async Task<IEnumerable<Profile>> GetProfilesByIds(string[] profileIds)
         {
             try
             {
@@ -163,6 +163,43 @@ namespace Avalon.Data
                     .Find(filter)
                     .Project<Profile>(GetProfileId())
                     .ToListAsync();
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        /// <summary>Gets profiles by identifiers.</summary>
+        /// <param name="profileId">The profile identifiers.</param>
+        /// <param name="skip">The skip.</param>
+        /// <param name="limit">The limit.</param>
+        /// <returns></returns>
+        public async Task<IEnumerable<Profile>> GetProfilesByIds(CurrentUser currentUser, string[] profileIds, int skip, int limit)
+        {
+            try
+            {
+                List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>();
+
+                //Remove currentUser from the list.
+                filters.Add(Builders<Profile>.Filter.Ne(p => p.ProfileId, currentUser.ProfileId));
+
+                //Remove admins from the list.
+                filters.Add(Builders<Profile>.Filter.Ne(p => p.Admin, true));
+
+                filters.Add(Builders<Profile>.Filter.Eq(p => p.Countrycode, currentUser.Countrycode));
+
+                filters.Add(Builders<Profile>.Filter.In(p => p.ProfileId, profileIds));
+
+                var combineFilters = Builders<Profile>.Filter.And(filters);
+
+                //var filter = Builders<Profile>
+                //                .Filter.In(p => p.ProfileId, profileIds);
+
+                SortDefinition<Profile> sortDefinition = Builders<Profile>.Sort.Descending(p => p.Name);
+
+                return await _context.Profiles
+                            .Find(combineFilters).Project<Profile>(this.GetProjection()).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
             }
             catch
             {
