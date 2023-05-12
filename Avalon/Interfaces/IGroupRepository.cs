@@ -8,5 +8,6 @@ namespace Avalon.Interfaces
     {
         Task<GroupModel> GetGroup(string groupId);
         Task<IEnumerable<GroupModel>> GetGroups(string[] groupIds);
+        Task RemoveCurrentUserFromGroups(string profileId, string[] groupIds);
     }
 }

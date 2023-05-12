@@ -183,7 +183,7 @@ namespace Avalon.Data
         {
             try
             {
-                //Filter out allready bookmarked profiles.
+                //Filter out allready removed bookmarked profiles.
                 var removeBookmarks = profileIds.Where(i => currentUser.Bookmarks.Contains(i)).ToList();
 
                 if (removeBookmarks.Count == 0)
@@ -267,6 +267,33 @@ namespace Avalon.Data
 
                 var update = Builders<CurrentUser>
                             .Update.Set(c => c.ChatMemberslist, currentUser.ChatMemberslist);
+
+                await _context.CurrentUser.FindOneAndUpdateAsync(filter, update);
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        /// <summary>Remove groups from CurrentUser.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <param name="groupIds">The group ids.</param>
+        public async Task RemoveGroupsFromCurrentUser(CurrentUser currentUser, string[] groupIds)
+        {
+            try
+            {
+                //Filter out allready removed groups.
+                var removeGroups = groupIds.Where(i => currentUser.Groups.Contains(i)).ToList();
+
+                if (removeGroups.Count == 0)
+                    return;
+
+                var filter = Builders<CurrentUser>
+                                .Filter.Eq(c => c.ProfileId, currentUser.ProfileId);
+
+                var update = Builders<CurrentUser>
+                                .Update.PullAll(c => c.Groups, removeGroups);
 
                 await _context.CurrentUser.FindOneAndUpdateAsync(filter, update);
             }

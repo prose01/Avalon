@@ -307,7 +307,6 @@ namespace Avalon.Controllers
             }
         }
 
-
         /// <summary>Removes the profiles from currentUser bookmarks and ChatMemberslist.</summary>
         /// <param name="profileIds">The profile ids.</param>
         /// <exception cref="ArgumentException">ProfileIds is either null {profileIds} or length is < 1 {profileIds.Length}. {profileIds}</exception>
@@ -387,6 +386,100 @@ namespace Avalon.Controllers
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
             return await _groupRepository.GetGroups(currentUser?.Groups.ToArray());
+        }
+
+        /// <summary>Remove CurrentUser from groups.</summary>
+        /// <param name="groupIds">The group ids.</param>
+        /// <exception cref="ArgumentException">GroupIds is either null {groupIds} or length is < 1 {groupIds.Length}. {groupIds}</exception>
+        /// <returns></returns>
+        [NoCache]
+        [HttpPost("~/RemoveCurrentUserFromGroups")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> RemoveCurrentUserFromGroups(string[] groupIds)
+        {
+            try
+            {
+                if (groupIds == null || groupIds.Length < 1) throw new ArgumentException($"GroupIds is either null {groupIds} or length is < 1 {groupIds.Length}.", nameof(groupIds));
+
+                var currentUser = await _helper.GetCurrentUserProfile(User);
+
+                if (currentUser == null || currentUser.Name == null)
+                {
+                    return NotFound();
+                }
+
+                await _groupRepository.RemoveCurrentUserFromGroups(currentUser.ProfileId, groupIds);
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.ToString());
+            }
+        }
+
+        /// <summary>Remove groups from CurrentUser.</summary>
+        /// <param name="groupIds">The group ids.</param>
+        /// <exception cref="ArgumentException">GroupIds is either null {groupIds} or length is < 1 {groupIds.Length}. {groupIds}</exception>
+        /// <returns></returns>
+        [NoCache]
+        [HttpPost("~/RemoveGroupsFromCurrentUser")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> RemoveGroupsFromCurrentUser(string[] groupIds)
+        {
+            if (groupIds == null || groupIds.Length < 1) throw new ArgumentException($"GroupIds is either null {groupIds} or length is < 1 {groupIds.Length}.", nameof(groupIds));
+
+            try
+            {
+                var currentUser = await _helper.GetCurrentUserProfile(User);
+
+                if (currentUser == null || currentUser.Name == null)
+                {
+                    return NotFound();
+                }
+
+                await _currentUserRepository.RemoveGroupsFromCurrentUser(currentUser, groupIds);
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.ToString());
+            }
+        }
+
+        /// <summary>Remove groups from CurrentUser and CurrentUser from groups.</summary>
+        /// <param name="groupIds">The group ids.</param>
+        /// <exception cref="ArgumentException">GroupIds is either null {groupIds} or length is < 1 {groupIds.Length}. {groupIds}</exception>
+        /// <returns></returns>
+        [NoCache]
+        [HttpPost("~/RemoveGroupsFromCurrentUserAndCurrentUserFromGroups")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> RemoveGroupsFromCurrentUserAndCurrentUserFromGroups(string[] groupIds)
+        {
+            if (groupIds == null || groupIds.Length < 1) throw new ArgumentException($"GroupIds is either null {groupIds} or length is < 1 {groupIds.Length}.", nameof(groupIds));
+
+            try
+            {
+                var currentUser = await _helper.GetCurrentUserProfile(User);
+
+                if (currentUser == null || currentUser.Name == null)
+                {
+                    return NotFound();
+                }
+
+                await _currentUserRepository.RemoveGroupsFromCurrentUser(currentUser, groupIds);
+                await _groupRepository.RemoveCurrentUserFromGroups(currentUser.ProfileId, groupIds);
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.ToString());
+            }
         }
 
 

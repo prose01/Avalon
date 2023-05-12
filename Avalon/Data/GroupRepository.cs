@@ -60,5 +60,47 @@ namespace Avalon.Data
                 throw;
             }
         }
+
+        /// <summary>Remove CurrentUser from groups.</summary>
+        /// <param name="profileId">The profile identifier.</param>
+        /// <param name="groupIds">The group ids.</param>
+        public async Task RemoveCurrentUserFromGroups(string profileId, string[] groupIds)
+        {
+            try
+            {
+                var update = Builders<GroupModel>.Update;
+                var updates = new List<UpdateDefinition<GroupModel>>();
+
+                var groups = await this.GetGroups(groupIds);
+
+                foreach (var group in groups)
+                {
+                    foreach (var member in group.GroupMemberslist)
+                    {
+                        if (member.ProfileId == profileId)
+                        {
+                            group.GroupMemberslist.Remove(member);
+
+                            updates.Add(update.Set(g => g.GroupMemberslist, group.GroupMemberslist));
+
+                            break;
+                        }
+                    }
+                }
+
+                var filter = Builders<GroupModel>
+                                .Filter.In(g => g.GroupId, groupIds);
+
+                if (updates.Count == 0)
+                    return;
+
+                await _context.Groups.UpdateManyAsync(filter, update.Combine(updates));
+
+            }
+            catch
+            {
+                throw;
+            }
+        }
     }
 }
