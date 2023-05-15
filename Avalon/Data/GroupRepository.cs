@@ -18,7 +18,36 @@ namespace Avalon.Data
         }
 
 
-        public async Task<GroupModel> GetGroup(string groupId)
+
+        /// <summary>Get all groups with same countrycode as currentUser.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <param name="skip">The skip.</param>
+        /// <param name="limit">The limit.</param>
+        /// <returns></returns>
+        public async Task<IEnumerable<GroupModel>> GetGroups(CurrentUser currentUser, int skip, int limit)
+        {
+            try
+            {
+                var filter = Builders<GroupModel>
+                                .Filter.Eq(g => g.Countrycode, currentUser.Countrycode);
+
+                SortDefinition<GroupModel> sortDefinition = Builders<GroupModel>.Sort.Ascending(g => g.Name);
+
+                return await _context.Groups
+                            .Find(filter).Project<GroupModel>(this.GetProjection()).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+
+
+        /// <summary>Get Group by groupId.</summary>
+        /// <param name="groupIds">groupId.</param>
+        /// <returns>Returns group.</returns>
+        public async Task<GroupModel> GetGroupById(string groupId)
         {
             try
             {
@@ -38,10 +67,10 @@ namespace Avalon.Data
             }
         }
 
-        /// <summary>Get Groups that CurrentUser is member off.</summary>
-        /// <param name="currentUser">The current user.</param>
+        /// <summary>Get Groups by group ids.</summary>
+        /// <param name="groupIds">The group ids.</param>
         /// <returns>Returns list of groups.</returns>
-        public async Task<IEnumerable<GroupModel>> GetGroups(string[] groupIds)
+        public async Task<IEnumerable<GroupModel>> GetGroupsByIds(string[] groupIds)
         {
             try
             {
@@ -71,7 +100,7 @@ namespace Avalon.Data
                 var update = Builders<GroupModel>.Update;
                 var updates = new List<UpdateDefinition<GroupModel>>();
 
-                var groups = await this.GetGroups(groupIds);
+                var groups = await this.GetGroupsByIds(groupIds);
 
                 foreach (var group in groups)
                 {
@@ -101,6 +130,17 @@ namespace Avalon.Data
             {
                 throw;
             }
+        }
+
+        private ProjectionDefinition<GroupModel> GetProjection()
+        {
+            ProjectionDefinition<GroupModel> projection = "{ " +
+                "_id: 0, " +
+                "Countrycode: 0, " +
+                "GroupMemberslist:0, " +
+                "}";
+
+            return projection;
         }
     }
 }
