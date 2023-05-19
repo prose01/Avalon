@@ -3,6 +3,7 @@ using Avalon.Model;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -18,6 +19,23 @@ namespace Avalon.Data
         }
 
 
+
+        /// <summary>Create chat group.</summary>
+        /// <param name="group">The group.</param>
+        /// <returns></returns>
+        public async Task CreateGroup(GroupModel group)
+        {
+            try
+            {
+                group.CreatedOn = DateTime.UtcNow;
+
+                await _context.Groups.InsertOneAsync(group);
+            }
+            catch
+            {
+                throw;
+            }
+        }
 
         /// <summary>Get all groups with same countrycode as currentUser.</summary>
         /// <param name="currentUser">The current user.</param>

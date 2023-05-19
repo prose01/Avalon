@@ -32,9 +32,9 @@ namespace Avalon.Model
         public override bool Admin { get; set; } = false;
         public override string Name { get; set; }
         public override AvatarModel Avatar { get; set; }
-        public override DateTime CreatedOn { get; set; } = DateTime.Now;
-        public override DateTime UpdatedOn { get; set; } = DateTime.Now;
-        public override DateTime LastActive { get; set; } = DateTime.Now;
+        public override DateTime CreatedOn { get; set; } = DateTime.UtcNow;
+        public override DateTime UpdatedOn { get; set; } = DateTime.UtcNow;
+        public override DateTime LastActive { get; set; } = DateTime.UtcNow;
         public override string Countrycode { get; set; }
         public override int? Age { get; set; } = null;
         public override int? Height { get; set; }

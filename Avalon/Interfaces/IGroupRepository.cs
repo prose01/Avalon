@@ -6,6 +6,7 @@ namespace Avalon.Interfaces
 {
     public interface IGroupRepository
     {
+        Task CreateGroup(GroupModel group);
         Task<IEnumerable<GroupModel>> GetGroups(CurrentUser currentUser, int skip, int limit);
         Task<GroupModel> GetGroupById(string groupId);
         Task<IEnumerable<GroupModel>> GetGroupsByIds(string[] groupIds);

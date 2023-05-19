@@ -463,6 +463,49 @@ namespace Avalon.Controllers
         //    }
         //}
 
+        /// <summary>Create chat group.</summary>
+        /// <param name="group">The group.</param>
+        /// <exception cref="ArgumentException">Group name is either null or empty. {group}</exception>
+        /// <returns></returns>
+        [NoCache]
+        [HttpPost("~/CreateGroup")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> CreateGroup([FromBody] GroupModel group)
+        {
+            if (group.Name.IsNullOrEmpty()) throw new ArgumentException($"Group name is either null or empty.", nameof(group));
+
+            try
+            {
+                var currentUser = await _helper.GetCurrentUserProfile(User);
+
+                if (currentUser == null || currentUser.Name == null)
+                {
+                    return NotFound();
+                }
+
+                group.GroupId = Guid.NewGuid().ToString();
+                group.Countrycode = currentUser.Countrycode;
+                group.GroupMemberslist = new List<GroupMember>();
+
+                group.GroupMemberslist.Add(new GroupMember()
+                {
+                    ProfileId = currentUser.ProfileId,
+                    Name = currentUser.Name,
+                    Blocked = false
+                });
+
+                await _currentUserRepository.AddGroupToCurrentUser(currentUser, group.GroupId);
+                await _groupRepository.CreateGroup(group);
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.ToString());
+            }
+        }
+
         /// <summary>Join chat group.</summary>
         /// <param name="groupId">The group id.</param>
         /// <exception cref="ArgumentException">GroupId is either null or empty. {groupId}</exception>

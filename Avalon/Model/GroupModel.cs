@@ -1,6 +1,7 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson;
 using System.Collections.Generic;
+using System;
 
 namespace Avalon.Model
 {
@@ -10,6 +11,8 @@ namespace Avalon.Model
         public ObjectId _id { get; set; }
 
         public string GroupId { get; set; }
+
+        public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
 
         public string Name { get; set; }
 

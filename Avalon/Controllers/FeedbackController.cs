@@ -46,7 +46,7 @@ namespace Avalon.Controllers
                 }
 
                 feedback.FeedbackId = Guid.NewGuid().ToString();
-                feedback.DateSent = DateTime.Now;
+                feedback.DateSent = DateTime.UtcNow;
                 feedback.Open = true;
                 feedback.FromProfileId = currentUser.ProfileId;
                 feedback.FromName = currentUser.Name;

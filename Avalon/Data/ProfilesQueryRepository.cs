@@ -50,7 +50,7 @@ namespace Avalon.Data
 
                 var update = Builders<Profile>
                                 .Update.Set(p => p.Admin, true)
-                                .Set(p => p.UpdatedOn, DateTime.Now);
+                                .Set(p => p.UpdatedOn, DateTime.UtcNow);
 
                 var options = new FindOneAndUpdateOptions<Profile>
                 {
@@ -77,7 +77,7 @@ namespace Avalon.Data
 
                 var update = Builders<Profile>
                                 .Update.Set(p => p.Admin, false)
-                                .Set(p => p.UpdatedOn, DateTime.Now);
+                                .Set(p => p.UpdatedOn, DateTime.UtcNow);
 
                 var options = new FindOneAndUpdateOptions<Profile>
                 {
@@ -614,7 +614,7 @@ namespace Avalon.Data
                         profile.IsBookmarked.Remove(isBookmarkedPair.Last().Key);
                     }
 
-                    profile.IsBookmarked.Add(currentUser.ProfileId, DateTime.Now);
+                    profile.IsBookmarked.Add(currentUser.ProfileId, DateTime.UtcNow);
 
                     updates.Add(update.Set(p => p.IsBookmarked, profile.IsBookmarked));
                 }
@@ -677,7 +677,7 @@ namespace Avalon.Data
             {
                 if (profile.Visited.ContainsKey(currentUser.ProfileId))
                 {
-                    profile.Visited[currentUser.ProfileId] = DateTime.Now;
+                    profile.Visited[currentUser.ProfileId] = DateTime.UtcNow;
                 }
                 else
                 {
@@ -690,7 +690,7 @@ namespace Avalon.Data
                         profile.Visited.Remove(visitedPair.Last().Key);
                     }
 
-                    profile.Visited.Add(currentUser.ProfileId, DateTime.Now);
+                    profile.Visited.Add(currentUser.ProfileId, DateTime.UtcNow);
                 }
 
                 var filter = Builders<Profile>
@@ -789,7 +789,7 @@ namespace Avalon.Data
             {
                 if (!profile.Complains.ContainsKey(currentUser.ProfileId))
                 {
-                    profile.Complains.Add(currentUser.ProfileId, DateTime.Now);
+                    profile.Complains.Add(currentUser.ProfileId, DateTime.UtcNow);
 
                     var filter = Builders<Profile>
                                .Filter.Eq(p => p.ProfileId, profile.ProfileId);
@@ -882,7 +882,7 @@ namespace Avalon.Data
                 _deleteProfileDaysBack = daysBack > 0 ? daysBack : _deleteProfileDaysBack;
                 _deleteProfileLimit = limit > 0 ? limit : _deleteProfileLimit;
 
-                return await _context.Profiles.Find(p => p.LastActive < DateTime.Now.AddDays(-_deleteProfileDaysBack) && !p.Admin).Project<Profile>(this.GetProjection()).Limit(_deleteProfileLimit).ToListAsync();
+                return await _context.Profiles.Find(p => p.LastActive < DateTime.UtcNow.AddDays(-_deleteProfileDaysBack) && !p.Admin).Project<Profile>(this.GetProjection()).Limit(_deleteProfileLimit).ToListAsync();
             }
             catch
             {

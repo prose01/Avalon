@@ -13,10 +13,10 @@ namespace Avalon.Model
         public string FeedbackId { get; set; }
 
         [DataType(DataType.DateTime)]
-        public DateTime? DateSent { get; set; } = DateTime.Now;
+        public DateTime? DateSent { get; set; } = DateTime.UtcNow;
 
         [DataType(DataType.DateTime)]
-        public DateTime? DateSeen { get; set; } = DateTime.Now;
+        public DateTime? DateSeen { get; set; } = DateTime.UtcNow;
 
         public string FromProfileId { get; set; }
 

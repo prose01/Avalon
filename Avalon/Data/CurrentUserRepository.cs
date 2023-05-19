@@ -34,9 +34,9 @@ namespace Avalon.Data
             try
             {
                 currentUser.ProfileId = Guid.NewGuid().ToString();
-                currentUser.CreatedOn = DateTime.Now;
-                currentUser.UpdatedOn = DateTime.Now;
-                currentUser.LastActive = DateTime.Now;
+                currentUser.CreatedOn = DateTime.UtcNow;
+                currentUser.UpdatedOn = DateTime.UtcNow;
+                currentUser.LastActive = DateTime.UtcNow;
 
                 await _context.CurrentUser.InsertOneAsync(currentUser);
             }
@@ -68,7 +68,7 @@ namespace Avalon.Data
         {
             try
             {
-                currentUser.UpdatedOn = DateTime.Now;
+                currentUser.UpdatedOn = DateTime.UtcNow;
 
                 var filter = Builders<CurrentUser>
                                 .Filter.Eq(c => c.ProfileId, currentUser.ProfileId);
@@ -91,7 +91,7 @@ namespace Avalon.Data
                 var filter = Builders<CurrentUser>.Filter.Eq("Auth0Id", auth0Id);
 
                 var update = Builders<CurrentUser>
-                                .Update.Set(c => c.LastActive, DateTime.Now);
+                                .Update.Set(c => c.LastActive, DateTime.UtcNow);
 
                 var options = new FindOneAndUpdateOptions<CurrentUser>
                 {
@@ -467,7 +467,7 @@ namespace Avalon.Data
             try
             {
                 // Remove old complains.
-                var oldcomplains = currentUser.Complains.Where(i => i.Value < DateTime.Now.AddDays(-_complainsDaysBack)).ToArray();
+                var oldcomplains = currentUser.Complains.Where(i => i.Value < DateTime.UtcNow.AddDays(-_complainsDaysBack)).ToArray();
 
                 if (oldcomplains.Length > 0)
                 {
