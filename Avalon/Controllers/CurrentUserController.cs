@@ -4,6 +4,7 @@ using Avalon.Model;
 using Microsoft.AspNetCore.Authorization;
 //using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -461,6 +462,38 @@ namespace Avalon.Controllers
         //        return Problem(ex.ToString());
         //    }
         //}
+
+        /// <summary>Join chat group.</summary>
+        /// <param name="groupId">The group id.</param>
+        /// <exception cref="ArgumentException">GroupId is either null or empty. {groupId}</exception>
+        /// <returns></returns>
+        [NoCache]
+        [HttpPost("~/JoinGroup")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> JoinGroup([FromBody] string groupId)
+        {
+            if (groupId.IsNullOrEmpty()) throw new ArgumentException($"GroupId is either null or empty.", nameof(groupId));
+
+            try
+            {
+                var currentUser = await _helper.GetCurrentUserProfile(User);
+
+                if (currentUser == null || currentUser.Name == null)
+                {
+                    return NotFound();
+                }
+
+                await _currentUserRepository.AddGroupToCurrentUser(currentUser, groupId);
+                await _groupRepository.AddCurrentUserToGroup(currentUser, groupId);
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.ToString());
+            }
+        }
 
         /// <summary>Remove groups from CurrentUser and CurrentUser from groups.</summary>
         /// <param name="groupIds">The group ids.</param>

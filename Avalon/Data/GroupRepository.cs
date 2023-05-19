@@ -90,6 +90,33 @@ namespace Avalon.Data
             }
         }
 
+        /// <summary>Add CurrentUser to group.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <param name="groupId">The group id.</param>
+        public async Task AddCurrentUserToGroup(CurrentUser currentUser, string groupId)
+        {
+            try
+            {
+                var member = new GroupMember() {
+                    ProfileId = currentUser.ProfileId,
+                    Name = currentUser.Name,
+                    Blocked = false 
+                }; 
+
+                var filter = Builders<GroupModel>
+                                .Filter.Eq(g => g.GroupId, groupId);
+
+                var update = Builders<GroupModel>
+                                .Update.Push(g => g.GroupMemberslist, member);
+
+                await _context.Groups.FindOneAndUpdateAsync(filter, update);
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
         /// <summary>Remove CurrentUser from groups.</summary>
         /// <param name="profileId">The profile identifier.</param>
         /// <param name="groupIds">The group ids.</param>

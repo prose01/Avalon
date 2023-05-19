@@ -276,6 +276,33 @@ namespace Avalon.Data
             }
         }
 
+        /// <summary>Add group to CurrentUser.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <param name="groupId">The group id.</param>
+        public async Task AddGroupToCurrentUser(CurrentUser currentUser, string groupId)
+        {
+            try
+            {
+                //Check if currentUser has allready joined group.
+                if(currentUser.Groups.Contains(groupId))
+                {
+                    return;
+                }
+
+                var filter = Builders<CurrentUser>
+                                .Filter.Eq(c => c.ProfileId, currentUser.ProfileId);
+
+                var update = Builders<CurrentUser>
+                                .Update.Push(c => c.Groups, groupId);
+
+                await _context.CurrentUser.FindOneAndUpdateAsync(filter, update);
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
         /// <summary>Remove groups from CurrentUser.</summary>
         /// <param name="currentUser">The current user.</param>
         /// <param name="groupIds">The group ids.</param>
