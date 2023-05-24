@@ -377,6 +377,8 @@ namespace Avalon.Controllers
             }
         }
 
+        #region Groups
+
         /// <summary>Get all groups with same countrycode as currentUser.</summary>
         /// <returns>Returns list of groups.</returns>
         [NoCache]
@@ -486,14 +488,16 @@ namespace Avalon.Controllers
 
                 group.GroupId = Guid.NewGuid().ToString();
                 group.Countrycode = currentUser.Countrycode;
-                group.GroupMemberslist = new List<GroupMember>();
-
-                group.GroupMemberslist.Add(new GroupMember()
+                group.GroupMemberslist = new List<GroupMember>
                 {
-                    ProfileId = currentUser.ProfileId,
-                    Name = currentUser.Name,
-                    Blocked = false
-                });
+                    new GroupMember()
+                    {
+                        ProfileId = currentUser.ProfileId,
+                        Name = currentUser.Name,
+                        Blocked = false,
+                        Complains = new Dictionary<string, DateTime>()
+                    }
+                };
 
                 await _currentUserRepository.AddGroupToCurrentUser(currentUser, group.GroupId);
                 await _groupRepository.CreateGroup(group);
@@ -569,6 +573,42 @@ namespace Avalon.Controllers
                 return Problem(ex.ToString());
             }
         }
+
+        /// <summary>Add complain to groupMember for group.</summary>
+        /// <param name="groupId">The group id.</param>
+        /// <param name="profileId">The profile identifier.</param>
+        /// <exception cref="ArgumentException">GroupId is either null or empty. {groupId}</exception>
+        /// <exception cref="ArgumentException">ProfileId is either null or empty. {profileId}</exception>
+        /// <returns></returns>
+        [NoCache]
+        [HttpPost("~/AddComplainToGroupMember/{groupId}")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> AddComplainToGroupMember([FromRoute] string groupId, [FromBody] string profileId)
+        {
+            if (groupId.IsNullOrEmpty()) throw new ArgumentException($"GroupId is either null or empty.", nameof(groupId));
+            if (profileId.IsNullOrEmpty()) throw new ArgumentException($"ProfileId is either null or empty.", nameof(profileId));
+
+            try
+            {
+                var currentUser = await _helper.GetCurrentUserProfile(User);
+
+                if (currentUser == null || currentUser.Name == null)
+                {
+                    return NotFound();
+                }
+
+                await _groupRepository.AddComplainToGroupMember(currentUser, groupId, profileId);
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.ToString());
+            }
+        }
+
+        #endregion
 
 
         /// <summary>

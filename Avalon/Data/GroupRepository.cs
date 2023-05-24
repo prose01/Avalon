@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Avalon.Data
@@ -12,10 +13,14 @@ namespace Avalon.Data
     public class GroupRepository: IGroupRepository
     {
         private readonly Context _context = null;
+        private readonly double _maxGroupComplainPercentage;
+        private int _groupComplainsDaysBack;
 
         public GroupRepository(IOptions<Settings> settings, IConfiguration config)
         {
             _context = new Context(settings);
+            _maxGroupComplainPercentage = config.GetValue<double>("MaxGroupComplainsPercentage");
+            _groupComplainsDaysBack = config.GetValue<int>("GroupComplainsDaysBack");
         }
 
 
@@ -170,6 +175,76 @@ namespace Avalon.Data
 
                 await _context.Groups.UpdateManyAsync(filter, update.Combine(updates));
 
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        /// <summary>Add complain to groupMember for group.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <param name="groupId">The group id.</param>
+        /// <param name="profileId">The profile identifier.</param>
+        public async Task AddComplainToGroupMember(CurrentUser currentUser, string groupId, string profileId)
+        {
+            try
+            {
+                var update = Builders<GroupModel>.Update;
+                var updates = new List<UpdateDefinition<GroupModel>>();
+
+                var group = await this.GetGroupById(groupId);
+
+                foreach (var member in group.GroupMemberslist)
+                {
+                    if (member.ProfileId == profileId)
+                    {
+
+                        // Remove old complains
+                        var oldcomplains = member.Complains.Where(i => i.Value < DateTime.UtcNow.AddDays(-_groupComplainsDaysBack)).ToArray();
+
+                        if (oldcomplains.Length > 0)
+                        {
+                            foreach (var oldcomplain in oldcomplains)
+                            {
+                                member.Complains.Remove(oldcomplain.Key.ToString());
+                            }
+                        }
+
+                        // Add new or update complain
+                        if (member.Complains.ContainsKey(currentUser.ProfileId))
+                        {
+                            member.Complains[currentUser.ProfileId] = DateTime.UtcNow;
+                        }
+                        else
+                        {
+                            var complainPair = from pair in member.Complains
+                                               orderby pair.Value descending
+                                               select pair;
+
+
+                            member.Complains.Add(currentUser.ProfileId, DateTime.UtcNow);
+
+                            // Block member if too many complains
+                            if ((double)member.Complains.Count / group.GroupMemberslist.Count >= _maxGroupComplainPercentage)
+                            {
+                                member.Blocked = true;
+                            }
+                        }
+
+                        updates.Add(update.Set(g => g.GroupMemberslist, group.GroupMemberslist));
+
+                        break;
+                    }
+                }
+
+                var filter = Builders<GroupModel>
+                           .Filter.Eq(g => g.GroupId, groupId);
+
+                if (updates.Count == 0)
+                    return;
+
+                await _context.Groups.UpdateManyAsync(filter, update.Combine(updates));
             }
             catch
             {

@@ -1,4 +1,7 @@
-﻿namespace Avalon.Model
+﻿using System.Collections.Generic;
+using System;
+
+namespace Avalon.Model
 {
     public class GroupMember
     {
@@ -8,6 +11,6 @@
 
         public bool Blocked { get; set; }
 
-        public int Complains { get; set; }
+        public Dictionary<string, DateTime> Complains { internal get; set; }
     }
 }

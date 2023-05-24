@@ -12,5 +12,6 @@ namespace Avalon.Interfaces
         Task<IEnumerable<GroupModel>> GetGroupsByIds(string[] groupIds);
         Task AddCurrentUserToGroup(CurrentUser currentUser, string groupId);
         Task RemoveCurrentUserFromGroups(string profileId, string[] groupIds);
+        Task AddComplainToGroupMember(CurrentUser currentUser, string groupId, string profileId);
     }
 }
