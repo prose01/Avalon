@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using static MongoDB.Bson.Serialization.Serializers.SerializerHelper;
 
 namespace Avalon.Data
 {
@@ -22,6 +23,9 @@ namespace Avalon.Data
         private readonly long _maxVisited;
         private int _deleteProfileDaysBack;
         private int _deleteProfileLimit;
+        private int _complainsDaysBack;
+        private int _complainsWarnUser;
+        private int _complainsDeleteUser;
 
         public ProfilesQueryRepository(IOptions<Settings> settings, IConfiguration config)
         {
@@ -34,6 +38,9 @@ namespace Avalon.Data
             _maxVisited = config.GetValue<long>("MaxVisited");
             _deleteProfileDaysBack = config.GetValue<int>("DeleteProfileDaysBack");
             _deleteProfileLimit = config.GetValue<int>("DeleteProfileLimit");
+            _complainsDaysBack = config.GetValue<int>("ComplainsDaysBack");
+            _complainsWarnUser = config.GetValue<int>("ComplainsWarnUser");
+            _complainsDeleteUser = config.GetValue<int>("ComplainsDeleteUser");
         }
 
         #region Admin stuff
@@ -787,18 +794,52 @@ namespace Avalon.Data
         {
             try
             {
-                if (!profile.Complains.ContainsKey(currentUser.ProfileId))
+                // Remove old complains.
+                var oldcomplains = profile.Complains.Where(i => i.Value < DateTime.UtcNow.AddDays(-_complainsDaysBack)).ToArray();
+
+                if (oldcomplains.Length > 0)
                 {
+                    foreach (var oldcomplain in oldcomplains)
+                    {
+                        profile.Complains.Remove(oldcomplain.Key.ToString());
+                    }
+                }
+
+                // Add new or update complain
+                if (profile.Complains.ContainsKey(currentUser.ProfileId))
+                {
+                    profile.Complains[currentUser.ProfileId] = DateTime.UtcNow;
+                }
+                else
+                {
+                    var complainPair = from pair in profile.Complains
+                                       orderby pair.Value descending
+                                       select pair;
+
+
                     profile.Complains.Add(currentUser.ProfileId, DateTime.UtcNow);
 
-                    var filter = Builders<Profile>
+                    // Delete profile if too many complains
+                    if (profile.Complains.Count >= _complainsDeleteUser)
+                    {
+                        //await this.DeleteProfile(profile.ProfileId);
+                        return;
+                    }
+
+                    // Send warning to profile if too many complains
+                    if (profile.Complains.Count >= _complainsWarnUser)
+                    {
+                        //warning; // TODO: Send warning to profile if too many complains
+                    }
+                }
+
+                var filter = Builders<Profile>
                                .Filter.Eq(p => p.ProfileId, profile.ProfileId);
 
-                    var update = Builders<Profile>
-                                .Update.Set(p => p.Complains, profile.Complains);
+                var update = Builders<Profile>
+                            .Update.Set(p => p.Complains, profile.Complains);
 
-                    await _context.Profiles.FindOneAndUpdateAsync(filter, update);
-                }
+                await _context.Profiles.FindOneAndUpdateAsync(filter, update);
             }
             catch
             {

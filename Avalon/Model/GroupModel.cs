@@ -20,7 +20,7 @@ namespace Avalon.Model
 
         public AvatarModel Avatar { get; set; }
 
-        public string Countrycode { get; set; }
+        public string Countrycode { internal get; set; }
 
         public List<GroupMember> GroupMemberslist { get; set; }
     }

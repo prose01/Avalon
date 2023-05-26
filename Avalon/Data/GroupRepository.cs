@@ -51,13 +51,18 @@ namespace Avalon.Data
         {
             try
             {
-                var filter = Builders<GroupModel>
-                                .Filter.Eq(g => g.Countrycode, currentUser.Countrycode);
+                List<FilterDefinition<GroupModel>> filters = new List<FilterDefinition<GroupModel>>();
+
+                filters.Add(Builders<GroupModel>.Filter.Eq(g => g.Countrycode, currentUser.Countrycode));
+
+                filters.Add(Builders<GroupModel>.Filter.Where(g => !g.GroupMemberslist.Any(m => m.ProfileId == currentUser.ProfileId && m.Blocked)));
+
+                var combineFilters = Builders<GroupModel>.Filter.And(filters);
 
                 SortDefinition<GroupModel> sortDefinition = Builders<GroupModel>.Sort.Ascending(g => g.Name);
 
                 return await _context.Groups
-                            .Find(filter).Project<GroupModel>(this.GetProjection()).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
+                            .Find(combineFilters).Project<GroupModel>(this.GetProjection()).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
             }
             catch
             {
@@ -158,6 +163,10 @@ namespace Avalon.Data
                     {
                         if (member.ProfileId == profileId)
                         {
+                            // Do Not remove member if it has been block as this would otherwise allow them to join again.
+                            if(member.Blocked == true)
+                                break;
+
                             group.GroupMemberslist.Remove(member);
 
                             updates.Add(update.Set(g => g.GroupMemberslist, group.GroupMemberslist));
@@ -257,7 +266,7 @@ namespace Avalon.Data
             ProjectionDefinition<GroupModel> projection = "{ " +
                 "_id: 0, " +
                 "Countrycode: 0, " +
-                "GroupMemberslist:0, " +
+                "GroupMemberslist:0, " +      // TODO: See if we can get this back so not to show too much info to users and for perfomance. However, GroupsListviewComponent show GroupBlocked should still work.
                 "}";
 
             return projection;

@@ -90,6 +90,7 @@ namespace Avalon.Controllers
                 item.IsBookmarked = new Dictionary<string, DateTime>();
                 item.Visited = new Dictionary<string, DateTime>();
                 item.Likes = new List<string>();
+                item.Complains = new Dictionary<string, DateTime>();
                 item.Groups = new List<string>();
 
                 await _currentUserRepository.AddProfile(item);
@@ -153,6 +154,7 @@ namespace Avalon.Controllers
                 item.ProfileFilter = currentUser.ProfileFilter;
                 item.Images = currentUser.Images;
                 item.CreatedOn = currentUser.CreatedOn;
+                item.Complains = currentUser.Complains; // You cannot run away from your complains
 
                 // If currentUser has changed country reset all connections to other profiles.
                 if (item.Countrycode != currentUser.Countrycode)
