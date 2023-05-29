@@ -2,6 +2,7 @@
 using Avalon.Model;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
@@ -111,6 +112,35 @@ namespace Avalon.Data
                 return await _context.Groups
                     .Find(filter)
                     .ToListAsync();
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        /// <summary>Get Groups by group ids.</summary>
+        /// <param name="groupIds">The group ids.</param>
+        /// <returns>Returns list of groups.</returns>
+        public async Task<IEnumerable<GroupModel>> GetGroupsByFilter(CurrentUser currentUser, string filter, int skip, int limit)
+        {
+            try
+            {
+                var filters = Builders<GroupModel>.Filter.And(
+                    Builders<GroupModel>.Filter.Eq(g => g.Countrycode, currentUser.Countrycode),
+                    Builders<GroupModel>.Filter.Where(g => !g.GroupMemberslist.Any(m => m.ProfileId == currentUser.ProfileId && m.Blocked))
+                    ) &
+                    Builders<GroupModel>.Filter.Or(
+                    Builders<GroupModel>.Filter.Regex(g => g.Name, new BsonRegularExpression(filter, "i")),
+                    Builders<GroupModel>.Filter.Regex(g => g.Description, new BsonRegularExpression(filter, "i"))
+                    );
+
+                var combineFilters = Builders<GroupModel>.Filter.And(filters);
+
+                SortDefinition<GroupModel> sortDefinition = Builders<GroupModel>.Sort.Ascending(g => g.Name);
+
+                return await _context.Groups
+                            .Find(combineFilters).Project<GroupModel>(this.GetProjection()).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
             }
             catch
             {

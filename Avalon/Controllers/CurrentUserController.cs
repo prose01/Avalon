@@ -405,6 +405,27 @@ namespace Avalon.Controllers
             return await _groupRepository.GetGroupsByIds(currentUser?.Groups.ToArray());
         }
 
+        /// <summary>
+        /// Gets the specified groups based on a filter.
+        /// </summary>
+        /// <param name="filter"></param>
+        /// <exception cref="ArgumentException">ProfileFilter is null. {requestBody.ProfileFilter}</exception>
+        /// <exception cref="ArgumentException">Current users profileFilter cannot find any matching profiles. {requestBody.ProfileFilter}</exception>
+        /// <returns></returns>
+        [NoCache]
+        [HttpPost("~/GetGroupsByFilter")]
+        public async Task<IEnumerable<GroupModel>> GetGroupsByFilter([FromBody] string filter, [FromQuery] ParameterFilter parameterFilter)
+        {
+            if (string.IsNullOrEmpty(filter) || filter == "null")
+                return await this.GetGroups(parameterFilter);
+
+            var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            var skip = parameterFilter.PageIndex == 0 ? parameterFilter.PageIndex : parameterFilter.PageIndex * parameterFilter.PageSize;
+
+            return await _groupRepository.GetGroupsByFilter(currentUser, filter, skip, parameterFilter.PageSize) ?? throw new ArgumentException($"Current filter cannot find any matching groups.", nameof(filter));
+        }
+
         ///// <summary>Remove CurrentUser from groups.</summary>
         ///// <param name="groupIds">The group ids.</param>
         ///// <exception cref="ArgumentException">GroupIds is either null {groupIds} or length is < 1 {groupIds.Length}. {groupIds}</exception>
