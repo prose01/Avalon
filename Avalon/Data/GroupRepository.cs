@@ -109,9 +109,10 @@ namespace Avalon.Data
                 var filter = Builders<GroupModel>
                                 .Filter.In(g => g.GroupId, groupIds);
 
+                SortDefinition<GroupModel> sortDefinition = Builders<GroupModel>.Sort.Ascending(g => g.Name);
+
                 return await _context.Groups
-                    .Find(filter)
-                    .ToListAsync();
+                    .Find(filter).Sort(sortDefinition).ToListAsync();
             }
             catch
             {
@@ -136,8 +137,8 @@ namespace Avalon.Data
                     );
 
                 var combineFilters = Builders<GroupModel>.Filter.And(filters);
-
                 SortDefinition<GroupModel> sortDefinition = Builders<GroupModel>.Sort.Ascending(g => g.Name);
+
 
                 return await _context.Groups
                             .Find(combineFilters).Project<GroupModel>(this.GetProjection()).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
@@ -175,10 +176,10 @@ namespace Avalon.Data
             }
         }
 
-        /// <summary>Remove CurrentUser from groups.</summary>
+        /// <summary>Remove User from groups.</summary>
         /// <param name="profileId">The profile identifier.</param>
         /// <param name="groupIds">The group ids.</param>
-        public async Task RemoveCurrentUserFromGroups(string profileId, string[] groupIds)
+        public async Task RemoveUserFromGroups(string profileId, string[] groupIds)
         {
             try
             {

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -398,11 +399,17 @@ namespace Avalon.Controllers
         /// <returns>Returns list of groups.</returns>
         [NoCache]
         [HttpGet("~/GetCurrenUsersGroups")]
-        public async Task<IEnumerable<GroupModel>> GetCurrenUsersGroups()
+        public async Task<IEnumerable<GroupModel>> GetCurrenUsersGroups([FromQuery] ParameterFilter parameterFilter)
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            return await _groupRepository.GetGroupsByIds(currentUser?.Groups.ToArray());
+            var skip = parameterFilter.PageIndex == 0 ? parameterFilter.PageIndex : parameterFilter.PageIndex * parameterFilter.PageSize;
+
+            var limit = parameterFilter.PageSize > currentUser?.Groups.Count ? currentUser.Groups.Count : parameterFilter.PageSize;
+
+            var groups = currentUser.Groups.Skip(skip).Take(limit);
+
+            return await _groupRepository.GetGroupsByIds(groups.ToArray());
         }
 
         /// <summary>
@@ -587,7 +594,7 @@ namespace Avalon.Controllers
                 }
 
                 await _currentUserRepository.RemoveGroupsFromCurrentUser(currentUser, groupIds);
-                await _groupRepository.RemoveCurrentUserFromGroups(currentUser.ProfileId, groupIds);
+                await _groupRepository.RemoveUserFromGroups(currentUser.ProfileId, groupIds);
 
                 return NoContent();
             }
