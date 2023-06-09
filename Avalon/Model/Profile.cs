@@ -23,6 +23,7 @@ namespace Avalon.Model
         public Dictionary<string, DateTime> IsBookmarked { internal get; set; }
         public List<string> Likes { get; set; }
         public Dictionary<string, DateTime> Complains { internal get; set; }
+        public List<string> Groups { internal get; set; }
         #endregion
 
         internal override ObjectId _id { get; set; }
@@ -30,6 +31,7 @@ namespace Avalon.Model
         public override string ProfileId { get; set; }
         public override bool Admin { get; set; } = false;
         public override string Name { get; set; }
+        public override AvatarModel Avatar { get; set; }
         public override DateTime CreatedOn { get; set; }
         public override DateTime UpdatedOn { get; set; }
         public override DateTime LastActive { get; set; }

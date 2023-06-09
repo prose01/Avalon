@@ -4,8 +4,10 @@ using Avalon.Model;
 using Microsoft.AspNetCore.Authorization;
 //using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -19,12 +21,14 @@ namespace Avalon.Controllers
     {
         private readonly ICurrentUserRepository _currentUserRepository;
         private readonly IProfilesQueryRepository _profilesQueryRepository;
+        private readonly IGroupRepository _groupRepository;
         private readonly IHelperMethods _helper;
 
-        public CurrentUserController(ICurrentUserRepository currentUserRepository, IProfilesQueryRepository profilesQueryRepository, IHelperMethods helperMethods)
+        public CurrentUserController(ICurrentUserRepository currentUserRepository, IProfilesQueryRepository profilesQueryRepository, IGroupRepository groupRepository, IHelperMethods helperMethods)
         {
             _currentUserRepository = currentUserRepository;
             _profilesQueryRepository = profilesQueryRepository;
+            _groupRepository = groupRepository;
             _helper = helperMethods;
         }
 
@@ -87,6 +91,8 @@ namespace Avalon.Controllers
                 item.IsBookmarked = new Dictionary<string, DateTime>();
                 item.Visited = new Dictionary<string, DateTime>();
                 item.Likes = new List<string>();
+                item.Complains = new Dictionary<string, DateTime>();
+                item.Groups = new List<string>();
 
                 await _currentUserRepository.AddProfile(item);
 
@@ -149,6 +155,7 @@ namespace Avalon.Controllers
                 item.ProfileFilter = currentUser.ProfileFilter;
                 item.Images = currentUser.Images;
                 item.CreatedOn = currentUser.CreatedOn;
+                item.Complains = currentUser.Complains; // You cannot run away from your complains
 
                 // If currentUser has changed country reset all connections to other profiles.
                 if (item.Countrycode != currentUser.Countrycode)
@@ -158,6 +165,7 @@ namespace Avalon.Controllers
                     item.IsBookmarked = new Dictionary<string, DateTime>();
                     item.Visited = new Dictionary<string, DateTime>();
                     item.Likes = new List<string>();
+                    item.Groups = new List<string>();
                 }
                 else
                 {
@@ -166,6 +174,7 @@ namespace Avalon.Controllers
                     item.IsBookmarked = currentUser.IsBookmarked;
                     item.Visited = currentUser.Visited;
                     item.Likes = currentUser.Likes;
+                    item.Groups = currentUser.Groups;
                 }
 
                 await _currentUserRepository.UpdateProfile(item);
@@ -302,7 +311,6 @@ namespace Avalon.Controllers
             }
         }
 
-
         /// <summary>Removes the profiles from currentUser bookmarks and ChatMemberslist.</summary>
         /// <param name="profileIds">The profile ids.</param>
         /// <exception cref="ArgumentException">ProfileIds is either null {profileIds} or length is < 1 {profileIds.Length}. {profileIds}</exception>
@@ -371,6 +379,267 @@ namespace Avalon.Controllers
                 return Problem(ex.ToString());
             }
         }
+
+        #region Groups
+
+        /// <summary>Get all groups with same countrycode as currentUser.</summary>
+        /// <returns>Returns list of groups.</returns>
+        [NoCache]
+        [HttpGet("~/GetGroups")]
+        public async Task<IEnumerable<GroupModel>> GetGroups([FromQuery] ParameterFilter parameterFilter)
+        {
+            var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            var skip = parameterFilter.PageIndex == 0 ? parameterFilter.PageIndex : parameterFilter.PageIndex * parameterFilter.PageSize;
+
+            return await _groupRepository.GetGroups(currentUser, skip, parameterFilter.PageSize);
+        }
+
+        /// <summary>Get Groups that CurrentUser is member of.</summary>
+        /// <returns>Returns list of groups.</returns>
+        [NoCache]
+        [HttpGet("~/GetCurrenUsersGroups")]
+        public async Task<IEnumerable<GroupModel>> GetCurrenUsersGroups([FromQuery] ParameterFilter parameterFilter)
+        {
+            var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            var skip = parameterFilter.PageIndex == 0 ? parameterFilter.PageIndex : parameterFilter.PageIndex * parameterFilter.PageSize;
+
+            var limit = parameterFilter.PageSize > currentUser?.Groups.Count ? currentUser.Groups.Count : parameterFilter.PageSize;
+
+            var groups = currentUser.Groups.Skip(skip).Take(limit);
+
+            return await _groupRepository.GetGroupsByIds(groups.ToArray());
+        }
+
+        /// <summary>
+        /// Gets the specified groups based on a filter.
+        /// </summary>
+        /// <param name="filter"></param>
+        /// <exception cref="ArgumentException">ProfileFilter is null. {requestBody.ProfileFilter}</exception>
+        /// <exception cref="ArgumentException">Current users profileFilter cannot find any matching profiles. {requestBody.ProfileFilter}</exception>
+        /// <returns></returns>
+        [NoCache]
+        [HttpPost("~/GetGroupsByFilter")]
+        public async Task<IEnumerable<GroupModel>> GetGroupsByFilter([FromBody] string filter, [FromQuery] ParameterFilter parameterFilter)
+        {
+            if (string.IsNullOrEmpty(filter) || filter == "null")
+                return await this.GetGroups(parameterFilter);
+
+            var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            var skip = parameterFilter.PageIndex == 0 ? parameterFilter.PageIndex : parameterFilter.PageIndex * parameterFilter.PageSize;
+
+            return await _groupRepository.GetGroupsByFilter(currentUser, filter, skip, parameterFilter.PageSize) ?? throw new ArgumentException($"Current filter cannot find any matching groups.", nameof(filter));
+        }
+
+        ///// <summary>Remove CurrentUser from groups.</summary>
+        ///// <param name="groupIds">The group ids.</param>
+        ///// <exception cref="ArgumentException">GroupIds is either null {groupIds} or length is < 1 {groupIds.Length}. {groupIds}</exception>
+        ///// <returns></returns>
+        //[NoCache]
+        //[HttpPost("~/RemoveCurrentUserFromGroups")]
+        //[ProducesResponseType((int)HttpStatusCode.NoContent)]
+        //[ProducesResponseType((int)HttpStatusCode.NotFound)]
+        //public async Task<IActionResult> RemoveCurrentUserFromGroups(string[] groupIds)
+        //{
+        //    try
+        //    {
+        //        if (groupIds == null || groupIds.Length < 1) throw new ArgumentException($"GroupIds is either null {groupIds} or length is < 1 {groupIds.Length}.", nameof(groupIds));
+
+        //        var currentUser = await _helper.GetCurrentUserProfile(User);
+
+        //        if (currentUser == null || currentUser.Name == null)
+        //        {
+        //            return NotFound();
+        //        }
+
+        //        await _groupRepository.RemoveCurrentUserFromGroups(currentUser.ProfileId, groupIds);
+
+        //        return NoContent();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return Problem(ex.ToString());
+        //    }
+        //}
+
+        ///// <summary>Remove groups from CurrentUser.</summary>
+        ///// <param name="groupIds">The group ids.</param>
+        ///// <exception cref="ArgumentException">GroupIds is either null {groupIds} or length is < 1 {groupIds.Length}. {groupIds}</exception>
+        ///// <returns></returns>
+        //[NoCache]
+        //[HttpPost("~/RemoveGroupsFromCurrentUser")]
+        //[ProducesResponseType((int)HttpStatusCode.NoContent)]
+        //[ProducesResponseType((int)HttpStatusCode.NotFound)]
+        //public async Task<IActionResult> RemoveGroupsFromCurrentUser(string[] groupIds)
+        //{
+        //    if (groupIds == null || groupIds.Length < 1) throw new ArgumentException($"GroupIds is either null {groupIds} or length is < 1 {groupIds.Length}.", nameof(groupIds));
+
+        //    try
+        //    {
+        //        var currentUser = await _helper.GetCurrentUserProfile(User);
+
+        //        if (currentUser == null || currentUser.Name == null)
+        //        {
+        //            return NotFound();
+        //        }
+
+        //        await _currentUserRepository.RemoveGroupsFromCurrentUser(currentUser, groupIds);
+
+        //        return NoContent();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return Problem(ex.ToString());
+        //    }
+        //}
+
+        /// <summary>Create chat group.</summary>
+        /// <param name="group">The group.</param>
+        /// <exception cref="ArgumentException">Group name is either null or empty. {group}</exception>
+        /// <returns></returns>
+        [NoCache]
+        [HttpPost("~/CreateGroup")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> CreateGroup([FromBody] GroupModel group)
+        {
+            if (group.Name.IsNullOrEmpty()) throw new ArgumentException($"Group name is either null or empty.", nameof(group));
+
+            try
+            {
+                var currentUser = await _helper.GetCurrentUserProfile(User);
+
+                if (currentUser == null || currentUser.Name == null)
+                {
+                    return NotFound();
+                }
+
+                group.GroupId = Guid.NewGuid().ToString();
+                group.Countrycode = currentUser.Countrycode;
+                group.GroupMemberslist = new List<GroupMember>
+                {
+                    new GroupMember()
+                    {
+                        ProfileId = currentUser.ProfileId,
+                        Name = currentUser.Name,
+                        Blocked = false,
+                        Complains = new Dictionary<string, DateTime>()
+                    }
+                };
+
+                await _currentUserRepository.AddGroupToCurrentUser(currentUser, group.GroupId);
+                await _groupRepository.CreateGroup(group);
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.ToString());
+            }
+        }
+
+        /// <summary>Join chat group.</summary>
+        /// <param name="groupId">The group id.</param>
+        /// <exception cref="ArgumentException">GroupId is either null or empty. {groupId}</exception>
+        /// <returns></returns>
+        [NoCache]
+        [HttpPost("~/JoinGroup")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> JoinGroup([FromBody] string groupId)
+        {
+            if (groupId.IsNullOrEmpty()) throw new ArgumentException($"GroupId is either null or empty.", nameof(groupId));
+
+            try
+            {
+                var currentUser = await _helper.GetCurrentUserProfile(User);
+
+                if (currentUser == null || currentUser.Name == null)
+                {
+                    return NotFound();
+                }
+
+                await _currentUserRepository.AddGroupToCurrentUser(currentUser, groupId);
+                await _groupRepository.AddCurrentUserToGroup(currentUser, groupId);
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.ToString());
+            }
+        }
+
+        /// <summary>Remove groups from CurrentUser and CurrentUser from groups.</summary>
+        /// <param name="groupIds">The group ids.</param>
+        /// <exception cref="ArgumentException">GroupIds is either null {groupIds} or length is < 1 {groupIds.Length}. {groupIds}</exception>
+        /// <returns></returns>
+        [NoCache]
+        [HttpPost("~/RemoveGroupsFromCurrentUserAndCurrentUserFromGroups")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> RemoveGroupsFromCurrentUserAndCurrentUserFromGroups(string[] groupIds)
+        {
+            if (groupIds == null || groupIds.Length < 1) throw new ArgumentException($"GroupIds is either null {groupIds} or length is < 1 {groupIds.Length}.", nameof(groupIds));
+
+            try
+            {
+                var currentUser = await _helper.GetCurrentUserProfile(User);
+
+                if (currentUser == null || currentUser.Name == null)
+                {
+                    return NotFound();
+                }
+
+                await _currentUserRepository.RemoveGroupsFromCurrentUser(currentUser, groupIds);
+                await _groupRepository.RemoveUserFromGroups(currentUser.ProfileId, groupIds);
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.ToString());
+            }
+        }
+
+        /// <summary>Add complain to groupMember for group.</summary>
+        /// <param name="groupId">The group id.</param>
+        /// <param name="profileId">The profile identifier.</param>
+        /// <exception cref="ArgumentException">GroupId is either null or empty. {groupId}</exception>
+        /// <exception cref="ArgumentException">ProfileId is either null or empty. {profileId}</exception>
+        /// <returns></returns>
+        [NoCache]
+        [HttpPost("~/AddComplainToGroupMember/{groupId}")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> AddComplainToGroupMember([FromRoute] string groupId, [FromBody] string profileId)
+        {
+            if (groupId.IsNullOrEmpty()) throw new ArgumentException($"GroupId is either null or empty.", nameof(groupId));
+            if (profileId.IsNullOrEmpty()) throw new ArgumentException($"ProfileId is either null or empty.", nameof(profileId));
+
+            try
+            {
+                var currentUser = await _helper.GetCurrentUserProfile(User);
+
+                if (currentUser == null || currentUser.Name == null)
+                {
+                    return NotFound();
+                }
+
+                await _groupRepository.AddComplainToGroupMember(currentUser, groupId, profileId);
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.ToString());
+            }
+        }
+
+        #endregion
+
 
         /// <summary>
         /// Clean CurrentUser for obsolete profile info.

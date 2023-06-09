@@ -12,7 +12,8 @@ namespace Avalon.Interfaces
         Task<DeleteResult> DeleteProfile(string profileId);
         //Task<DeleteResult> DeleteProfiles(string[] profileIds);
         Task<Profile> GetProfileById(string profileId);
-        Task<IEnumerable<Profile>> GetProfilIdsByIds(string[] profileIds);
+        Task<IEnumerable<Profile>> GetProfilesByIds(string[] profileIds);
+        Task<IEnumerable<Profile>> GetProfilesByIds(CurrentUser currentUser, string[] profileIds, int skip, int limit);
         //Task<IEnumerable<Profile>> GetChatMemberProfiles(CurrentUser currentUser, int skip, int limit);
         Task<Profile> GetProfileByAuth0Id(string auth0Id);
         //Task<Profile> GetProfileByNameStrict(string profileName);

@@ -22,6 +22,9 @@ namespace Avalon.Data
         private readonly long _maxVisited;
         private int _deleteProfileDaysBack;
         private int _deleteProfileLimit;
+        private int _complainsDaysBack;
+        private int _complainsWarnUser;
+        private int _complainsDeleteUser;
 
         public ProfilesQueryRepository(IOptions<Settings> settings, IConfiguration config)
         {
@@ -34,6 +37,9 @@ namespace Avalon.Data
             _maxVisited = config.GetValue<long>("MaxVisited");
             _deleteProfileDaysBack = config.GetValue<int>("DeleteProfileDaysBack");
             _deleteProfileLimit = config.GetValue<int>("DeleteProfileLimit");
+            _complainsDaysBack = config.GetValue<int>("ComplainsDaysBack");
+            _complainsWarnUser = config.GetValue<int>("ComplainsWarnUser");
+            _complainsDeleteUser = config.GetValue<int>("ComplainsDeleteUser");
         }
 
         #region Admin stuff
@@ -50,7 +56,7 @@ namespace Avalon.Data
 
                 var update = Builders<Profile>
                                 .Update.Set(p => p.Admin, true)
-                                .Set(p => p.UpdatedOn, DateTime.Now);
+                                .Set(p => p.UpdatedOn, DateTime.UtcNow);
 
                 var options = new FindOneAndUpdateOptions<Profile>
                 {
@@ -77,7 +83,7 @@ namespace Avalon.Data
 
                 var update = Builders<Profile>
                                 .Update.Set(p => p.Admin, false)
-                                .Set(p => p.UpdatedOn, DateTime.Now);
+                                .Set(p => p.UpdatedOn, DateTime.UtcNow);
 
                 var options = new FindOneAndUpdateOptions<Profile>
                 {
@@ -150,9 +156,9 @@ namespace Avalon.Data
         }
 
         /// <summary>Gets profiles by identifiers.</summary>
-        /// <param name="profileId">The profile identifiers.</param>
+        /// <param name="profileId">The profile identifiers.</param>        // TODO: This can be moved to another application when CleanCurrentUser is moved!!!
         /// <returns></returns>
-        public async Task<IEnumerable<Profile>> GetProfilIdsByIds(string[] profileIds)
+        public async Task<IEnumerable<Profile>> GetProfilesByIds(string[] profileIds)
         {
             try
             {
@@ -163,6 +169,43 @@ namespace Avalon.Data
                     .Find(filter)
                     .Project<Profile>(GetProfileId())
                     .ToListAsync();
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        /// <summary>Gets profiles by identifiers.</summary>
+        /// <param name="profileId">The profile identifiers.</param>
+        /// <param name="skip">The skip.</param>
+        /// <param name="limit">The limit.</param>
+        /// <returns></returns>
+        public async Task<IEnumerable<Profile>> GetProfilesByIds(CurrentUser currentUser, string[] profileIds, int skip, int limit)
+        {
+            try
+            {
+                List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>();
+
+                //Remove currentUser from the list.
+                filters.Add(Builders<Profile>.Filter.Ne(p => p.ProfileId, currentUser.ProfileId));
+
+                //Remove admins from the list.
+                filters.Add(Builders<Profile>.Filter.Ne(p => p.Admin, true));
+
+                filters.Add(Builders<Profile>.Filter.Eq(p => p.Countrycode, currentUser.Countrycode));
+
+                filters.Add(Builders<Profile>.Filter.In(p => p.ProfileId, profileIds));
+
+                var combineFilters = Builders<Profile>.Filter.And(filters);
+
+                //var filter = Builders<Profile>
+                //                .Filter.In(p => p.ProfileId, profileIds);
+
+                SortDefinition<Profile> sortDefinition = Builders<Profile>.Sort.Descending(p => p.Name);
+
+                return await _context.Profiles
+                            .Find(combineFilters).Project<Profile>(this.GetProjection()).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
             }
             catch
             {
@@ -577,7 +620,7 @@ namespace Avalon.Data
                         profile.IsBookmarked.Remove(isBookmarkedPair.Last().Key);
                     }
 
-                    profile.IsBookmarked.Add(currentUser.ProfileId, DateTime.Now);
+                    profile.IsBookmarked.Add(currentUser.ProfileId, DateTime.UtcNow);
 
                     updates.Add(update.Set(p => p.IsBookmarked, profile.IsBookmarked));
                 }
@@ -620,6 +663,9 @@ namespace Avalon.Data
                 var filter = Builders<Profile>
                                 .Filter.In(p => p.ProfileId, profileIds);
 
+                if (updates.Count == 0)
+                    return;
+
                 await _context.Profiles.UpdateManyAsync(filter, update.Combine(updates));
             }
             catch
@@ -637,7 +683,7 @@ namespace Avalon.Data
             {
                 if (profile.Visited.ContainsKey(currentUser.ProfileId))
                 {
-                    profile.Visited[currentUser.ProfileId] = DateTime.Now;
+                    profile.Visited[currentUser.ProfileId] = DateTime.UtcNow;
                 }
                 else
                 {
@@ -650,7 +696,7 @@ namespace Avalon.Data
                         profile.Visited.Remove(visitedPair.Last().Key);
                     }
 
-                    profile.Visited.Add(currentUser.ProfileId, DateTime.Now);
+                    profile.Visited.Add(currentUser.ProfileId, DateTime.UtcNow);
                 }
 
                 var filter = Builders<Profile>
@@ -747,18 +793,52 @@ namespace Avalon.Data
         {
             try
             {
-                if (!profile.Complains.ContainsKey(currentUser.ProfileId))
-                {
-                    profile.Complains.Add(currentUser.ProfileId, DateTime.Now);
+                // Remove old complains.
+                var oldcomplains = profile.Complains.Where(i => i.Value < DateTime.UtcNow.AddDays(-_complainsDaysBack)).ToArray();
 
-                    var filter = Builders<Profile>
+                if (oldcomplains.Length > 0)
+                {
+                    foreach (var oldcomplain in oldcomplains)
+                    {
+                        profile.Complains.Remove(oldcomplain.Key.ToString());
+                    }
+                }
+
+                // Add new or update complain
+                if (profile.Complains.ContainsKey(currentUser.ProfileId))
+                {
+                    profile.Complains[currentUser.ProfileId] = DateTime.UtcNow;
+                }
+                else
+                {
+                    var complainPair = from pair in profile.Complains
+                                       orderby pair.Value descending
+                                       select pair;
+
+
+                    profile.Complains.Add(currentUser.ProfileId, DateTime.UtcNow);
+
+                    // Delete profile if too many complains
+                    if (profile.Complains.Count >= _complainsDeleteUser)
+                    {
+                        //await this.DeleteProfile(profile.ProfileId);
+                        return;
+                    }
+
+                    // Send warning to profile if too many complains
+                    if (profile.Complains.Count >= _complainsWarnUser)
+                    {
+                        //warning; // TODO: Send warning to profile if too many complains
+                    }
+                }
+
+                var filter = Builders<Profile>
                                .Filter.Eq(p => p.ProfileId, profile.ProfileId);
 
-                    var update = Builders<Profile>
-                                .Update.Set(p => p.Complains, profile.Complains);
+                var update = Builders<Profile>
+                            .Update.Set(p => p.Complains, profile.Complains);
 
-                    await _context.Profiles.FindOneAndUpdateAsync(filter, update);
-                }
+                await _context.Profiles.FindOneAndUpdateAsync(filter, update);
             }
             catch
             {
@@ -779,6 +859,7 @@ namespace Avalon.Data
                 "ProfileFilter: 0, " +
                 "IsBookmarked: 0, " +
                 "Languagecode: 0, " +
+                "Groups: 0, " +
                 "}";
 
             return projection;
@@ -822,6 +903,7 @@ namespace Avalon.Data
                 "Languagecode: 0, " +
                 "Visited: 0, " +
                 "Likes: 0, " +
+                "Groups: 0, " +
                 "}";
 
             return projection;
@@ -840,7 +922,7 @@ namespace Avalon.Data
                 _deleteProfileDaysBack = daysBack > 0 ? daysBack : _deleteProfileDaysBack;
                 _deleteProfileLimit = limit > 0 ? limit : _deleteProfileLimit;
 
-                return await _context.Profiles.Find(p => p.LastActive < DateTime.Now.AddDays(-_deleteProfileDaysBack) && !p.Admin).Project<Profile>(this.GetProjection()).Limit(_deleteProfileLimit).ToListAsync();
+                return await _context.Profiles.Find(p => p.LastActive < DateTime.UtcNow.AddDays(-_deleteProfileDaysBack) && !p.Admin).Project<Profile>(this.GetProjection()).Limit(_deleteProfileLimit).ToListAsync();
             }
             catch
             {

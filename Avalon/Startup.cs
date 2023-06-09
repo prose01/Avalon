@@ -73,6 +73,7 @@ namespace Avalon
             // Add our repository type(s)
             services.AddSingleton<ICurrentUserRepository, CurrentUserRepository>();
             services.AddSingleton<IProfilesQueryRepository, ProfilesQueryRepository>();
+            services.AddSingleton<IGroupRepository, GroupRepository>();
             services.AddSingleton<IFeedbackRepository, FeedbackRepository>();
 
             // Add our helper method(s)
@@ -151,12 +152,21 @@ namespace Avalon
             // Enable routing
             app.UseRouting();
 
-            if (env.IsDevelopment())
+            if (env.IsDevelopment() || env.IsStaging())
             {
                 //app.UseStatusCodePages();     https://stackoverflow.com/questions/51719195/asp-net-core-useexceptionhandler-not-working-post-request
                 //app.UseDatabaseErrorPage();   https://docs.microsoft.com/en-us/aspnet/core/fundamentals/error-handling?view=aspnetcore-3.1
                 app.UseDeveloperExceptionPage();
                 //app.UseExceptionHandler("/error-local-development");
+
+                // Enable middleware to serve generated Swagger as a JSON endpoint.
+                app.UseSwagger();
+
+                // Enable middleware to serve swagger-ui (HTML, JS, CSS etc.), specifying the Swagger JSON endpoint.
+                app.UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Avalon V1");
+                });
             }
             //else
             //{
@@ -179,15 +189,6 @@ namespace Avalon
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-            });
-
-            // Enable middleware to serve generated Swagger as a JSON endpoint.
-            app.UseSwagger();
-
-            // Enable middleware to serve swagger-ui (HTML, JS, CSS etc.), specifying the Swagger JSON endpoint.
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Avalon V1");
             });
         }
     }

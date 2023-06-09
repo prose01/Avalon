@@ -104,7 +104,7 @@ namespace Avalon.Data
 
                 updates.Add(Builders<Feedback>.Update.Set(f => f.AdminName, currentUser.Name));
 
-                updates.Add(Builders<Feedback>.Update.Set(f => f.DateSeen, DateTime.Now));
+                updates.Add(Builders<Feedback>.Update.Set(f => f.DateSeen, DateTime.UtcNow));
 
                 var combineUpdates = Builders<Feedback>.Update.Combine(updates);
 
@@ -227,7 +227,7 @@ namespace Avalon.Data
             {
                 List<FilterDefinition<Feedback>> filters = new List<FilterDefinition<Feedback>>();
 
-                filters.Add(Builders<Feedback>.Filter.Gt(f => f.DateSeen, DateTime.Now.AddYears(-_deleteFeedbacksOlderThanYear)));
+                filters.Add(Builders<Feedback>.Filter.Gt(f => f.DateSeen, DateTime.UtcNow.AddYears(-_deleteFeedbacksOlderThanYear)));
 
                 filters.Add(Builders<Feedback>.Filter.Eq(f => f.Open, false));
 

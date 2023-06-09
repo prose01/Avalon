@@ -34,9 +34,9 @@ namespace Avalon.Data
             try
             {
                 currentUser.ProfileId = Guid.NewGuid().ToString();
-                currentUser.CreatedOn = DateTime.Now;
-                currentUser.UpdatedOn = DateTime.Now;
-                currentUser.LastActive = DateTime.Now;
+                currentUser.CreatedOn = DateTime.UtcNow;
+                currentUser.UpdatedOn = DateTime.UtcNow;
+                currentUser.LastActive = DateTime.UtcNow;
 
                 await _context.CurrentUser.InsertOneAsync(currentUser);
             }
@@ -68,7 +68,7 @@ namespace Avalon.Data
         {
             try
             {
-                currentUser.UpdatedOn = DateTime.Now;
+                currentUser.UpdatedOn = DateTime.UtcNow;
 
                 var filter = Builders<CurrentUser>
                                 .Filter.Eq(c => c.ProfileId, currentUser.ProfileId);
@@ -91,7 +91,7 @@ namespace Avalon.Data
                 var filter = Builders<CurrentUser>.Filter.Eq("Auth0Id", auth0Id);
 
                 var update = Builders<CurrentUser>
-                                .Update.Set(c => c.LastActive, DateTime.Now);
+                                .Update.Set(c => c.LastActive, DateTime.UtcNow);
 
                 var options = new FindOneAndUpdateOptions<CurrentUser>
                 {
@@ -183,7 +183,7 @@ namespace Avalon.Data
         {
             try
             {
-                //Filter out allready bookmarked profiles.
+                //Filter out allready removed bookmarked profiles.
                 var removeBookmarks = profileIds.Where(i => currentUser.Bookmarks.Contains(i)).ToList();
 
                 if (removeBookmarks.Count == 0)
@@ -276,6 +276,60 @@ namespace Avalon.Data
             }
         }
 
+        /// <summary>Add group to CurrentUser.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <param name="groupId">The group id.</param>
+        public async Task AddGroupToCurrentUser(CurrentUser currentUser, string groupId)
+        {
+            try
+            {
+                //Check if currentUser has allready joined group.
+                if(currentUser.Groups.Contains(groupId))
+                {
+                    return;
+                }
+
+                var filter = Builders<CurrentUser>
+                                .Filter.Eq(c => c.ProfileId, currentUser.ProfileId);
+
+                var update = Builders<CurrentUser>
+                                .Update.Push(c => c.Groups, groupId);
+
+                await _context.CurrentUser.FindOneAndUpdateAsync(filter, update);
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        /// <summary>Remove groups from CurrentUser.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <param name="groupIds">The group ids.</param>
+        public async Task RemoveGroupsFromCurrentUser(CurrentUser currentUser, string[] groupIds)
+        {
+            try
+            {
+                //Filter out allready removed groups.
+                var removeGroups = groupIds.Where(i => currentUser.Groups.Contains(i)).ToList();
+
+                if (removeGroups.Count == 0)
+                    return;
+
+                var filter = Builders<CurrentUser>
+                                .Filter.Eq(c => c.ProfileId, currentUser.ProfileId);
+
+                var update = Builders<CurrentUser>
+                                .Update.PullAll(c => c.Groups, removeGroups);
+
+                await _context.CurrentUser.FindOneAndUpdateAsync(filter, update);
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
         /// <summary>Blocks or unblocks chatmember profiles.</summary>
         /// <param name="currentUser">The current user.</param>
         /// <param name="profileIds">The profile identifiers.</param>
@@ -337,7 +391,7 @@ namespace Avalon.Data
 
 
                 // Chech if our profiles exist
-                IEnumerable<Profile> exitingprofiles = await this._profilesQueryRepository.GetProfilIdsByIds(checkThesesProfiles);
+                IEnumerable<Profile> exitingprofiles = await this._profilesQueryRepository.GetProfilesByIds(checkThesesProfiles);
 
                 //List<string> newCountrycode = new List<string>();
                 List<string> exitingIds = new List<string>();
@@ -413,7 +467,7 @@ namespace Avalon.Data
             try
             {
                 // Remove old complains.
-                var oldcomplains = currentUser.Complains.Where(i => i.Value < DateTime.Now.AddDays(-_complainsDaysBack)).ToArray();
+                var oldcomplains = currentUser.Complains.Where(i => i.Value < DateTime.UtcNow.AddDays(-_complainsDaysBack)).ToArray();
 
                 if (oldcomplains.Length > 0)
                 {
