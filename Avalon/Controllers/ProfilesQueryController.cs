@@ -376,23 +376,8 @@ namespace Avalon.Controllers
             }
         }
 
-        ///// <summary>Gets the currentUser's chatMember profiles.</summary>
-        ///// <param name="parameterFilter"></param>
-        ///// <exception cref="ArgumentException">There are no ChatMembers for current user.</exception>
-        ///// <returns></returns>
-        //[NoCache]
-        //[HttpGet("~/GetChatMemberProfiles")]
-        //public async Task<IEnumerable<Profile>> GetChatMemberProfiles([FromQuery] ParameterFilter parameterFilter)
-        //{
-        //    var currentUser = await _helper.GetCurrentUserProfile(User);
-
-        //    var skip = parameterFilter.PageIndex == 0 ? parameterFilter.PageIndex : parameterFilter.PageIndex * parameterFilter.PageSize;
-
-        //    return await _profilesQueryRepository.GetChatMemberProfiles(currentUser, skip, parameterFilter.PageSize) ?? throw new ArgumentException($"There are no ChatMembers for current user.");
-        //}
-
         /// <summary>
-        /// Gets the specified profile based on a filter. Eg. { Body: 'something' }
+        /// Gets the specified profile(s) based on a filter. Eg. { Body: 'something' }
         /// </summary>
         /// <param name="parameterFilter"></param>
         /// <exception cref="ArgumentException">ProfileFilter is null. {requestBody.ProfileFilter}</exception>
@@ -400,7 +385,7 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpPost("~/GetProfileByFilter")]
-        public async Task<IEnumerable<Profile>> GetProfileByFilter([FromBody] RequestBody requestBody, [FromQuery] ParameterFilter parameterFilter)
+        public async Task<IActionResult> GetProfileByFilter([FromBody] RequestBody requestBody, [FromQuery] ParameterFilter parameterFilter)
         {
             if (requestBody.ProfileFilter == null) throw new ArgumentException($"ProfileFilter is null.", nameof(requestBody.ProfileFilter));
 
@@ -408,7 +393,9 @@ namespace Avalon.Controllers
 
             var skip = parameterFilter.PageIndex == 0 ? parameterFilter.PageIndex : parameterFilter.PageIndex * parameterFilter.PageSize;
 
-            return await _profilesQueryRepository.GetProfileByFilter(currentUser, requestBody.ProfileFilter, parameterFilter.OrderByType, skip, parameterFilter.PageSize) ?? throw new ArgumentException($"Current users profileFilter cannot find any matching profiles.", nameof(requestBody.ProfileFilter));
+            var tuple = await _profilesQueryRepository.GetProfileByFilter(currentUser, requestBody.ProfileFilter, parameterFilter.OrderByType, skip, parameterFilter.PageSize);
+
+            return Json(new { tuple.totalPages, tuple.profiles }); 
         }
 
         /// <summary>Gets the specified profiles based on the CurrentUser's filter.</summary>
@@ -417,7 +404,7 @@ namespace Avalon.Controllers
         [NoCache]
         [HttpGet("~/GetProfileByCurrentUsersFilter/")]
         /// <exception cref="ArgumentException">Current users profileFilter is null. {parameterFilter}</exception>
-        public async Task<IEnumerable<Profile>> GetProfileByCurrentUsersFilter([FromQuery] ParameterFilter parameterFilter)
+        public async Task<IActionResult> GetProfileByCurrentUsersFilter([FromQuery] ParameterFilter parameterFilter)
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
@@ -425,7 +412,9 @@ namespace Avalon.Controllers
 
             var skip = parameterFilter.PageIndex == 0 ? parameterFilter.PageIndex : parameterFilter.PageIndex * parameterFilter.PageSize;
 
-            return await _profilesQueryRepository.GetProfileByFilter(currentUser, currentUser.ProfileFilter, parameterFilter.OrderByType, skip, parameterFilter.PageSize);
+            var tuple = await _profilesQueryRepository.GetProfileByFilter(currentUser, currentUser.ProfileFilter, parameterFilter.OrderByType, skip, parameterFilter.PageSize);
+
+            return Json(new { tuple.totalPages, tuple.profiles });
         }
 
         /// <summary>
@@ -435,13 +424,15 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpGet("~/GetLatestProfiles/")]
-        public async Task<IEnumerable<Profile>> GetLatestProfiles([FromQuery] ParameterFilter parameterFilter)
+        public async Task<IActionResult> GetLatestProfiles([FromQuery] ParameterFilter parameterFilter)
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
             var skip = parameterFilter.PageIndex == 0 ? parameterFilter.PageIndex : parameterFilter.PageIndex * parameterFilter.PageSize;
 
-            return await _profilesQueryRepository.GetLatestProfiles(currentUser, parameterFilter.OrderByType, skip, parameterFilter.PageSize);
+            var tuple = await _profilesQueryRepository.GetLatestProfiles(currentUser, parameterFilter.OrderByType, skip, parameterFilter.PageSize);
+
+            return Json(new { tuple.totalPages, tuple.profiles });
         }
 
         /// <summary>
@@ -467,13 +458,15 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpGet("~/GetProfilesWhoVisitedMe/")]
-        public async Task<IEnumerable<Profile>> GetProfilesWhoVisitedMe([FromQuery] ParameterFilter parameterFilter)
+        public async Task<IActionResult> GetProfilesWhoVisitedMe([FromQuery] ParameterFilter parameterFilter)
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
             var skip = parameterFilter.PageIndex == 0 ? parameterFilter.PageIndex : parameterFilter.PageIndex * parameterFilter.PageSize;
 
-            return await _profilesQueryRepository.GetProfilesWhoVisitedMe(currentUser, parameterFilter.OrderByType, skip, parameterFilter.PageSize);
+            var tuple = await _profilesQueryRepository.GetProfilesWhoVisitedMe(currentUser, parameterFilter.OrderByType, skip, parameterFilter.PageSize);
+
+            return Json(new { tuple.totalPages, tuple.profiles });
         }
 
         /// <summary>
@@ -483,13 +476,15 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpGet("~/GetProfilesWhoBookmarkedMe/")]
-        public async Task<IEnumerable<Profile>> GetProfilesWhoBookmarkedMe([FromQuery] ParameterFilter parameterFilter)
+        public async Task<IActionResult> GetProfilesWhoBookmarkedMe([FromQuery] ParameterFilter parameterFilter)
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
             var skip = parameterFilter.PageIndex == 0 ? parameterFilter.PageIndex : parameterFilter.PageIndex * parameterFilter.PageSize;
 
-            return await _profilesQueryRepository.GetProfilesWhoBookmarkedMe(currentUser, parameterFilter.OrderByType, skip, parameterFilter.PageSize);
+            var tuple = await _profilesQueryRepository.GetProfilesWhoBookmarkedMe(currentUser, parameterFilter.OrderByType, skip, parameterFilter.PageSize);
+
+            return Json(new { tuple.totalPages, tuple.profiles });
         }
 
         /// <summary>
@@ -499,13 +494,15 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpGet("~/GetProfilesWhoLikesMe/")]
-        public async Task<IEnumerable<Profile>> GetProfilesWhoLikesMe([FromQuery] ParameterFilter parameterFilter)
+        public async Task<IActionResult> GetProfilesWhoLikesMe([FromQuery] ParameterFilter parameterFilter)
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
             var skip = parameterFilter.PageIndex == 0 ? parameterFilter.PageIndex : parameterFilter.PageIndex * parameterFilter.PageSize;
 
-            return await _profilesQueryRepository.GetProfilesWhoLikesMe(currentUser, parameterFilter.OrderByType, skip, parameterFilter.PageSize);
+            var tuple = await _profilesQueryRepository.GetProfilesWhoLikesMe(currentUser, parameterFilter.OrderByType, skip, parameterFilter.PageSize);
+
+            return Json(new { tuple.totalPages, tuple.profiles });
         }
 
         #region Maintenance

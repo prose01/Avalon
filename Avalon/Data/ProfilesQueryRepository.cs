@@ -1,5 +1,6 @@
 ﻿using Avalon.Interfaces;
 using Avalon.Model;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
@@ -241,6 +242,7 @@ namespace Avalon.Data
             {
                 var filter = Builders<Profile>
                                 .Filter.Eq(p => p.Auth0Id, auth0Id);
+
                 return await _context.Profiles
                     .Find(filter)
                     .Project<Profile>(this.GetProjection())
@@ -253,53 +255,39 @@ namespace Avalon.Data
         }
 
         // Search for anything in filter - eg. { Body: 'something' }
-        /// <summary>Gets the profile by filter.</summary>
+        /// <summary>Gets the total page count and profiles matching filter.</summary>
         /// <param name="currentUser">The current user.</param>
         /// <param name="profileFilter">The profileFilter.</param>
         /// <param name="orderByType">The OrderByDescending column type.</param>
         /// <param name="skip">The skip.</param>
         /// <param name="limit">The limit.</param>
         /// <returns></returns>
-        public async Task<IEnumerable<Profile>> GetProfileByFilter(CurrentUser currentUser, ProfileFilter profileFilter, OrderByType orderByType, int skip, int limit)
+        public async Task<(int totalPages, IReadOnlyList<Profile> profiles)> GetProfileByFilter(CurrentUser currentUser, ProfileFilter profileFilter, OrderByType orderByType, int skip, int limit)
         {
             try
             {
-                List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>();
+                List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>
+                {
+                    //Remove currentUser from the list.
+                    Builders<Profile>.Filter.Ne(p => p.ProfileId, currentUser.ProfileId),
 
-                //Remove currentUser from the list.
-                filters.Add(Builders<Profile>.Filter.Ne(p => p.ProfileId, currentUser.ProfileId));
+                    //Remove admins from the list.
+                    Builders<Profile>.Filter.Ne(p => p.Admin, true),
 
-                //Remove admins from the list.
-                filters.Add(Builders<Profile>.Filter.Ne(p => p.Admin, true));
+                    Builders<Profile>.Filter.Eq(p => p.Countrycode, currentUser.Countrycode),
 
-                filters.Add(Builders<Profile>.Filter.Eq(p => p.Countrycode, currentUser.Countrycode));
+                    Builders<Profile>.Filter.In(p => p.Gender, currentUser.Seeking),
 
-                filters.Add(Builders<Profile>.Filter.In(p => p.Gender, currentUser.Seeking));
-
-                filters.Add(Builders<Profile>.Filter.Where(p => p.Seeking.Contains(currentUser.Gender)));
+                    Builders<Profile>.Filter.Where(p => p.Seeking.Contains(currentUser.Gender))
+                };
 
                 //Apply all other ProfileFilter criterias.
                 filters = this.ApplyProfileFilter(profileFilter, filters);
 
                 var combineFilters = Builders<Profile>.Filter.And(filters);
 
-                SortDefinition<Profile> sortDefinition;
-
-                switch (orderByType)
-                {
-                    case OrderByType.UpdatedOn:
-                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.UpdatedOn);
-                        break;
-                    case OrderByType.LastActive:
-                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.LastActive);
-                        break;
-                    default:
-                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.CreatedOn);
-                        break;
-                }
-
-                return await _context.Profiles
-                                .Find(combineFilters).Project<Profile>(this.GetProjection()).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
+                //Get total number of pages and profiles mathching the filters.
+                return await this.GetTotalPagesAndProfiles(combineFilters, orderByType, skip, limit);
             }
             catch
             {
@@ -314,8 +302,8 @@ namespace Avalon.Data
         {
             try
             {
-                if (profileFilter.Name != null)
-                    filters.Add(Builders<Profile>.Filter.Regex(p => p.Name, new BsonRegularExpression(profileFilter.Name, "i")));
+                //if (profileFilter.Name != null)
+                //    filters.Add(Builders<Profile>.Filter.Regex(p => p.Name, new BsonRegularExpression(profileFilter.Name, "i")));
 
                 if (profileFilter.Age != null && profileFilter.Age[0] > this._minAge)
                     filters.Add(Builders<Profile>.Filter.Gte(p => p.Age, profileFilter.Age[0]));
@@ -329,11 +317,11 @@ namespace Avalon.Data
                 if (profileFilter.Height != null && profileFilter.Height[1] < this._maxHeight)
                     filters.Add(Builders<Profile>.Filter.Lte(p => p.Height, profileFilter.Height[1]));
 
-                if (profileFilter.Description != null)
-                    filters.Add(Builders<Profile>.Filter.Regex(p => p.Description, new BsonRegularExpression(profileFilter.Description, "i")));
+                //if (profileFilter.Description != null)
+                //    filters.Add(Builders<Profile>.Filter.Regex(p => p.Description, new BsonRegularExpression(profileFilter.Description, "i")));
 
-                if (profileFilter.Tags != null && profileFilter.Tags.Count > 0)
-                    filters.Add(Builders<Profile>.Filter.AnyIn(p => p.Tags, profileFilter.Tags));
+                //if (profileFilter.Tags != null && profileFilter.Tags.Count > 0)
+                //    filters.Add(Builders<Profile>.Filter.AnyIn(p => p.Tags, profileFilter.Tags));
 
                 if (profileFilter.Body != BodyType.NotChosen)
                     filters.Add(Builders<Profile>.Filter.Eq(p => p.Body, profileFilter.Body));
@@ -381,6 +369,71 @@ namespace Avalon.Data
                 throw;
             }
         }
+        
+        /// <summary>Gets the total page count and profiles matching filter.</summary>
+        /// <param name="combineFilters">The combine Filters.</param>
+        /// <param name="orderByType">The OrderByDescending column type.</param>
+        /// <param name="skip">The skip.</param>
+        /// <param name="limit">The limit.</param>
+        /// <returns></returns>
+        public async Task<(int totalPages, IReadOnlyList<Profile> profiles)> GetTotalPagesAndProfiles(FilterDefinition<Profile> combineFilters, OrderByType orderByType, int skip, int limit)
+        {
+            try
+            {
+                SortDefinition<Profile> sortDefinition;
+
+                switch (orderByType)
+                {
+                    case OrderByType.UpdatedOn:
+                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.UpdatedOn);
+                        break;
+                    case OrderByType.LastActive:
+                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.LastActive);
+                        break;
+                    default:
+                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.CreatedOn);
+                        break;
+                }
+
+                var countFacet = AggregateFacet.Create("count",
+                    PipelineDefinition<Profile, AggregateCountResult>.Create(new[]
+                    {
+                        PipelineStageDefinitionBuilder.Count<Profile>()
+                    }));
+
+                var dataFacet = AggregateFacet.Create("data",
+                    PipelineDefinition<Profile, Profile>.Create(new[]
+                    {
+                        PipelineStageDefinitionBuilder.Sort(sortDefinition),
+                        PipelineStageDefinitionBuilder.Skip<Profile>(skip),
+                        PipelineStageDefinitionBuilder.Limit<Profile>(limit),
+                    }));
+
+                var aggregation = await _context.Profiles.Aggregate()
+                    .Match(combineFilters)
+                    .Project<Profile>(this.GetProjection())
+                    .Facet(countFacet, dataFacet)
+                    .ToListAsync();
+
+                var count = aggregation.First()
+                    .Facets.First(x => x.Name == "count")
+                    .Output<AggregateCountResult>()
+                    ?.FirstOrDefault()
+                    ?.Count ?? 0;
+
+                var totalPages = (int)count / limit;
+
+                var data = aggregation.First()
+                    .Facets.First(x => x.Name == "data")
+                    .Output<Profile>();
+
+                return (totalPages, data);
+            }
+            catch
+            {
+                throw;
+            }
+        }
 
         /// <summary>Gets the latest profiles.</summary>
         /// <param name="currentUser">The current user.</param>
@@ -388,7 +441,7 @@ namespace Avalon.Data
         /// <param name="skip">The skip.</param>
         /// <param name="limit">The limit.</param>
         /// <returns></returns>
-        public async Task<IEnumerable<Profile>> GetLatestProfiles(CurrentUser currentUser, OrderByType orderByType, int skip, int limit)
+        public async Task<(int totalPages, IReadOnlyList<Profile> profiles)> GetLatestProfiles(CurrentUser currentUser, OrderByType orderByType, int skip, int limit)
         {
             try
             {
@@ -408,23 +461,8 @@ namespace Avalon.Data
 
                 var combineFilters = Builders<Profile>.Filter.And(filters);
 
-                SortDefinition<Profile> sortDefinition;
-
-                switch (orderByType)
-                {
-                    case OrderByType.UpdatedOn:
-                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.UpdatedOn);
-                        break;
-                    case OrderByType.LastActive:
-                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.LastActive);
-                        break;
-                    default:
-                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.CreatedOn);
-                        break;
-                }
-
-                return await _context.Profiles
-                            .Find(combineFilters).Project<Profile>(this.GetProjection()).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
+                //Get total number of pages and profiles mathching the filters.
+                return await this.GetTotalPagesAndProfiles(combineFilters, orderByType, skip, limit);
             }
             catch
             {
@@ -472,7 +510,7 @@ namespace Avalon.Data
         /// <param name="skip">The skip.</param>
         /// <param name="limit">The limit.</param>
         /// <returns></returns>
-        public async Task<IEnumerable<Profile>> GetProfilesWhoVisitedMe(CurrentUser currentUser, OrderByType orderByType, int skip, int limit)
+        public async Task<(int totalPages, IReadOnlyList<Profile> profiles)> GetProfilesWhoVisitedMe(CurrentUser currentUser, OrderByType orderByType, int skip, int limit)
         {
             try
             {
@@ -485,23 +523,8 @@ namespace Avalon.Data
 
                 var combineFilters = Builders<Profile>.Filter.And(filters);
 
-                SortDefinition<Profile> sortDefinition;
-
-                switch (orderByType)
-                {
-                    case OrderByType.UpdatedOn:
-                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.UpdatedOn);
-                        break;
-                    case OrderByType.LastActive:
-                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.LastActive);
-                        break;
-                    default:
-                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.CreatedOn);
-                        break;
-                }
-
-                return await _context.Profiles
-                            .Find(combineFilters).Project<Profile>(this.GetProjection()).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
+                //Get total number of pages and profiles mathching the filters.
+                return await this.GetTotalPagesAndProfiles(combineFilters, orderByType, skip, limit);
             }
             catch
             {
@@ -515,7 +538,7 @@ namespace Avalon.Data
         /// <param name="skip">The skip.</param>
         /// <param name="limit">The limit.</param>
         /// <returns></returns>
-        public async Task<IEnumerable<Profile>> GetProfilesWhoBookmarkedMe(CurrentUser currentUser, OrderByType orderByType, int skip, int limit)
+        public async Task<(int totalPages, IReadOnlyList<Profile> profiles)> GetProfilesWhoBookmarkedMe(CurrentUser currentUser, OrderByType orderByType, int skip, int limit)
         {
             try
             {
@@ -528,23 +551,8 @@ namespace Avalon.Data
 
                 var combineFilters = Builders<Profile>.Filter.And(filters);
 
-                SortDefinition<Profile> sortDefinition;
-
-                switch (orderByType)
-                {
-                    case OrderByType.UpdatedOn:
-                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.UpdatedOn);
-                        break;
-                    case OrderByType.LastActive:
-                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.LastActive);
-                        break;
-                    default:
-                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.CreatedOn);
-                        break;
-                }
-
-                return await _context.Profiles
-                            .Find(combineFilters).Project<Profile>(this.GetProjection()).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
+                //Get total number of pages and profiles mathching the filters.
+                return await this.GetTotalPagesAndProfiles(combineFilters, orderByType, skip, limit);
             }
             catch
             {
@@ -558,7 +566,7 @@ namespace Avalon.Data
         /// <param name="skip">The skip.</param>
         /// <param name="limit">The limit.</param>
         /// <returns></returns>
-        public async Task<IEnumerable<Profile>> GetProfilesWhoLikesMe(CurrentUser currentUser, OrderByType orderByType, int skip, int limit)
+        public async Task<(int totalPages, IReadOnlyList<Profile> profiles)> GetProfilesWhoLikesMe(CurrentUser currentUser, OrderByType orderByType, int skip, int limit)
         {
             try
             {
@@ -571,23 +579,8 @@ namespace Avalon.Data
 
                 var combineFilters = Builders<Profile>.Filter.And(filters);
 
-                SortDefinition<Profile> sortDefinition;
-
-                switch (orderByType)
-                {
-                    case OrderByType.UpdatedOn:
-                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.UpdatedOn);
-                        break;
-                    case OrderByType.LastActive:
-                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.LastActive);
-                        break;
-                    default:
-                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.CreatedOn);
-                        break;
-                }
-
-                return await _context.Profiles
-                            .Find(combineFilters).Project<Profile>(this.GetProjection()).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
+                //Get total number of pages and profiles mathching the filters.
+                return await this.GetTotalPagesAndProfiles(combineFilters, orderByType, skip, limit);
             }
             catch
             {
