@@ -13,8 +13,8 @@ namespace Avalon.Interfaces
         Task<Profile> GetProfileByAuth0Id(string auth0Id);
         Task<Profile> GetProfileById(string profileId);
         Task<IEnumerable<Profile>> GetProfilesByIds(string[] profileIds);
-        Task<IEnumerable<Profile>> GetProfilesByIds(CurrentUser currentUser, string[] profileIds, int skip, int limit);
-        Task<IEnumerable<Profile>> GetBookmarkedProfiles(CurrentUser profile, OrderByType orderByType, int skip, int limit);
+        Task<(int totalPages, IReadOnlyList<Profile> profiles)> GetProfilesByIds(CurrentUser currentUser, string[] profileIds, int skip, int limit);
+        Task<(int totalPages, IReadOnlyList<Profile> profiles)> GetBookmarkedProfiles(CurrentUser profile, OrderByType orderByType, int skip, int limit);
         Task<(int totalPages, IReadOnlyList<Profile> profiles)> GetProfileByFilter(CurrentUser currentUser, ProfileFilter profileFilter, OrderByType orderByType, int skip, int limit);
         Task<(int totalPages, IReadOnlyList<Profile> profiles)> GetLatestProfiles(CurrentUser currentUser, OrderByType orderByType, int skip, int limit);
         Task<(int totalPages, IReadOnlyList<Profile> profiles)> GetProfilesWhoVisitedMe(CurrentUser currentUser, OrderByType orderByType, int skip, int limit);

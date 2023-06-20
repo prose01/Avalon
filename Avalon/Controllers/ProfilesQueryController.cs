@@ -197,7 +197,7 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpPost("~/GetProfilesByIds")]
-        public async Task<IEnumerable<Profile>> GetProfilesByIds([FromBody] RequestBody requestBody, [FromQuery] ParameterFilter parameterFilter)
+        public async Task<IActionResult> GetProfilesByIds([FromBody] RequestBody requestBody, [FromQuery] ParameterFilter parameterFilter)
         {
             if (requestBody.ProfileIds == null) throw new ArgumentException($"ProfileIds is either null {requestBody.ProfileIds} or length is < 1 {requestBody.ProfileIds.Length}.", nameof(requestBody.ProfileIds));
 
@@ -205,7 +205,9 @@ namespace Avalon.Controllers
 
             var skip = parameterFilter.PageIndex == 0 ? parameterFilter.PageIndex : parameterFilter.PageIndex * parameterFilter.PageSize;
 
-            return await _profilesQueryRepository.GetProfilesByIds(currentUser, requestBody.ProfileIds, skip, parameterFilter.PageSize);
+            var tuple = await _profilesQueryRepository.GetProfilesByIds(currentUser, requestBody.ProfileIds, skip, parameterFilter.PageSize);
+
+            return Json(new { tuple.totalPages, tuple.profiles });
         }
 
         /// <summary>Adds the visited to profiles.</summary>
@@ -442,13 +444,15 @@ namespace Avalon.Controllers
         /// <returns></returns>
         [NoCache]
         [HttpGet("~/GetBookmarkedProfiles/")]
-        public async Task<IEnumerable<Profile>> GetBookmarkedProfiles([FromQuery] ParameterFilter parameterFilter)
+        public async Task<IActionResult> GetBookmarkedProfiles([FromQuery] ParameterFilter parameterFilter)
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
             var skip = parameterFilter.PageIndex == 0 ? parameterFilter.PageIndex : parameterFilter.PageIndex * parameterFilter.PageSize;
 
-            return await _profilesQueryRepository.GetBookmarkedProfiles(currentUser, parameterFilter.OrderByType, skip, parameterFilter.PageSize);
+            var tuple = await _profilesQueryRepository.GetBookmarkedProfiles(currentUser, parameterFilter.OrderByType, skip, parameterFilter.PageSize);
+
+            return Json(new { tuple.totalPages, tuple.profiles });
         }
 
         /// <summary>

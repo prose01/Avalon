@@ -133,6 +133,7 @@
     {
         CreatedOn,
         UpdatedOn,
-        LastActive
+        LastActive,
+        Name
     }
 }

@@ -182,31 +182,27 @@ namespace Avalon.Data
         /// <param name="skip">The skip.</param>
         /// <param name="limit">The limit.</param>
         /// <returns></returns>
-        public async Task<IEnumerable<Profile>> GetProfilesByIds(CurrentUser currentUser, string[] profileIds, int skip, int limit)
+        public async Task<(int totalPages, IReadOnlyList<Profile> profiles)> GetProfilesByIds(CurrentUser currentUser, string[] profileIds, int skip, int limit)
         {
             try
             {
-                List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>();
+                List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>
+                {
+                    //Remove currentUser from the list.
+                    Builders<Profile>.Filter.Ne(p => p.ProfileId, currentUser.ProfileId),
 
-                //Remove currentUser from the list.
-                filters.Add(Builders<Profile>.Filter.Ne(p => p.ProfileId, currentUser.ProfileId));
+                    //Remove admins from the list.
+                    Builders<Profile>.Filter.Ne(p => p.Admin, true),
 
-                //Remove admins from the list.
-                filters.Add(Builders<Profile>.Filter.Ne(p => p.Admin, true));
+                    Builders<Profile>.Filter.Eq(p => p.Countrycode, currentUser.Countrycode),
 
-                filters.Add(Builders<Profile>.Filter.Eq(p => p.Countrycode, currentUser.Countrycode));
-
-                filters.Add(Builders<Profile>.Filter.In(p => p.ProfileId, profileIds));
+                    Builders<Profile>.Filter.In(p => p.ProfileId, profileIds)
+                };
 
                 var combineFilters = Builders<Profile>.Filter.And(filters);
 
-                //var filter = Builders<Profile>
-                //                .Filter.In(p => p.ProfileId, profileIds);
-
-                SortDefinition<Profile> sortDefinition = Builders<Profile>.Sort.Descending(p => p.Name);
-
-                return await _context.Profiles
-                            .Find(combineFilters).Project<Profile>(this.GetProjection()).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
+                //Get total number of pages and profiles mathching the filters.
+                return await this.GetTotalPagesAndProfiles(combineFilters, OrderByType.Name, skip, limit);
             }
             catch
             {
@@ -384,6 +380,9 @@ namespace Avalon.Data
 
                 switch (orderByType)
                 {
+                    case OrderByType.Name:
+                        sortDefinition = Builders<Profile>.Sort.Ascending(p => p.Name);
+                        break;
                     case OrderByType.UpdatedOn:
                         sortDefinition = Builders<Profile>.Sort.Descending(p => p.UpdatedOn);
                         break;
@@ -445,19 +444,20 @@ namespace Avalon.Data
         {
             try
             {
-                List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>();
+                List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>
+                {
+                    //Remove currentUser from the list.
+                    Builders<Profile>.Filter.Ne(p => p.ProfileId, currentUser.ProfileId),
 
-                //Remove currentUser from the list.
-                filters.Add(Builders<Profile>.Filter.Ne(p => p.ProfileId, currentUser.ProfileId));
+                    //Remove admins from the list.
+                    Builders<Profile>.Filter.Ne(p => p.Admin, true),
 
-                //Remove admins from the list.
-                filters.Add(Builders<Profile>.Filter.Ne(p => p.Admin, true));
+                    Builders<Profile>.Filter.Eq(p => p.Countrycode, currentUser.Countrycode),
 
-                filters.Add(Builders<Profile>.Filter.Eq(p => p.Countrycode, currentUser.Countrycode));
+                    Builders<Profile>.Filter.In(p => p.Gender, currentUser.Seeking),
 
-                filters.Add(Builders<Profile>.Filter.In(p => p.Gender, currentUser.Seeking));
-
-                filters.Add(Builders<Profile>.Filter.Where(p => p.Seeking.Contains(currentUser.Gender)));
+                    Builders<Profile>.Filter.Where(p => p.Seeking.Contains(currentUser.Gender))
+                };
 
                 var combineFilters = Builders<Profile>.Filter.And(filters);
 
@@ -476,27 +476,18 @@ namespace Avalon.Data
         /// <param name="skip">The skip.</param>
         /// <param name="limit">The limit.</param>
         /// <returns></returns>
-        public async Task<IEnumerable<Profile>> GetBookmarkedProfiles(CurrentUser currentUser, OrderByType orderByType, int skip, int limit)
+        public async Task<(int totalPages, IReadOnlyList<Profile> profiles)> GetBookmarkedProfiles(CurrentUser currentUser, OrderByType orderByType, int skip, int limit)
         {
             try
             {
-                SortDefinition<Profile> sortDefinition;
+                List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>();
 
-                switch (orderByType)
-                {
-                    case OrderByType.UpdatedOn:
-                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.UpdatedOn);
-                        break;
-                    case OrderByType.LastActive:
-                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.LastActive);
-                        break;
-                    default:
-                        sortDefinition = Builders<Profile>.Sort.Descending(p => p.CreatedOn);
-                        break;
-                }
+                filters.Add(Builders<Profile>.Filter.In(p => p.ProfileId, currentUser.Bookmarks));
 
-                return await _context.Profiles
-                            .Find(p => currentUser.Bookmarks.Contains(p.ProfileId)).Project<Profile>(this.GetProjection()).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
+                var combineFilters = Builders<Profile>.Filter.And(filters);
+
+                //Get total number of pages and profiles mathching the filters.
+                return await this.GetTotalPagesAndProfiles(combineFilters, orderByType, skip, limit);
             }
             catch
             {
@@ -514,12 +505,13 @@ namespace Avalon.Data
         {
             try
             {
-                List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>();
+                List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>
+                {
+                    Builders<Profile>.Filter.In(p => p.ProfileId, currentUser.Visited.Keys),
 
-                filters.Add(Builders<Profile>.Filter.In(p => p.ProfileId, currentUser.Visited.Keys));
-
-                //Remove admins from the list.
-                filters.Add(Builders<Profile>.Filter.Ne(p => p.Admin, true));
+                    //Remove admins from the list.
+                    Builders<Profile>.Filter.Ne(p => p.Admin, true)
+                };
 
                 var combineFilters = Builders<Profile>.Filter.And(filters);
 
@@ -542,12 +534,13 @@ namespace Avalon.Data
         {
             try
             {
-                List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>();
+                List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>
+                {
+                    Builders<Profile>.Filter.In(p => p.ProfileId, currentUser.IsBookmarked.Keys),
 
-                filters.Add(Builders<Profile>.Filter.In(p => p.ProfileId, currentUser.IsBookmarked.Keys));
-
-                //Remove admins from the list.
-                filters.Add(Builders<Profile>.Filter.Ne(p => p.Admin, true));
+                    //Remove admins from the list.
+                    Builders<Profile>.Filter.Ne(p => p.Admin, true)
+                };
 
                 var combineFilters = Builders<Profile>.Filter.And(filters);
 
@@ -570,12 +563,13 @@ namespace Avalon.Data
         {
             try
             {
-                List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>();
+                List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>
+                {
+                    Builders<Profile>.Filter.In(p => p.ProfileId, currentUser.Likes),
 
-                filters.Add(Builders<Profile>.Filter.In(p => p.ProfileId, currentUser.Likes));
-
-                //Remove admins from the list.
-                filters.Add(Builders<Profile>.Filter.Ne(p => p.Admin, true));
+                    //Remove admins from the list.
+                    Builders<Profile>.Filter.Ne(p => p.Admin, true)
+                };
 
                 var combineFilters = Builders<Profile>.Filter.And(filters);
 
