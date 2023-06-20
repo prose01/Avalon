@@ -1,9 +1,7 @@
 ﻿using Avalon.Interfaces;
 using Avalon.Model;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
-using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
@@ -182,7 +180,7 @@ namespace Avalon.Data
         /// <param name="skip">The skip.</param>
         /// <param name="limit">The limit.</param>
         /// <returns></returns>
-        public async Task<(int totalPages, IReadOnlyList<Profile> profiles)> GetProfilesByIds(CurrentUser currentUser, string[] profileIds, int skip, int limit)
+        public async Task<(int total, IReadOnlyList<Profile> profiles)> GetProfilesByIds(CurrentUser currentUser, string[] profileIds, int skip, int limit)
         {
             try
             {
@@ -258,7 +256,7 @@ namespace Avalon.Data
         /// <param name="skip">The skip.</param>
         /// <param name="limit">The limit.</param>
         /// <returns></returns>
-        public async Task<(int totalPages, IReadOnlyList<Profile> profiles)> GetProfileByFilter(CurrentUser currentUser, ProfileFilter profileFilter, OrderByType orderByType, int skip, int limit)
+        public async Task<(int total, IReadOnlyList<Profile> profiles)> GetProfileByFilter(CurrentUser currentUser, ProfileFilter profileFilter, OrderByType orderByType, int skip, int limit)
         {
             try
             {
@@ -372,7 +370,7 @@ namespace Avalon.Data
         /// <param name="skip">The skip.</param>
         /// <param name="limit">The limit.</param>
         /// <returns></returns>
-        public async Task<(int totalPages, IReadOnlyList<Profile> profiles)> GetTotalPagesAndProfiles(FilterDefinition<Profile> combineFilters, OrderByType orderByType, int skip, int limit)
+        public async Task<(int total, IReadOnlyList<Profile> profiles)> GetTotalPagesAndProfiles(FilterDefinition<Profile> combineFilters, OrderByType orderByType, int skip, int limit)
         {
             try
             {
@@ -420,13 +418,14 @@ namespace Avalon.Data
                     ?.FirstOrDefault()
                     ?.Count ?? 0;
 
-                var totalPages = (int)count / limit;
+                //var totalPages = ((int)count + limit - 1) / limit;
+                var total = (int)count;
 
                 var data = aggregation.First()
                     .Facets.First(x => x.Name == "data")
                     .Output<Profile>();
 
-                return (totalPages, data);
+                return (total, data);
             }
             catch
             {
@@ -440,7 +439,7 @@ namespace Avalon.Data
         /// <param name="skip">The skip.</param>
         /// <param name="limit">The limit.</param>
         /// <returns></returns>
-        public async Task<(int totalPages, IReadOnlyList<Profile> profiles)> GetLatestProfiles(CurrentUser currentUser, OrderByType orderByType, int skip, int limit)
+        public async Task<(int total, IReadOnlyList<Profile> profiles)> GetLatestProfiles(CurrentUser currentUser, OrderByType orderByType, int skip, int limit)
         {
             try
             {
@@ -476,7 +475,7 @@ namespace Avalon.Data
         /// <param name="skip">The skip.</param>
         /// <param name="limit">The limit.</param>
         /// <returns></returns>
-        public async Task<(int totalPages, IReadOnlyList<Profile> profiles)> GetBookmarkedProfiles(CurrentUser currentUser, OrderByType orderByType, int skip, int limit)
+        public async Task<(int total, IReadOnlyList<Profile> profiles)> GetBookmarkedProfiles(CurrentUser currentUser, OrderByType orderByType, int skip, int limit)
         {
             try
             {
@@ -501,7 +500,7 @@ namespace Avalon.Data
         /// <param name="skip">The skip.</param>
         /// <param name="limit">The limit.</param>
         /// <returns></returns>
-        public async Task<(int totalPages, IReadOnlyList<Profile> profiles)> GetProfilesWhoVisitedMe(CurrentUser currentUser, OrderByType orderByType, int skip, int limit)
+        public async Task<(int total, IReadOnlyList<Profile> profiles)> GetProfilesWhoVisitedMe(CurrentUser currentUser, OrderByType orderByType, int skip, int limit)
         {
             try
             {
@@ -530,7 +529,7 @@ namespace Avalon.Data
         /// <param name="skip">The skip.</param>
         /// <param name="limit">The limit.</param>
         /// <returns></returns>
-        public async Task<(int totalPages, IReadOnlyList<Profile> profiles)> GetProfilesWhoBookmarkedMe(CurrentUser currentUser, OrderByType orderByType, int skip, int limit)
+        public async Task<(int total, IReadOnlyList<Profile> profiles)> GetProfilesWhoBookmarkedMe(CurrentUser currentUser, OrderByType orderByType, int skip, int limit)
         {
             try
             {
@@ -559,7 +558,7 @@ namespace Avalon.Data
         /// <param name="skip">The skip.</param>
         /// <param name="limit">The limit.</param>
         /// <returns></returns>
-        public async Task<(int totalPages, IReadOnlyList<Profile> profiles)> GetProfilesWhoLikesMe(CurrentUser currentUser, OrderByType orderByType, int skip, int limit)
+        public async Task<(int total, IReadOnlyList<Profile> profiles)> GetProfilesWhoLikesMe(CurrentUser currentUser, OrderByType orderByType, int skip, int limit)
         {
             try
             {

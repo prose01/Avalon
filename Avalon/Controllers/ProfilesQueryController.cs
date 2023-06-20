@@ -207,7 +207,7 @@ namespace Avalon.Controllers
 
             var tuple = await _profilesQueryRepository.GetProfilesByIds(currentUser, requestBody.ProfileIds, skip, parameterFilter.PageSize);
 
-            return Json(new { tuple.totalPages, tuple.profiles });
+            return Json(new { tuple.total, tuple.profiles });
         }
 
         /// <summary>Adds the visited to profiles.</summary>
@@ -397,7 +397,7 @@ namespace Avalon.Controllers
 
             var tuple = await _profilesQueryRepository.GetProfileByFilter(currentUser, requestBody.ProfileFilter, parameterFilter.OrderByType, skip, parameterFilter.PageSize);
 
-            return Json(new { tuple.totalPages, tuple.profiles }); 
+            return Json(new { tuple.total, tuple.profiles }); 
         }
 
         /// <summary>Gets the specified profiles based on the CurrentUser's filter.</summary>
@@ -416,7 +416,7 @@ namespace Avalon.Controllers
 
             var tuple = await _profilesQueryRepository.GetProfileByFilter(currentUser, currentUser.ProfileFilter, parameterFilter.OrderByType, skip, parameterFilter.PageSize);
 
-            return Json(new { tuple.totalPages, tuple.profiles });
+            return Json(new { tuple.total, tuple.profiles });
         }
 
         /// <summary>
@@ -434,7 +434,7 @@ namespace Avalon.Controllers
 
             var tuple = await _profilesQueryRepository.GetLatestProfiles(currentUser, parameterFilter.OrderByType, skip, parameterFilter.PageSize);
 
-            return Json(new { tuple.totalPages, tuple.profiles });
+            return Json(new { tuple.total, tuple.profiles });
         }
 
         /// <summary>
@@ -452,7 +452,7 @@ namespace Avalon.Controllers
 
             var tuple = await _profilesQueryRepository.GetBookmarkedProfiles(currentUser, parameterFilter.OrderByType, skip, parameterFilter.PageSize);
 
-            return Json(new { tuple.totalPages, tuple.profiles });
+            return Json(new { tuple.total, tuple.profiles });
         }
 
         /// <summary>
@@ -470,7 +470,7 @@ namespace Avalon.Controllers
 
             var tuple = await _profilesQueryRepository.GetProfilesWhoVisitedMe(currentUser, parameterFilter.OrderByType, skip, parameterFilter.PageSize);
 
-            return Json(new { tuple.totalPages, tuple.profiles });
+            return Json(new { tuple.total, tuple.profiles });
         }
 
         /// <summary>
@@ -488,7 +488,7 @@ namespace Avalon.Controllers
 
             var tuple = await _profilesQueryRepository.GetProfilesWhoBookmarkedMe(currentUser, parameterFilter.OrderByType, skip, parameterFilter.PageSize);
 
-            return Json(new { tuple.totalPages, tuple.profiles });
+            return Json(new { tuple.total, tuple.profiles });
         }
 
         /// <summary>
@@ -506,7 +506,7 @@ namespace Avalon.Controllers
 
             var tuple = await _profilesQueryRepository.GetProfilesWhoLikesMe(currentUser, parameterFilter.OrderByType, skip, parameterFilter.PageSize);
 
-            return Json(new { tuple.totalPages, tuple.profiles });
+            return Json(new { tuple.total, tuple.profiles });
         }
 
         #region Maintenance
