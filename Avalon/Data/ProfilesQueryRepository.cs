@@ -2,6 +2,7 @@
 using Avalon.Model;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
@@ -296,8 +297,8 @@ namespace Avalon.Data
         {
             try
             {
-                //if (profileFilter.Name != null)
-                //    filters.Add(Builders<Profile>.Filter.Regex(p => p.Name, new BsonRegularExpression(profileFilter.Name, "i")));
+                if (profileFilter.Name != null)
+                    filters.Add(Builders<Profile>.Filter.Regex(p => p.Name, new BsonRegularExpression(profileFilter.Name, "i")));
 
                 if (profileFilter.Age != null && profileFilter.Age[0] > this._minAge)
                     filters.Add(Builders<Profile>.Filter.Gte(p => p.Age, profileFilter.Age[0]));
@@ -311,11 +312,11 @@ namespace Avalon.Data
                 if (profileFilter.Height != null && profileFilter.Height[1] < this._maxHeight)
                     filters.Add(Builders<Profile>.Filter.Lte(p => p.Height, profileFilter.Height[1]));
 
-                //if (profileFilter.Description != null)
-                //    filters.Add(Builders<Profile>.Filter.Regex(p => p.Description, new BsonRegularExpression(profileFilter.Description, "i")));
+                if (profileFilter.Description != null)
+                    filters.Add(Builders<Profile>.Filter.Regex(p => p.Description, new BsonRegularExpression(profileFilter.Description, "i")));
 
-                //if (profileFilter.Tags != null && profileFilter.Tags.Count > 0)
-                //    filters.Add(Builders<Profile>.Filter.AnyIn(p => p.Tags, profileFilter.Tags));
+                if (profileFilter.Tags != null && profileFilter.Tags.Count > 0)
+                    filters.Add(Builders<Profile>.Filter.AnyIn(p => p.Tags, profileFilter.Tags));
 
                 if (profileFilter.Body != BodyType.NotChosen)
                     filters.Add(Builders<Profile>.Filter.Eq(p => p.Body, profileFilter.Body));
