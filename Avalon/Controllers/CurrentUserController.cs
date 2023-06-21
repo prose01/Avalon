@@ -386,13 +386,15 @@ namespace Avalon.Controllers
         /// <returns>Returns list of groups.</returns>
         [NoCache]
         [HttpGet("~/GetGroups")]
-        public async Task<IEnumerable<GroupModel>> GetGroups([FromQuery] ParameterFilter parameterFilter)
+        public async Task<IActionResult> GetGroups([FromQuery] ParameterFilter parameterFilter)
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
             var skip = parameterFilter.PageIndex == 0 ? parameterFilter.PageIndex : parameterFilter.PageIndex * parameterFilter.PageSize;
 
-            return await _groupRepository.GetGroups(currentUser, skip, parameterFilter.PageSize);
+            var tuple = await _groupRepository.GetGroups(currentUser, skip, parameterFilter.PageSize);
+
+            return Json(new { tuple.total, tuple.groups });
         }
 
         /// <summary>Get Groups that CurrentUser is member of.</summary>
@@ -416,12 +418,10 @@ namespace Avalon.Controllers
         /// Gets the specified groups based on a filter.
         /// </summary>
         /// <param name="filter"></param>
-        /// <exception cref="ArgumentException">ProfileFilter is null. {requestBody.ProfileFilter}</exception>
-        /// <exception cref="ArgumentException">Current users profileFilter cannot find any matching profiles. {requestBody.ProfileFilter}</exception>
-        /// <returns></returns>
+        /// <returns>Returns list of groups.</returns>
         [NoCache]
         [HttpPost("~/GetGroupsByFilter")]
-        public async Task<IEnumerable<GroupModel>> GetGroupsByFilter([FromBody] string filter, [FromQuery] ParameterFilter parameterFilter)
+        public async Task<IActionResult> GetGroupsByFilter([FromBody] string filter, [FromQuery] ParameterFilter parameterFilter)
         {
             if (string.IsNullOrEmpty(filter) || filter == "null")
                 return await this.GetGroups(parameterFilter);
@@ -430,7 +430,9 @@ namespace Avalon.Controllers
 
             var skip = parameterFilter.PageIndex == 0 ? parameterFilter.PageIndex : parameterFilter.PageIndex * parameterFilter.PageSize;
 
-            return await _groupRepository.GetGroupsByFilter(currentUser, filter, skip, parameterFilter.PageSize) ?? throw new ArgumentException($"Current filter cannot find any matching groups.", nameof(filter));
+            var tuple = await _groupRepository.GetGroupsByFilter(currentUser, filter, skip, parameterFilter.PageSize);
+
+            return Json(new { tuple.total, tuple.groups });
         }
 
         ///// <summary>Remove CurrentUser from groups.</summary>

@@ -48,22 +48,21 @@ namespace Avalon.Data
         /// <param name="skip">The skip.</param>
         /// <param name="limit">The limit.</param>
         /// <returns></returns>
-        public async Task<IEnumerable<GroupModel>> GetGroups(CurrentUser currentUser, int skip, int limit)
+        public async Task<(int total, IReadOnlyList<GroupModel> groups)> GetGroups(CurrentUser currentUser, int skip, int limit)
         {
             try
             {
-                List<FilterDefinition<GroupModel>> filters = new List<FilterDefinition<GroupModel>>();
+                List<FilterDefinition<GroupModel>> filters = new List<FilterDefinition<GroupModel>>
+                {
+                    Builders<GroupModel>.Filter.Eq(g => g.Countrycode, currentUser.Countrycode),
 
-                filters.Add(Builders<GroupModel>.Filter.Eq(g => g.Countrycode, currentUser.Countrycode));
-
-                filters.Add(Builders<GroupModel>.Filter.Where(g => !g.GroupMemberslist.Any(m => m.ProfileId == currentUser.ProfileId && m.Blocked)));
+                    Builders<GroupModel>.Filter.Where(g => !g.GroupMemberslist.Any(m => m.ProfileId == currentUser.ProfileId && m.Blocked))
+                };
 
                 var combineFilters = Builders<GroupModel>.Filter.And(filters);
 
-                SortDefinition<GroupModel> sortDefinition = Builders<GroupModel>.Sort.Ascending(g => g.Name);
-
-                return await _context.Groups
-                            .Find(combineFilters).Project<GroupModel>(this.GetProjection()).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
+                //Get total number of groups and groups mathching the filters.
+                return await this.GetTotalAndGroups(combineFilters, OrderByType.Name, skip, limit);
             }
             catch
             {
@@ -123,7 +122,7 @@ namespace Avalon.Data
         /// <summary>Get Groups by group ids.</summary>
         /// <param name="groupIds">The group ids.</param>
         /// <returns>Returns list of groups.</returns>
-        public async Task<IEnumerable<GroupModel>> GetGroupsByFilter(CurrentUser currentUser, string filter, int skip, int limit)
+        public async Task<(int total, IReadOnlyList<GroupModel> groups)> GetGroupsByFilter(CurrentUser currentUser, string filter, int skip, int limit)
         {
             try
             {
@@ -137,11 +136,72 @@ namespace Avalon.Data
                     );
 
                 var combineFilters = Builders<GroupModel>.Filter.And(filters);
-                SortDefinition<GroupModel> sortDefinition = Builders<GroupModel>.Sort.Ascending(g => g.Name);
 
+                //Get total number of groups and groups mathching the filters.
+                return await this.GetTotalAndGroups(combineFilters, OrderByType.Name, skip, limit);
+            }
+            catch
+            {
+                throw;
+            }
+        }
 
-                return await _context.Groups
-                            .Find(combineFilters).Project<GroupModel>(this.GetProjection()).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
+        /// <summary>Gets the total page count and profiles matching filter.</summary>
+        /// <param name="combineFilters">The combine Filters.</param>
+        /// <param name="orderByType">The OrderByDescending column type.</param>
+        /// <param name="skip">The skip.</param>
+        /// <param name="limit">The limit.</param>
+        /// <returns></returns>
+        private async Task<(int total, IReadOnlyList<GroupModel> groups)> GetTotalAndGroups(FilterDefinition<GroupModel> combineFilters, OrderByType orderByType, int skip, int limit)
+        {
+            try
+            {
+                SortDefinition<GroupModel> sortDefinition;
+
+                switch (orderByType)
+                {
+                    case OrderByType.Name:
+                        sortDefinition = Builders<GroupModel>.Sort.Ascending(g => g.Name);
+                        break;
+                    default:
+                        sortDefinition = Builders<GroupModel>.Sort.Ascending(g => g.Name);
+                        break;
+                }
+
+                var countFacet = AggregateFacet.Create("count",
+                    PipelineDefinition<GroupModel, AggregateCountResult>.Create(new[]
+                    {
+                        PipelineStageDefinitionBuilder.Count<GroupModel>()
+                    }));
+
+                var dataFacet = AggregateFacet.Create("data",
+                    PipelineDefinition<GroupModel, GroupModel>.Create(new[]
+                    {
+                        PipelineStageDefinitionBuilder.Sort(sortDefinition),
+                        PipelineStageDefinitionBuilder.Skip<GroupModel>(skip),
+                        PipelineStageDefinitionBuilder.Limit<GroupModel>(limit),
+                    }));
+
+                var aggregation = await _context.Groups.Aggregate()
+                    .Match(combineFilters)
+                    .Project<GroupModel>(this.GetProjection())
+                    .Facet(countFacet, dataFacet)
+                    .ToListAsync();
+
+                var count = aggregation.First()
+                    .Facets.First(x => x.Name == "count")
+                    .Output<AggregateCountResult>()
+                    ?.FirstOrDefault()
+                    ?.Count ?? 0;
+
+                //var totalPages = ((int)count + limit - 1) / limit;
+                var total = (int)count;
+
+                var data = aggregation.First()
+                    .Facets.First(x => x.Name == "data")
+                    .Output<GroupModel>();
+
+                return (total, data);
             }
             catch
             {

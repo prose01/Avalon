@@ -199,8 +199,8 @@ namespace Avalon.Data
 
                 var combineFilters = Builders<Profile>.Filter.And(filters);
 
-                //Get total number of pages and profiles mathching the filters.
-                return await this.GetTotalPagesAndProfiles(combineFilters, OrderByType.Name, skip, limit);
+                //Get total number of profiles and profiles mathching the filters.
+                return await this.GetTotalAndProfiles(combineFilters, OrderByType.Name, skip, limit);
             }
             catch
             {
@@ -280,8 +280,8 @@ namespace Avalon.Data
 
                 var combineFilters = Builders<Profile>.Filter.And(filters);
 
-                //Get total number of pages and profiles mathching the filters.
-                return await this.GetTotalPagesAndProfiles(combineFilters, orderByType, skip, limit);
+                //Get total number of profiles and profiles mathching the filters.
+                return await this.GetTotalAndProfiles(combineFilters, orderByType, skip, limit);
             }
             catch
             {
@@ -370,7 +370,7 @@ namespace Avalon.Data
         /// <param name="skip">The skip.</param>
         /// <param name="limit">The limit.</param>
         /// <returns></returns>
-        public async Task<(int total, IReadOnlyList<Profile> profiles)> GetTotalPagesAndProfiles(FilterDefinition<Profile> combineFilters, OrderByType orderByType, int skip, int limit)
+        private async Task<(int total, IReadOnlyList<Profile> profiles)> GetTotalAndProfiles(FilterDefinition<Profile> combineFilters, OrderByType orderByType, int skip, int limit)
         {
             try
             {
@@ -460,8 +460,8 @@ namespace Avalon.Data
 
                 var combineFilters = Builders<Profile>.Filter.And(filters);
 
-                //Get total number of pages and profiles mathching the filters.
-                return await this.GetTotalPagesAndProfiles(combineFilters, orderByType, skip, limit);
+                //Get total number of profiles and profiles mathching the filters.
+                return await this.GetTotalAndProfiles(combineFilters, orderByType, skip, limit);
             }
             catch
             {
@@ -485,8 +485,8 @@ namespace Avalon.Data
 
                 var combineFilters = Builders<Profile>.Filter.And(filters);
 
-                //Get total number of pages and profiles mathching the filters.
-                return await this.GetTotalPagesAndProfiles(combineFilters, orderByType, skip, limit);
+                //Get total number of profiles and profiles mathching the filters.
+                return await this.GetTotalAndProfiles(combineFilters, orderByType, skip, limit);
             }
             catch
             {
@@ -514,8 +514,8 @@ namespace Avalon.Data
 
                 var combineFilters = Builders<Profile>.Filter.And(filters);
 
-                //Get total number of pages and profiles mathching the filters.
-                return await this.GetTotalPagesAndProfiles(combineFilters, orderByType, skip, limit);
+                //Get total number of profiles and profiles mathching the filters.
+                return await this.GetTotalAndProfiles(combineFilters, orderByType, skip, limit);
             }
             catch
             {
@@ -543,8 +543,8 @@ namespace Avalon.Data
 
                 var combineFilters = Builders<Profile>.Filter.And(filters);
 
-                //Get total number of pages and profiles mathching the filters.
-                return await this.GetTotalPagesAndProfiles(combineFilters, orderByType, skip, limit);
+                //Get total number of profiles and profiles mathching the filters.
+                return await this.GetTotalAndProfiles(combineFilters, orderByType, skip, limit);
             }
             catch
             {
@@ -572,8 +572,8 @@ namespace Avalon.Data
 
                 var combineFilters = Builders<Profile>.Filter.And(filters);
 
-                //Get total number of pages and profiles mathching the filters.
-                return await this.GetTotalPagesAndProfiles(combineFilters, orderByType, skip, limit);
+                //Get total number of profiles and profiles mathching the filters.
+                return await this.GetTotalAndProfiles(combineFilters, orderByType, skip, limit);
             }
             catch
             {
