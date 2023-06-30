@@ -229,7 +229,7 @@ namespace Avalon.Data
                     // Uncontactable profiles are not added to chatmemberlist unless currentUser is admin.
                     if (!chatMember.Contactable && !currentUser.Admin) continue;
 
-                    newChatMembers.Add(new ChatMember() { ProfileId = chatMemberId, Name = chatMember.Name, Blocked = false });
+                    newChatMembers.Add(new ChatMember() { ProfileId = chatMemberId, Name = chatMember.Name, Avatar = chatMember.Avatar, Blocked = false });
                 }
 
                 var update = Builders<CurrentUser>
