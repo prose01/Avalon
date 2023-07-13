@@ -13,12 +13,12 @@ namespace Avalon.Data
     public class FeedbackRepository : IFeedbackRepository
     {
         private readonly Context _context = null;
-        private readonly int _deleteFeedbacksOlderThanYear;
+        //private readonly int _deleteFeedbacksOlderThanYear;
 
         public FeedbackRepository(IOptions<Settings> settings, IConfiguration config)
         {
             _context = new Context(settings);
-            _deleteFeedbacksOlderThanYear = config.GetValue<int>("DeleteFeedbacksOlderThanYear");
+            //_deleteFeedbacksOlderThanYear = config.GetValue<int>("DeleteFeedbacksOlderThanYear");
         }
 
         public async Task AddFeedback(Feedback item)
@@ -219,26 +219,26 @@ namespace Avalon.Data
 
 
 
-        /// <summary>Deletes Feedbacks that are greater  than 1 year old (DateSeen) and closed.</summary>
-        /// <returns></returns>
-        public async Task<DeleteResult> DeleteOldFeedbacks()
-        {
-            try
-            {
-                List<FilterDefinition<Feedback>> filters = new List<FilterDefinition<Feedback>>();
+        ///// <summary>Deletes Feedbacks that are greater  than 1 year old (DateSeen) and closed.</summary>
+        ///// <returns></returns>
+        //public async Task<DeleteResult> DeleteOldFeedbacks()
+        //{
+        //    try
+        //    {
+        //        List<FilterDefinition<Feedback>> filters = new List<FilterDefinition<Feedback>>();
 
-                filters.Add(Builders<Feedback>.Filter.Gt(f => f.DateSeen, DateTime.UtcNow.AddYears(-_deleteFeedbacksOlderThanYear)));
+        //        filters.Add(Builders<Feedback>.Filter.Gt(f => f.DateSeen, DateTime.UtcNow.AddYears(-_deleteFeedbacksOlderThanYear)));
 
-                filters.Add(Builders<Feedback>.Filter.Eq(f => f.Open, false));
+        //        filters.Add(Builders<Feedback>.Filter.Eq(f => f.Open, false));
 
-                var combineFilters = Builders<Feedback>.Filter.And(filters);
+        //        var combineFilters = Builders<Feedback>.Filter.And(filters);
 
-                return await _context.Feedbacks.DeleteManyAsync(combineFilters);
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
+        //        return await _context.Feedbacks.DeleteManyAsync(combineFilters);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw ex;
+        //    }
+        //}
     }
 }

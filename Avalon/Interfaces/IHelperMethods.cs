@@ -13,6 +13,6 @@ namespace Avalon.Interfaces
 
         Task DeleteProfileFromAuth0(string profileId);
 
-        Task DeleteOldProfiles(int daysBack, int limit);
+        //Task DeleteOldProfiles(int daysBack, int limit);
     }
 }

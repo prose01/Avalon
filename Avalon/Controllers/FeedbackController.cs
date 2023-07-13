@@ -16,13 +16,13 @@ namespace Avalon.Controllers
     [ApiController]
     public class FeedbackController : Controller
     {
-        private readonly IFeedbackRepository _reedbackRepository;
+        private readonly IFeedbackRepository _feedbackRepository;
         private readonly IHelperMethods _helper;
         private readonly ICryptography _cryptography;
 
-        public FeedbackController(IFeedbackRepository reedbackRepository, IHelperMethods helperMethods, ICryptography cryptography)
+        public FeedbackController(IFeedbackRepository feedbackRepository, IHelperMethods helperMethods, ICryptography cryptography)
         {
-            _reedbackRepository = reedbackRepository;
+            _feedbackRepository = feedbackRepository;
             _helper = helperMethods;
             _cryptography = cryptography;
         }
@@ -56,7 +56,7 @@ namespace Avalon.Controllers
                 var encryptedMessage = _cryptography.Encrypt(feedback.Message);
                 feedback.Message = encryptedMessage;
 
-                await _reedbackRepository.AddFeedback(feedback);
+                await _feedbackRepository.AddFeedback(feedback);
 
                 return NoContent();
             }
@@ -83,7 +83,7 @@ namespace Avalon.Controllers
                     throw new ArgumentException($"Current user is null or does not have admin status.");
                 }
 
-                await _reedbackRepository.ToggleFeedbackStatus(feedbackIds, true);
+                await _feedbackRepository.ToggleFeedbackStatus(feedbackIds, true);
 
                 return NoContent();
             }
@@ -110,7 +110,7 @@ namespace Avalon.Controllers
                     throw new ArgumentException($"Current user is null or does not have admin status.");
                 }
 
-                await _reedbackRepository.ToggleFeedbackStatus(feedbackIds, false);
+                await _feedbackRepository.ToggleFeedbackStatus(feedbackIds, false);
 
                 return NoContent();
             }
@@ -143,7 +143,7 @@ namespace Avalon.Controllers
 
             var skip = parameterFilter.PageIndex == 0 ? parameterFilter.PageIndex : parameterFilter.PageIndex * parameterFilter.PageSize;
 
-            var feedbacks = await _reedbackRepository.GetUnassignedFeedbacks(feedbackParameters.Countrycode, feedbackParameters.Languagecode, skip, parameterFilter.PageSize);
+            var feedbacks = await _feedbackRepository.GetUnassignedFeedbacks(feedbackParameters.Countrycode, feedbackParameters.Languagecode, skip, parameterFilter.PageSize);
 
             foreach (var feedback in feedbacks)
             {
@@ -173,7 +173,7 @@ namespace Avalon.Controllers
                     throw new ArgumentException($"Current user is null or does not have admin status.");
                 }
 
-                await _reedbackRepository.AssignFeedbackToAdmin(currentUser, feedbackIds);
+                await _feedbackRepository.AssignFeedbackToAdmin(currentUser, feedbackIds);
 
                 return NoContent();
             }
@@ -204,7 +204,7 @@ namespace Avalon.Controllers
 
             var skip = parameterFilter.PageIndex == 0 ? parameterFilter.PageIndex : parameterFilter.PageIndex * parameterFilter.PageSize;
 
-            var feedbacks = await _reedbackRepository.GetFeedbacksByFilter(requestBody.FeedbackFilter, skip, parameterFilter.PageSize) ?? throw new ArgumentException($"Current feedbackFilter cannot find any matching feedbacks.", nameof(requestBody.FeedbackFilter));
+            var feedbacks = await _feedbackRepository.GetFeedbacksByFilter(requestBody.FeedbackFilter, skip, parameterFilter.PageSize) ?? throw new ArgumentException($"Current feedbackFilter cannot find any matching feedbacks.", nameof(requestBody.FeedbackFilter));
 
             foreach (var feedback in feedbacks)
             {
@@ -226,7 +226,7 @@ namespace Avalon.Controllers
         {
             try
             {
-                //await _reedbackRepository.DeleteOldFeedbacks();
+                //await _feedbackRepository.DeleteOldFeedbacks();
 
                 return NoContent();
             }

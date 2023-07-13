@@ -20,8 +20,8 @@ namespace Avalon.Data
         private readonly long _maxHeight;
         private readonly long _maxIsBookmarked;
         private readonly long _maxVisited;
-        private int _deleteProfileDaysBack;
-        private int _deleteProfileLimit;
+        //private int _deleteProfileDaysBack;
+        //private int _deleteProfileLimit;
         private int _complainsDaysBack;
         private int _complainsWarnUser;
         private int _complainsDeleteUser;
@@ -35,8 +35,8 @@ namespace Avalon.Data
             _maxHeight = config.GetValue<long>("MaxHeight");
             _maxIsBookmarked = config.GetValue<long>("MaxIsBookmarked");
             _maxVisited = config.GetValue<long>("MaxVisited");
-            _deleteProfileDaysBack = config.GetValue<int>("DeleteProfileDaysBack");
-            _deleteProfileLimit = config.GetValue<int>("DeleteProfileLimit");
+            //_deleteProfileDaysBack = config.GetValue<int>("DeleteProfileDaysBack");
+            //_deleteProfileLimit = config.GetValue<int>("DeleteProfileLimit");
             _complainsDaysBack = config.GetValue<int>("ComplainsDaysBack");
             _complainsWarnUser = config.GetValue<int>("ComplainsWarnUser");
             _complainsDeleteUser = config.GetValue<int>("ComplainsDeleteUser");
@@ -900,22 +900,22 @@ namespace Avalon.Data
 
         #region Maintenance
 
-        /// <summary>Gets 10 old profiles (limit) that are more than 30 days (daysBack) since last active.</summary>
-        /// <returns></returns>
-        public async Task<IEnumerable<Profile>> GetOldProfiles(int daysBack, int limit)
-        {
-            try
-            {
-                _deleteProfileDaysBack = daysBack > 0 ? daysBack : _deleteProfileDaysBack;
-                _deleteProfileLimit = limit > 0 ? limit : _deleteProfileLimit;
+        ///// <summary>Gets 10 old profiles (limit) that are more than 30 days (daysBack) since last active.</summary>
+        ///// <returns></returns>
+        //public async Task<IEnumerable<Profile>> GetOldProfiles(int daysBack, int limit)
+        //{
+        //    try
+        //    {
+        //        _deleteProfileDaysBack = daysBack > 0 ? daysBack : _deleteProfileDaysBack;
+        //        _deleteProfileLimit = limit > 0 ? limit : _deleteProfileLimit;
 
-                return await _context.Profiles.Find(p => p.LastActive < DateTime.UtcNow.AddDays(-_deleteProfileDaysBack) && !p.Admin).Project<Profile>(this.GetProjection()).Limit(_deleteProfileLimit).ToListAsync();
-            }
-            catch
-            {
-                throw;
-            }
-        }
+        //        return await _context.Profiles.Find(p => p.LastActive < DateTime.UtcNow.AddDays(-_deleteProfileDaysBack) && !p.Admin).Project<Profile>(this.GetProjection()).Limit(_deleteProfileLimit).ToListAsync();
+        //    }
+        //    catch
+        //    {
+        //        throw;
+        //    }
+        //}
 
         #endregion
     }
