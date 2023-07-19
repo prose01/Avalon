@@ -630,6 +630,9 @@ namespace Avalon.Controllers
                     return NotFound();
                 }
 
+                // An admin cannot complain.
+                if (currentUser.Admin) return NoContent();
+
                 await _groupRepository.AddComplainToGroupMember(currentUser, groupId, profileId);
 
                 return NoContent();
