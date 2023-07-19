@@ -19,12 +19,14 @@ namespace Avalon.Controllers
     {
         private readonly IProfilesQueryRepository _profilesQueryRepository;
         private readonly IHelperMethods _helper;
+        private int _complainsDeleteUser;
         //private readonly bool _deleteOldProfiles;
 
         public ProfilesQueryController(IProfilesQueryRepository profilesQueryRepository, IHelperMethods helperMethods, IConfiguration config)
         {
             _profilesQueryRepository = profilesQueryRepository;
             _helper = helperMethods;
+            _complainsDeleteUser = config.GetValue<int>("ComplainsDeleteUser");
             //_deleteOldProfiles = config.GetValue<bool>("DeleteOldProfiles");
         }
 
@@ -63,7 +65,9 @@ namespace Avalon.Controllers
                     {
                         if (profileId == null) continue;
 
-                        await _helper.DeleteProfileFromAuth0(profileId);
+                        var profile = await _profilesQueryRepository.GetProfileById(profileId);
+
+                        await _helper.DeleteProfileFromAuth0(profile.ProfileId);
                         await _profilesQueryRepository.DeleteProfile(profileId);
                     }
                 }
@@ -368,6 +372,14 @@ namespace Avalon.Controllers
                 }
 
                 await _profilesQueryRepository.AddComplainToProfile(currentUser, profile);
+
+
+                // Delete profile if too many complains
+                if (profile.Complains.Count >= _complainsDeleteUser)
+                {
+                    await _helper.DeleteProfileFromAuth0(profile.ProfileId);
+                    await _profilesQueryRepository.DeleteProfile(profile.ProfileId);
+                }
 
                 return NoContent();
             }

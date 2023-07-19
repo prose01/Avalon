@@ -482,13 +482,6 @@ namespace Avalon.Data
                     await _context.CurrentUser.ReplaceOneAsync(filter, currentUser);
                 }
 
-                // Check if CurrentUser has too many complains and should be deleted.
-                if (currentUser.Complains.Count >= _complainsDeleteUser)
-                {
-                    await this.DeleteCurrentUser(currentUser.ProfileId);
-                    return true;
-                }
-
                 // Check if CurrentUser has too many complains and should receive a warning.
                 if (currentUser.Complains.Count >= _complainsWarnUser)
                 {

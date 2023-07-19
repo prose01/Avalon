@@ -24,7 +24,6 @@ namespace Avalon.Data
         //private int _deleteProfileLimit;
         private int _complainsDaysBack;
         private int _complainsWarnUser;
-        private int _complainsDeleteUser;
 
         public ProfilesQueryRepository(IOptions<Settings> settings, IConfiguration config)
         {
@@ -39,7 +38,6 @@ namespace Avalon.Data
             //_deleteProfileLimit = config.GetValue<int>("DeleteProfileLimit");
             _complainsDaysBack = config.GetValue<int>("ComplainsDaysBack");
             _complainsWarnUser = config.GetValue<int>("ComplainsWarnUser");
-            _complainsDeleteUser = config.GetValue<int>("ComplainsDeleteUser");
         }
 
         #region Admin stuff
@@ -804,13 +802,6 @@ namespace Avalon.Data
 
 
                     profile.Complains.Add(currentUser.ProfileId, DateTime.UtcNow);
-
-                    // Delete profile if too many complains
-                    if (profile.Complains.Count >= _complainsDeleteUser)
-                    {
-                        //await this.DeleteProfile(profile.ProfileId);
-                        return;
-                    }
 
                     // Send warning to profile if too many complains
                     if (profile.Complains.Count >= _complainsWarnUser)
