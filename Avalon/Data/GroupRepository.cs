@@ -250,19 +250,27 @@ namespace Avalon.Data
 
                 foreach (var group in groups)
                 {
-                    foreach (var member in group.GroupMemberslist)
+                    // Last person leaving turn out the lights
+                    if (group.GroupMemberslist.Count() == 1 & group.GroupMemberslist.First().ProfileId == profileId)
                     {
-                        if (member.ProfileId == profileId)
+                        await _context.Groups.DeleteOneAsync(Builders<GroupModel>.Filter.Eq("GroupId", group.GroupId));
+                    }
+                    else
+                    {
+                        foreach (var member in group.GroupMemberslist)
                         {
-                            // Do Not remove member if it has been block as this would otherwise allow them to join again.
-                            if(member.Blocked == true)
+                            if (member.ProfileId == profileId)
+                            {
+                                // Do Not remove member if it has been block as this would otherwise allow them to join again.
+                                if (member.Blocked == true)
+                                    break;
+
+                                group.GroupMemberslist.Remove(member);
+
+                                updates.Add(update.Set(g => g.GroupMemberslist, group.GroupMemberslist));
+
                                 break;
-
-                            group.GroupMemberslist.Remove(member);
-
-                            updates.Add(update.Set(g => g.GroupMemberslist, group.GroupMemberslist));
-
-                            break;
+                            }
                         }
                     }
                 }
