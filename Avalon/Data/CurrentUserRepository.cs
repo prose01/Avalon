@@ -16,7 +16,6 @@ namespace Avalon.Data
         private readonly IProfilesQueryRepository _profilesQueryRepository;
         private int _complainsDaysBack;
         private int _complainsWarnUser;
-        private int _complainsDeleteUser;
 
         public CurrentUserRepository(IOptions<Settings> settings, IConfiguration config, IProfilesQueryRepository profilesQueryRepository)
         {
@@ -24,7 +23,6 @@ namespace Avalon.Data
             _profilesQueryRepository = profilesQueryRepository;
             _complainsDaysBack = config.GetValue<int>("ComplainsDaysBack");
             _complainsWarnUser = config.GetValue<int>("ComplainsWarnUser");
-            _complainsDeleteUser = config.GetValue<int>("ComplainsDeleteUser");
         }
 
         /// <summary>Adds a new profile.</summary>
@@ -155,7 +153,7 @@ namespace Avalon.Data
         {
             try
             {
-                //Filter out allready bookmarked profiles.
+                //Filter out already bookmarked profiles.
                 var newBookmarks = profileIds.Where(i => !currentUser.Bookmarks.Contains(i)).ToList();
 
                 if (newBookmarks.Count == 0)
@@ -183,7 +181,7 @@ namespace Avalon.Data
         {
             try
             {
-                //Filter out allready removed bookmarked profiles.
+                //Filter out already removed bookmarked profiles.
                 var removeBookmarks = profileIds.Where(i => currentUser.Bookmarks.Contains(i)).ToList();
 
                 if (removeBookmarks.Count == 0)
@@ -211,7 +209,7 @@ namespace Avalon.Data
         {
             try
             {
-                //Filter out allready added ChatMembers.
+                //Filter out already added ChatMembers.
                 var newChatMemberIds = profileIds.Where(i => !currentUser.ChatMemberslist.Any(m => m.ProfileId == i)).ToList();
 
                 if (newChatMemberIds.Count == 0)
@@ -283,7 +281,7 @@ namespace Avalon.Data
         {
             try
             {
-                //Check if currentUser has allready joined group.
+                //Check if currentUser has already joined group.
                 if(currentUser.Groups.Contains(groupId))
                 {
                     return;
@@ -310,7 +308,7 @@ namespace Avalon.Data
         {
             try
             {
-                //Filter out allready removed groups.
+                //Filter out already removed groups.
                 var removeGroups = groupIds.Where(i => currentUser.Groups.Contains(i)).ToList();
 
                 if (removeGroups.Count == 0)

@@ -1,5 +1,4 @@
 ﻿using Avalon.Model;
-using MongoDB.Driver;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -12,6 +11,5 @@ namespace Avalon.Interfaces
         Task<IEnumerable<Feedback>> GetUnassignedFeedbacks(string Countrycode, string Languagecode, int skip, int limit);
         Task AssignFeedbackToAdmin(CurrentUser currentUser, string[] feedbackIds);
         Task<IEnumerable<Feedback>> GetFeedbacksByFilter(FeedbackFilter feedbackFilter, int skip, int limit);
-        //Task<DeleteResult> DeleteOldFeedbacks();
     }
 }

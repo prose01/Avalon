@@ -88,18 +88,6 @@ namespace Avalon.Helpers
             }
         }
 
-        ///// <summary>Deletes 10 old profiles that are more than 30 days since last active.</summary>
-        //public async Task DeleteOldProfiles(int daysBack, int limit)
-        //{
-        //    var oldProfiles = await _profilesQueryRepository.GetOldProfiles(daysBack, limit);
-
-        //    foreach (var profile in oldProfiles)
-        //    {
-        //        //await _helper.DeleteProfileFromAuth0(profile.ProfileId);
-        //        //await _profilesQueryRepository.DeleteProfile(profile.ProfileId);
-        //    }
-        //}
-
         // TODO: Auth0 customers are billed based on the number of Machine to Machine Access Tokens issued by Auth0.
         // Once your application gets an Access Token it should keep using it until it expires, to minimize the number of tokens requested.
 

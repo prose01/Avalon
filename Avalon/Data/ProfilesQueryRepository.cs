@@ -20,10 +20,7 @@ namespace Avalon.Data
         private readonly long _maxHeight;
         private readonly long _maxIsBookmarked;
         private readonly long _maxVisited;
-        //private int _deleteProfileDaysBack;
-        //private int _deleteProfileLimit;
         private int _complainsDaysBack;
-        private int _complainsWarnUser;
 
         public ProfilesQueryRepository(IOptions<Settings> settings, IConfiguration config)
         {
@@ -34,10 +31,7 @@ namespace Avalon.Data
             _maxHeight = config.GetValue<long>("MaxHeight");
             _maxIsBookmarked = config.GetValue<long>("MaxIsBookmarked");
             _maxVisited = config.GetValue<long>("MaxVisited");
-            //_deleteProfileDaysBack = config.GetValue<int>("DeleteProfileDaysBack");
-            //_deleteProfileLimit = config.GetValue<int>("DeleteProfileLimit");
             _complainsDaysBack = config.GetValue<int>("ComplainsDaysBack");
-            _complainsWarnUser = config.GetValue<int>("ComplainsWarnUser");
         }
 
         #region Admin stuff
@@ -701,7 +695,6 @@ namespace Avalon.Data
         /// <summary>Add currentUser.profileId to likes list of profiles.</summary>
         /// <param name="currentUser">The current user.</param>
         /// <param name="profileIds">The profile ids.</param>
-
         public async Task AddLikeToProfiles(CurrentUser currentUser, string[] profileIds)
         {
             try
@@ -738,7 +731,6 @@ namespace Avalon.Data
         /// <summary>Removes currentUser.profileId from likes list of profiles.</summary>
         /// <param name="currentUser">The current user.</param>
         /// <param name="profileIds">The profile ids.</param>
-
         public async Task RemoveLikeFromProfiles(CurrentUser currentUser, string[] profileIds)
         {
             try
@@ -802,12 +794,6 @@ namespace Avalon.Data
 
 
                     profile.Complains.Add(currentUser.ProfileId, DateTime.UtcNow);
-
-                    // Send warning to profile if too many complains
-                    if (profile.Complains.Count >= _complainsWarnUser)
-                    {
-                        //warning; // TODO: Send warning to profile if too many complains
-                    }
                 }
 
                 var filter = Builders<Profile>
@@ -886,27 +872,6 @@ namespace Avalon.Data
 
             return projection;
         }
-
-        #endregion
-
-        #region Maintenance
-
-        ///// <summary>Gets 10 old profiles (limit) that are more than 30 days (daysBack) since last active.</summary>
-        ///// <returns></returns>
-        //public async Task<IEnumerable<Profile>> GetOldProfiles(int daysBack, int limit)
-        //{
-        //    try
-        //    {
-        //        _deleteProfileDaysBack = daysBack > 0 ? daysBack : _deleteProfileDaysBack;
-        //        _deleteProfileLimit = limit > 0 ? limit : _deleteProfileLimit;
-
-        //        return await _context.Profiles.Find(p => p.LastActive < DateTime.UtcNow.AddDays(-_deleteProfileDaysBack) && !p.Admin).Project<Profile>(this.GetProjection()).Limit(_deleteProfileLimit).ToListAsync();
-        //    }
-        //    catch
-        //    {
-        //        throw;
-        //    }
-        //}
 
         #endregion
     }

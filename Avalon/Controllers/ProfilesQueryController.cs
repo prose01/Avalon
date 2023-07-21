@@ -20,14 +20,12 @@ namespace Avalon.Controllers
         private readonly IProfilesQueryRepository _profilesQueryRepository;
         private readonly IHelperMethods _helper;
         private int _complainsDeleteUser;
-        //private readonly bool _deleteOldProfiles;
 
         public ProfilesQueryController(IProfilesQueryRepository profilesQueryRepository, IHelperMethods helperMethods, IConfiguration config)
         {
             _profilesQueryRepository = profilesQueryRepository;
             _helper = helperMethods;
             _complainsDeleteUser = config.GetValue<int>("ComplainsDeleteUser");
-            //_deleteOldProfiles = config.GetValue<bool>("DeleteOldProfiles");
         }
 
         /// <summary>
@@ -519,39 +517,5 @@ namespace Avalon.Controllers
 
             return Json(new { tuple.total, tuple.profiles });
         }
-
-        #region Maintenance
-
-        ///// <summary>Deletes 10 old profiles that are more than 30 days since last active.</summary>
-        //[NoCache]
-        //[HttpDelete("~/DeleteOldProfiles")]
-        //[ProducesResponseType((int)HttpStatusCode.NoContent)]
-        //public async Task<IActionResult> DeleteOldProfiles(int daysBack, int limit)
-        //{
-        //    try
-        //    {
-        //        if(_deleteOldProfiles)
-        //        {
-        //            var currentUser = await _helper.GetCurrentUserProfile(User);
-
-        //            if (currentUser == null || currentUser.Name == null)
-        //            {
-        //                return NotFound();
-        //            }
-
-        //            if (!currentUser.Admin) throw new ArgumentException($"Current user does not have admin status.");
-
-        //            await _helper.DeleteOldProfiles(daysBack, limit);                    
-        //        }
-
-        //        return NoContent();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return Problem(ex.ToString());
-        //    }
-        //}
-
-        #endregion
     }
 }

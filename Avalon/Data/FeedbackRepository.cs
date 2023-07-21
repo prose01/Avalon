@@ -13,12 +13,10 @@ namespace Avalon.Data
     public class FeedbackRepository : IFeedbackRepository
     {
         private readonly Context _context = null;
-        //private readonly int _deleteFeedbacksOlderThanYear;
 
         public FeedbackRepository(IOptions<Settings> settings, IConfiguration config)
         {
             _context = new Context(settings);
-            //_deleteFeedbacksOlderThanYear = config.GetValue<int>("DeleteFeedbacksOlderThanYear");
         }
 
         public async Task AddFeedback(Feedback item)
@@ -27,9 +25,9 @@ namespace Avalon.Data
             {
                 await _context.Feedbacks.InsertOneAsync(item);
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -46,9 +44,9 @@ namespace Avalon.Data
                     await _context.Feedbacks.FindOneAndUpdateAsync(filter, update);
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -62,11 +60,12 @@ namespace Avalon.Data
         {
             try
             {
-                List<FilterDefinition<Feedback>> filters = new List<FilterDefinition<Feedback>>();
+                List<FilterDefinition<Feedback>> filters = new List<FilterDefinition<Feedback>>
+                {
+                    Builders<Feedback>.Filter.Eq(f => f.Open, true),
 
-                filters.Add(Builders<Feedback>.Filter.Eq(f => f.Open, true));
-
-                filters.Add(Builders<Feedback>.Filter.Eq(f => f.AdminProfileId, null));
+                    Builders<Feedback>.Filter.Eq(f => f.AdminProfileId, null)
+                };
 
                 if (!string.IsNullOrEmpty(countrycode))
                     filters.Add(Builders<Feedback>.Filter.Eq(f => f.Countrycode, countrycode));
@@ -81,9 +80,9 @@ namespace Avalon.Data
                 return await _context.Feedbacks
                             .Find(combineFilters).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -98,21 +97,22 @@ namespace Avalon.Data
             {
                 var filter = Builders<Feedback>.Filter.In(f => f.FeedbackId, feedbackIds);
 
-                List<UpdateDefinition<Feedback>> updates = new List<UpdateDefinition<Feedback>>();
+                List<UpdateDefinition<Feedback>> updates = new List<UpdateDefinition<Feedback>>
+                {
+                    Builders<Feedback>.Update.Set(f => f.AdminProfileId, currentUser.ProfileId),
 
-                updates.Add(Builders<Feedback>.Update.Set(f => f.AdminProfileId, currentUser.ProfileId));
+                    Builders<Feedback>.Update.Set(f => f.AdminName, currentUser.Name),
 
-                updates.Add(Builders<Feedback>.Update.Set(f => f.AdminName, currentUser.Name));
-
-                updates.Add(Builders<Feedback>.Update.Set(f => f.DateSeen, DateTime.UtcNow));
+                    Builders<Feedback>.Update.Set(f => f.DateSeen, DateTime.UtcNow)
+                };
 
                 var combineUpdates = Builders<Feedback>.Update.Combine(updates);
 
                 await _context.Feedbacks.FindOneAndUpdateAsync(filter, combineUpdates);
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -146,9 +146,9 @@ namespace Avalon.Data
                 return await _context.Feedbacks
                                 .Find(combineFilters).Sort(sortDefinition).Skip(skip).Limit(limit).ToListAsync();
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -199,8 +199,6 @@ namespace Avalon.Data
                 if (feedbackFilter.Open != null)
                 {
                     filters.Add(Builders<Feedback>.Filter.Eq(f => f.Open, feedbackFilter.Open));
-                    //bool.TryParse(feedbackFilter.Open, out bool parsedValue);
-                    //filters.Add(Builders<Feedback>.Filter.Eq(f => f.Open, parsedValue));
                 }
 
                 if (feedbackFilter.Countrycode != null)
@@ -211,34 +209,10 @@ namespace Avalon.Data
 
                 return filters;
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
-
-
-
-        ///// <summary>Deletes Feedbacks that are greater  than 1 year old (DateSeen) and closed.</summary>
-        ///// <returns></returns>
-        //public async Task<DeleteResult> DeleteOldFeedbacks()
-        //{
-        //    try
-        //    {
-        //        List<FilterDefinition<Feedback>> filters = new List<FilterDefinition<Feedback>>();
-
-        //        filters.Add(Builders<Feedback>.Filter.Gt(f => f.DateSeen, DateTime.UtcNow.AddYears(-_deleteFeedbacksOlderThanYear)));
-
-        //        filters.Add(Builders<Feedback>.Filter.Eq(f => f.Open, false));
-
-        //        var combineFilters = Builders<Feedback>.Filter.And(filters);
-
-        //        return await _context.Feedbacks.DeleteManyAsync(combineFilters);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw ex;
-        //    }
-        //}
     }
 }
