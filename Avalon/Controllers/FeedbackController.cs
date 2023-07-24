@@ -213,29 +213,5 @@ namespace Avalon.Controllers
 
             return feedbacks;
         }
-
-
-        #region Maintenance
-
-        /// <summary>Deletes Feedbacks that are greater  than 1 year old (DateSeen) and closed.</summary>
-        /// <returns></returns>
-        [NoCache]
-        [HttpDelete("~/DeleteOldFeedbacks")]
-        [ProducesResponseType((int)HttpStatusCode.NoContent)]
-        public async Task<IActionResult> DeleteOldFeedbacks()
-        {
-            try
-            {
-                //await _feedbackRepository.DeleteOldFeedbacks();
-
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                return Problem(ex.ToString());
-            }
-        }
-
-        #endregion
     }
 }
