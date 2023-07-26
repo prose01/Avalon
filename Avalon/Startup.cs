@@ -42,6 +42,13 @@ namespace Avalon
                                 .AllowAnyHeader()
                                 .AllowCredentials()
                     );
+
+                options.AddPolicy("CorsPolicy2",
+                    builder => builder.WithOrigins("http://localhost:4200/manifest.webmanifest")
+                                .WithMethods("GET", "POST", "PUT", "PATCH", "DELETE", "HEAD")
+                                .AllowAnyHeader()
+                                .AllowCredentials()
+                    );
             });
 
             // Add framework services.
@@ -167,6 +174,10 @@ namespace Avalon
                 {
                     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Avalon V1");
                 });
+
+                app.UseCors("CorsPolicy");
+
+                app.UseCors("CorsPolicy2");
             }
             //else
             //{
@@ -174,8 +185,6 @@ namespace Avalon
             //}
 
             // Shows UseCors with CorsPolicyBuilder.
-            
-            app.UseCors("CorsPolicy");
 
             app.UseHttpsRedirection();
 
