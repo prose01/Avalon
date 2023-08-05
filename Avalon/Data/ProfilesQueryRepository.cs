@@ -126,6 +126,32 @@ namespace Avalon.Data
         //    }
         //}
 
+        /// <summary>Gets the profile Auth0Id by identifier.</summary>
+        /// <param name="profileId">The profile identifier.</param>
+        /// <returns></returns>
+        public async Task<string> GetAuth0Id(string profileId)
+        {
+            try
+            {
+                var filter = Builders<Profile>
+                                .Filter.Eq(p => p.ProfileId, profileId);
+
+                var projection = Builders<Profile>
+                                .Projection.Include(p => p.Auth0Id);
+
+                var profile = await _context.Profiles
+                    .Find(filter)
+                    .Project<Profile>(projection)
+                    .FirstOrDefaultAsync();
+
+                return profile.Auth0Id;
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
         /// <summary>Gets the profile by identifier.</summary>
         /// <param name="profileId">The profile identifier.</param>
         /// <returns></returns>
@@ -148,7 +174,7 @@ namespace Avalon.Data
         }
 
         /// <summary>Gets profiles by identifiers.</summary>
-        /// <param name="profileId">The profile identifiers.</param>        // TODO: This can be moved to another application when CleanCurrentUser is moved!!!
+        /// <param name="profileId">The profile identifiers.</param>
         /// <returns></returns>
         public async Task<IEnumerable<Profile>> GetProfilesByIds(string[] profileIds)
         {

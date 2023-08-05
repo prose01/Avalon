@@ -11,6 +11,7 @@ namespace Avalon.Interfaces
         Task<Profile> RemoveAdmin(string profileId);
         Task<DeleteResult> DeleteProfile(string profileId);
         Task<Profile> GetProfileByAuth0Id(string auth0Id);
+        Task<string> GetAuth0Id(string profileId);
         Task<Profile> GetProfileById(string profileId);
         Task<IEnumerable<Profile>> GetProfilesByIds(string[] profileIds);
         Task<(int total, IReadOnlyList<Profile> profiles)> GetProfilesByIds(CurrentUser currentUser, string[] profileIds, int skip, int limit);

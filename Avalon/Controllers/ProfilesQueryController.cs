@@ -55,17 +55,15 @@ namespace Avalon.Controllers
 
                 if (Array.Exists(profileIds, x => x == currentUser.ProfileId))
                 {
-                    throw new ArgumentException($"Admins cannot delete themseleves.");
+                    throw new ArgumentException($"Admins cannot delete themselves.");
                 }
                 else
                 {
                     foreach (var profileId in profileIds)
                     {
-                        if (profileId == null) continue;
+                        if (string.IsNullOrEmpty(profileId)) continue;
 
-                        var profile = await _profilesQueryRepository.GetProfileById(profileId);
-
-                        await _helper.DeleteProfileFromAuth0(profile.ProfileId);
+                        await _helper.DeleteProfileFromAuth0(profileId);
                         await _profilesQueryRepository.DeleteProfile(profileId);
                     }
                 }

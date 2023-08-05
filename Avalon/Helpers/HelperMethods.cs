@@ -6,6 +6,7 @@ using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Avalon.Helpers
@@ -70,19 +71,19 @@ namespace Avalon.Helpers
         {
             try
             {
-                var profile = await _profilesQueryRepository.GetProfileById(profileId);
+                var auth0Id = await _profilesQueryRepository.GetAuth0Id(profileId);
 
-                if (profile == null) return;
+                if (string.IsNullOrEmpty(auth0Id)) return;
 
                 var accessToken = string.IsNullOrEmpty(token) ? await GetAuth0Token() : token;
 
-                var url = _auth0ApiIdentifier + "users/" + profile.Auth0Id;
+                var url = _auth0ApiIdentifier + "users/" + auth0Id;
                 var client = new RestClient(url);
                 var request = new RestRequest(url, Method.Delete);
                 request.AddHeader("authorization", "Bearer " + accessToken);
-                //var response = await client.ExecuteAsync(request, CancellationToken.None);
+                var response = await client.ExecuteAsync(request, CancellationToken.None);
             }
-            catch
+            catch(Exception ex)
             {
                 throw;
             }
