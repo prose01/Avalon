@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -417,7 +418,13 @@ namespace Avalon.Controllers
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
-            if (currentUser.ProfileFilter == null) throw new ArgumentException($"Current users profileFilter is null.", nameof(parameterFilter));
+            if (currentUser == null || currentUser.ProfileFilter == null)
+            {
+                int total = 0;
+                List<Profile> profiles = new List<Profile> { };
+
+                return Json(new { total, profiles });
+            }
 
             var skip = parameterFilter.PageIndex == 0 ? parameterFilter.PageIndex : parameterFilter.PageIndex * parameterFilter.PageSize;
 
@@ -437,6 +444,14 @@ namespace Avalon.Controllers
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
+            if (currentUser == null || currentUser.Name == null)
+            {
+                int total = 0;
+                List<Profile> profiles = new List<Profile> { };
+
+                return Json(new { total, profiles });
+            }
+
             var skip = parameterFilter.PageIndex == 0 ? parameterFilter.PageIndex : parameterFilter.PageIndex * parameterFilter.PageSize;
 
             var tuple = await _profilesQueryRepository.GetLatestProfiles(currentUser, parameterFilter.OrderByType, skip, parameterFilter.PageSize);
@@ -454,6 +469,14 @@ namespace Avalon.Controllers
         public async Task<IActionResult> GetBookmarkedProfiles([FromQuery] ParameterFilter parameterFilter)
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            if (currentUser == null || currentUser.Name == null)
+            {
+                int total = 0;
+                List<Profile> profiles = new List<Profile> { };
+
+                return Json(new { total, profiles });
+            }
 
             var skip = parameterFilter.PageIndex == 0 ? parameterFilter.PageIndex : parameterFilter.PageIndex * parameterFilter.PageSize;
 
@@ -473,6 +496,14 @@ namespace Avalon.Controllers
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
+            if (currentUser == null || currentUser.Name == null)
+            {
+                int total = 0;
+                List<Profile> profiles = new List<Profile> { };
+
+                return Json(new { total, profiles });
+            }
+
             var skip = parameterFilter.PageIndex == 0 ? parameterFilter.PageIndex : parameterFilter.PageIndex * parameterFilter.PageSize;
 
             var tuple = await _profilesQueryRepository.GetProfilesWhoVisitedMe(currentUser, parameterFilter.OrderByType, skip, parameterFilter.PageSize);
@@ -491,6 +522,14 @@ namespace Avalon.Controllers
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
+            if (currentUser == null || currentUser.Name == null)
+            {
+                int total = 0;
+                List<Profile> profiles = new List<Profile> { };
+
+                return Json(new { total, profiles });
+            }
+
             var skip = parameterFilter.PageIndex == 0 ? parameterFilter.PageIndex : parameterFilter.PageIndex * parameterFilter.PageSize;
 
             var tuple = await _profilesQueryRepository.GetProfilesWhoBookmarkedMe(currentUser, parameterFilter.OrderByType, skip, parameterFilter.PageSize);
@@ -508,6 +547,14 @@ namespace Avalon.Controllers
         public async Task<IActionResult> GetProfilesWhoLikesMe([FromQuery] ParameterFilter parameterFilter)
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            if (currentUser == null || currentUser.Name == null)
+            {
+                int total = 0;
+                List<Profile> profiles = new List<Profile> { };
+
+                return Json(new { total, profiles });
+            }
 
             var skip = parameterFilter.PageIndex == 0 ? parameterFilter.PageIndex : parameterFilter.PageIndex * parameterFilter.PageSize;
 

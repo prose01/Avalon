@@ -390,6 +390,14 @@ namespace Avalon.Controllers
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
+            if (currentUser == null || currentUser.Name == null)
+            {
+                int total = 0;
+                List<GroupModel> groups = new List<GroupModel> { };
+
+                return Json(new { total, groups });
+            }
+
             var skip = parameterFilter.PageIndex == 0 ? parameterFilter.PageIndex : parameterFilter.PageIndex * parameterFilter.PageSize;
 
             var tuple = await _groupRepository.GetGroups(currentUser, skip, parameterFilter.PageSize);
@@ -404,6 +412,12 @@ namespace Avalon.Controllers
         public async Task<IEnumerable<GroupModel>> GetCurrenUsersGroups([FromQuery] ParameterFilter parameterFilter)
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            if (currentUser == null || currentUser.Name == null)
+            {
+                List<GroupModel> emptyGroups = new List<GroupModel> { };
+                return emptyGroups;
+            }
 
             var skip = parameterFilter.PageIndex == 0 ? parameterFilter.PageIndex : parameterFilter.PageIndex * parameterFilter.PageSize;
 
@@ -427,6 +441,14 @@ namespace Avalon.Controllers
                 return await this.GetGroups(parameterFilter);
 
             var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            if (currentUser == null || currentUser.Name == null)
+            {
+                int total = 0;
+                List<GroupModel> groups = new List<GroupModel> { };
+
+                return Json(new { total, groups });
+            }
 
             var skip = parameterFilter.PageIndex == 0 ? parameterFilter.PageIndex : parameterFilter.PageIndex * parameterFilter.PageSize;
 
@@ -710,33 +732,5 @@ namespace Avalon.Controllers
                 return Problem(ex.ToString());
             }
         }
-
-
-        #region Temp method for Dev. TODO: Please delete before release!
-
-        ///// <summary>
-        ///// Deletes the CurrentUser profile.
-        ///// </summary>
-        //[HttpPost("~/DeleteProfileFromAuth0")]
-        //[ProducesResponseType((int)HttpStatusCode.NoContent)]
-        //[ProducesResponseType((int)HttpStatusCode.NotFound)]
-        //public async Task<IActionResult> DeleteProfileFromAuth0([FromBody] string profileId)
-        //{
-
-        //    try
-        //    {
-        //        await _helper.DeleteProfileFromAuth0(profileId);
-
-        //        //var auth0 = new DeleteProfileFromAuth0();
-
-        //        return NoContent();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return Problem(ex.ToString());
-        //    }
-        //}
-
-        #endregion
     }
 }
