@@ -10,8 +10,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
-using System;
-using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace Avalon
@@ -37,14 +35,7 @@ namespace Avalon
             services.AddCors(options =>
             {
                 options.AddPolicy("CorsPolicy",
-                    builder => builder.WithOrigins("http://localhost:4200")
-                                .WithMethods("GET", "POST", "PUT", "PATCH", "DELETE", "HEAD")
-                                .AllowAnyHeader()
-                                .AllowCredentials()
-                    );
-
-                options.AddPolicy("CorsPolicy2",
-                    builder => builder.WithOrigins("http://localhost:4200/manifest.webmanifest")
+                    builder => builder.WithOrigins("http://localhost:4200", "http://localhost:4200/manifest.webmanifest")
                                 .WithMethods("GET", "POST", "PUT", "PATCH", "DELETE", "HEAD")
                                 .AllowAnyHeader()
                                 .AllowCredentials()
@@ -95,29 +86,8 @@ namespace Avalon
                 {
                     Version = "v1",
                     Title = "Avalon API",
-                    Description = "A simple example Avalon API",
-                    //TermsOfService = "None",
-                    //Contact = new Contact { Name = "Peter Rose", Email = "", Url = "http://Avalon.com/" },
-                    //License = new Swashbuckle.AspNetCore.Swagger.License { Name = "Use under LICX", Url = "http://Avalon.com" }
+                    Description = "A simple example Avalon API"
                 });
-
-                // Define the ApiKey scheme that's in use (i.e. Implicit Flow)
-                //c.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
-                //{
-                //    Type = SecuritySchemeType.ApiKey,
-                //    Flows = new OpenApiOAuthFlows
-                //    {
-                //        Implicit = new OpenApiOAuthFlow
-                //        {
-                //            AuthorizationUrl = new Uri("/auth-server/connect/authorize", UriKind.Relative),
-                //            Scopes = new Dictionary<string, string>
-                //            {
-                //                { "readAccess", "Access read operations" },
-                //                { "writeAccess", "Access write operations" }
-                //            }
-                //        }
-                //    }
-                //});
 
                 var securitySchema = new OpenApiSecurityScheme
                 {
@@ -161,10 +131,7 @@ namespace Avalon
 
             if (env.IsDevelopment() || env.IsStaging())
             {
-                //app.UseStatusCodePages();     https://stackoverflow.com/questions/51719195/asp-net-core-useexceptionhandler-not-working-post-request
-                //app.UseDatabaseErrorPage();   https://docs.microsoft.com/en-us/aspnet/core/fundamentals/error-handling?view=aspnetcore-3.1
                 app.UseDeveloperExceptionPage();
-                //app.UseExceptionHandler("/error-local-development");
 
                 // Enable middleware to serve generated Swagger as a JSON endpoint.
                 app.UseSwagger();
@@ -176,15 +143,7 @@ namespace Avalon
                 });
 
                 app.UseCors("CorsPolicy");
-
-                app.UseCors("CorsPolicy2");
             }
-            //else
-            //{
-            //    app.UseExceptionHandler("/error");
-            //}
-
-            // Shows UseCors with CorsPolicyBuilder.
 
             app.UseHttpsRedirection();
 
