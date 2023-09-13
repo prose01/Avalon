@@ -190,6 +190,7 @@ namespace Avalon.Controllers
         /// <summary>
         /// Deletes the CurrentUser profile.
         /// </summary>
+        /// <exception cref="ArgumentException">Admins cannot delete themselves.</exception>
         [HttpDelete("~/CurrentUser")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
@@ -202,7 +203,7 @@ namespace Avalon.Controllers
                 return NotFound();
             }
 
-            if (currentUser.Admin) throw new ArgumentException($"Admins cannot delete themseleves.");
+            if (currentUser.Admin) throw new ArgumentException($"Admins cannot delete themselves.");
 
             try
             {

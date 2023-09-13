@@ -77,7 +77,6 @@ namespace Avalon
             // Add our helper method(s)
             services.AddSingleton<ICryptography, Cryptography>();
             services.AddSingleton<IHelperMethods, HelperMethods>();
-            //services.AddSingleton<ITwitterClient>(new DeleteProfileFromAuth0(Configuration["Twitter:ApiKey"],Configuration["Twitter:ApiKeySecret"]));
 
             // Register the Swagger generator, defining one or more Swagger documents
             services.AddSwaggerGen(c =>
