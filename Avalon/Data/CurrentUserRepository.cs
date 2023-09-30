@@ -385,7 +385,7 @@ namespace Avalon.Data
 
                 checkThesesProfiles = checkThesesProfiles.Union(currentUser.Likes).ToArray();
 
-                checkThesesProfiles = checkThesesProfiles.Union(currentUser.Complains.Keys).ToArray();
+                checkThesesProfiles = checkThesesProfiles.Union(currentUser.Complains?.Keys).ToArray();
 
 
                 // Chech if our profiles exist
@@ -465,9 +465,9 @@ namespace Avalon.Data
             try
             {
                 // Remove old complains.
-                var oldcomplains = currentUser.Complains.Where(i => i.Value < DateTime.UtcNow.AddDays(-_complainsDaysBack)).ToArray();
+                var oldcomplains = currentUser.Complains?.Where(i => i.Value < DateTime.UtcNow.AddDays(-_complainsDaysBack)).ToArray();
 
-                if (oldcomplains.Length > 0)
+                if (oldcomplains?.Length > 0)
                 {
                     foreach (var oldcomplain in oldcomplains)
                     {
@@ -481,7 +481,7 @@ namespace Avalon.Data
                 }
 
                 // Check if CurrentUser has too many complains and should receive a warning.
-                if (currentUser.Complains.Count >= _complainsWarnUser)
+                if (currentUser.Complains?.Count >= _complainsWarnUser)
                 {
                     return true;
                 }
