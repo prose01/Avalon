@@ -710,7 +710,7 @@ namespace Avalon.Data
                 var update = Builders<Profile>
                             .Update.Set(p => p.Visited, profile.Visited);
 
-                await _context.Profiles.FindOneAndUpdateAsync(filter, update);
+                await _context.Profiles.UpdateOneAsync(filter, update);
             }
             catch
             {
@@ -828,7 +828,7 @@ namespace Avalon.Data
                 var update = Builders<Profile>
                             .Update.Set(p => p.Complains, profile.Complains);
 
-                await _context.Profiles.FindOneAndUpdateAsync(filter, update);
+                await _context.Profiles.UpdateOneAsync(filter, update);
             }
             catch
             {

@@ -41,7 +41,7 @@ namespace Avalon.Data
 
                     var update = Builders<Feedback>.Update.Set(f => f.Open, status);
 
-                    await _context.Feedbacks.FindOneAndUpdateAsync(filter, update);
+                    await _context.Feedbacks.UpdateOneAsync(filter, update);
                 }
             }
             catch
@@ -108,7 +108,7 @@ namespace Avalon.Data
 
                 var combineUpdates = Builders<Feedback>.Update.Combine(updates);
 
-                await _context.Feedbacks.FindOneAndUpdateAsync(filter, combineUpdates);
+                await _context.Feedbacks.UpdateOneAsync(filter, combineUpdates);
             }
             catch
             {

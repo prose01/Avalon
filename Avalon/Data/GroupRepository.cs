@@ -228,7 +228,7 @@ namespace Avalon.Data
                 var update = Builders<GroupModel>
                                 .Update.Push(g => g.GroupMemberslist, member);
 
-                await _context.Groups.FindOneAndUpdateAsync(filter, update);
+                await _context.Groups.UpdateOneAsync(filter, update);
             }
             catch
             {
