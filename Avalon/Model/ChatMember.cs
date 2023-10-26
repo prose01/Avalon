@@ -1,4 +1,7 @@
-﻿namespace Avalon.Model
+﻿using System.Collections.Generic;
+using System;
+
+namespace Avalon.Model
 {
     public class ChatMember
     {
@@ -6,6 +9,7 @@
 
         public string Name { get; set; }
         public AvatarModel Avatar { get; set; }
+        public DateTime? LastMessagesSeen { get; set; }
 
         public bool Blocked { get; set; }
     }

@@ -92,7 +92,7 @@ namespace Avalon.Controllers
                 item.Visited = new Dictionary<string, DateTime>();
                 item.Likes = new List<string>();
                 item.Complains = new Dictionary<string, DateTime>();
-                item.Groups = new List<string>();
+                item.Groups = new Dictionary<string, DateTime?>();
 
                 await _currentUserRepository.AddProfile(item);
 
@@ -165,7 +165,7 @@ namespace Avalon.Controllers
                     item.IsBookmarked = new Dictionary<string, DateTime>();
                     item.Visited = new Dictionary<string, DateTime>();
                     item.Likes = new List<string>();
-                    item.Groups = new List<string>();
+                    item.Groups = new Dictionary<string, DateTime?>();
                 }
                 else
                 {
@@ -424,7 +424,7 @@ namespace Avalon.Controllers
 
             var limit = parameterFilter.PageSize > currentUser?.Groups.Count ? currentUser.Groups.Count : parameterFilter.PageSize;
 
-            var groups = currentUser.Groups.Skip(skip).Take(limit);
+            var groups = currentUser.Groups.Skip(skip).Take(limit).Select(g => g.Key);
 
             return await _groupRepository.GetGroupsByIds(groups.ToArray());
         }

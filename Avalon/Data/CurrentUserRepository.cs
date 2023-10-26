@@ -118,7 +118,7 @@ namespace Avalon.Data
                 var update = Builders<CurrentUser>
                                 .Update.Set(c => c.ProfileFilter, profileFilter);
 
-                await _context.CurrentUser.FindOneAndUpdateAsync(filter, update);
+                await _context.CurrentUser.UpdateOneAsync(filter, update);
             }
             catch
             {
@@ -165,7 +165,7 @@ namespace Avalon.Data
                 var update = Builders<CurrentUser>
                                 .Update.PushEach(c => c.Bookmarks, newBookmarks);
 
-                await _context.CurrentUser.FindOneAndUpdateAsync(filter, update);
+                await _context.CurrentUser.UpdateOneAsync(filter, update);
             }
             catch
             {
@@ -193,7 +193,7 @@ namespace Avalon.Data
                 var update = Builders<CurrentUser>
                                 .Update.PullAll(c => c.Bookmarks, removeBookmarks);
 
-                await _context.CurrentUser.FindOneAndUpdateAsync(filter, update);
+                await _context.CurrentUser.UpdateOneAsync(filter, update);
             }
             catch
             {
@@ -233,7 +233,7 @@ namespace Avalon.Data
                 var update = Builders<CurrentUser>
                                 .Update.PushEach(c => c.ChatMemberslist, newChatMembers);      // TODO: Kig på $addToSet
 
-                await _context.CurrentUser.FindOneAndUpdateAsync(filter, update);
+                await _context.CurrentUser.UpdateOneAsync(filter, update);
             }
             catch
             {
@@ -266,7 +266,7 @@ namespace Avalon.Data
                 var update = Builders<CurrentUser>
                             .Update.Set(c => c.ChatMemberslist, currentUser.ChatMemberslist);
 
-                await _context.CurrentUser.FindOneAndUpdateAsync(filter, update);
+                await _context.CurrentUser.UpdateOneAsync(filter, update);
             }
             catch
             {
@@ -282,18 +282,22 @@ namespace Avalon.Data
             try
             {
                 //Check if currentUser has already joined group.
-                if(currentUser.Groups.Contains(groupId))
+                if (currentUser.Groups.ContainsKey(groupId))
                 {
                     return;
                 }
 
+                var update = Builders<CurrentUser>.Update;
+                var updates = new List<UpdateDefinition<CurrentUser>>();
+
+                currentUser.Groups.Add(groupId, null);
+
+                updates.Add(update.Set(c => c.Groups, currentUser.Groups));
+
                 var filter = Builders<CurrentUser>
                                 .Filter.Eq(c => c.ProfileId, currentUser.ProfileId);
 
-                var update = Builders<CurrentUser>
-                                .Update.Push(c => c.Groups, groupId);
-
-                await _context.CurrentUser.FindOneAndUpdateAsync(filter, update);
+                await _context.CurrentUser.UpdateOneAsync(filter, update.Combine(updates));
             }
             catch
             {
@@ -309,18 +313,23 @@ namespace Avalon.Data
             try
             {
                 //Filter out already removed groups.
-                var removeGroups = groupIds.Where(i => currentUser.Groups.Contains(i)).ToList();
+                var removeGroups = groupIds.Where(i => currentUser.Groups.ContainsKey(i)).ToList();
 
                 if (removeGroups.Count == 0)
                     return;
+
+                foreach (var groupId in groupIds)
+                {
+                    currentUser.Groups.Remove(groupId);
+                }
 
                 var filter = Builders<CurrentUser>
                                 .Filter.Eq(c => c.ProfileId, currentUser.ProfileId);
 
                 var update = Builders<CurrentUser>
-                                .Update.PullAll(c => c.Groups, removeGroups);
+                            .Update.Set(c => c.Groups, currentUser.Groups);
 
-                await _context.CurrentUser.FindOneAndUpdateAsync(filter, update);
+                await _context.CurrentUser.UpdateOneAsync(filter, update);
             }
             catch
             {
@@ -359,7 +368,7 @@ namespace Avalon.Data
                 var update = Builders<CurrentUser>
                                 .Update.Set(c => c.ChatMemberslist, updateChatMembers);
 
-                await _context.CurrentUser.FindOneAndUpdateAsync(filter, update);
+                await _context.CurrentUser.UpdateOneAsync(filter, update);
             }
             catch
             {
