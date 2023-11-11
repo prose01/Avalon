@@ -85,10 +85,8 @@ namespace Avalon.Controllers
 
                 // Initiate empty lists and other defaults
                 item.Tags ??= new List<string>();
-                item.Bookmarks = new List<string>();
-                item.ChatMemberslist = new List<ChatMember>();
+                item.Bookmarks = new List<Bookmark>();
                 item.Images = new List<ImageModel>();
-                item.IsBookmarked = new Dictionary<string, DateTime>();
                 item.Visited = new Dictionary<string, DateTime>();
                 item.Likes = new List<string>();
                 item.Complains = new Dictionary<string, DateTime>();
@@ -160,9 +158,7 @@ namespace Avalon.Controllers
                 // If currentUser has changed country reset all connections to other profiles.
                 if (item.Countrycode != currentUser.Countrycode)
                 {
-                    item.Bookmarks = new List<string>();
-                    item.ChatMemberslist = new List<ChatMember>();
-                    item.IsBookmarked = new Dictionary<string, DateTime>();
+                    item.Bookmarks = new List<Bookmark>();
                     item.Visited = new Dictionary<string, DateTime>();
                     item.Likes = new List<string>();
                     item.Groups = new Dictionary<string, DateTime?>();
@@ -170,8 +166,6 @@ namespace Avalon.Controllers
                 else
                 {
                     item.Bookmarks = currentUser.Bookmarks;
-                    item.ChatMemberslist = currentUser.ChatMemberslist;
-                    item.IsBookmarked = currentUser.IsBookmarked;
                     item.Visited = currentUser.Visited;
                     item.Likes = currentUser.Likes;
                     item.Groups = currentUser.Groups;
@@ -274,7 +268,7 @@ namespace Avalon.Controllers
             }
         }
 
-        /// <summary>Adds the profiles to currentUser bookmarks and ChatMemberslist.</summary>
+        /// <summary>Adds the profiles to currentUser bookmarks.</summary>
         /// <param name="profileIds">The profile ids.</param>
         /// <returns></returns>
         [NoCache]
@@ -296,12 +290,12 @@ namespace Avalon.Controllers
                 }
 
                 await _currentUserRepository.AddProfilesToBookmarks(currentUser, profileIds);
-                await _currentUserRepository.AddProfilesToChatMemberslist(currentUser, profileIds);
 
                 // Notify other profiles that currentUser has bookmarked their profile, unless currentUser is admin.
                 if (!currentUser.Admin)
                 {
-                    await _profilesQueryRepository.AddIsBookmarkedToProfiles(currentUser, profileIds);
+                    await _profilesQueryRepository.AddCurrentUserToProfilesBookmarks(currentUser, profileIds);
+                    //await _profilesQueryRepository.AddIsBookmarkedToProfiles(currentUser, profileIds);
                 }
 
                 return NoContent();
@@ -312,7 +306,7 @@ namespace Avalon.Controllers
             }
         }
 
-        /// <summary>Removes the profiles from currentUser bookmarks and ChatMemberslist.</summary>
+        /// <summary>Removes the profiles from currentUser bookmarks.</summary>
         /// <param name="profileIds">The profile ids.</param>
         /// <exception cref="ArgumentException">ProfileIds is either null {profileIds} or length is < 1 {profileIds.Length}. {profileIds}</exception>
         /// <returns></returns>
@@ -334,10 +328,15 @@ namespace Avalon.Controllers
                 }
 
                 await _currentUserRepository.RemoveProfilesFromBookmarks(currentUser, profileIds);
-                await _currentUserRepository.RemoveProfilesFromChatMemberslist(currentUser, profileIds);
+
+                // There are no bookmarks to remove is currentUser is admin.
+                if (!currentUser.Admin)
+                {
+                    await _profilesQueryRepository.RemoveCurrentUserFromProfilesBookmarks(currentUser, profileIds);
+                }
 
                 /// Remove currentUser.profileId from IsBookmarked list of every profile in profileIds list.
-                await _profilesQueryRepository.RemoveIsBookmarkedFromProfiles(currentUser, profileIds);
+                //await _profilesQueryRepository.RemoveIsBookmarkedFromProfiles(currentUser, profileIds);
 
                 return NoContent();
             }
@@ -347,14 +346,14 @@ namespace Avalon.Controllers
             }
         }
 
-        /// <summary>Blocks or unblocks chatMembers.</summary>
+        /// <summary>Blocks or unblocks bookmarks.</summary>
         /// <param name="profileIds">The profile ids.</param>
         /// <returns></returns>
         [NoCache]
-        [HttpPost("~/BlockChatMembers")]
+        [HttpPost("~/BlockBookmarks")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> BlockChatMembers([FromBody] string[] profileIds)
+        public async Task<IActionResult> BlockBookmarks([FromBody] string[] profileIds)
         {
             if (profileIds == null || profileIds.Length < 1) return BadRequest();
 
@@ -367,10 +366,10 @@ namespace Avalon.Controllers
                     return NotFound();
                 }
 
-                // Blocks or unblocks chatMembers if not admin.
+                // Blocks or unblocks bookmarks if not admin.
                 if (!currentUser.Admin)
                 {
-                    await _currentUserRepository.BlockChatMembers(currentUser, profileIds);
+                    await _currentUserRepository.BlockBookmarks(currentUser, profileIds);
                 }
 
                 return NoContent();

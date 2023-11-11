@@ -14,11 +14,9 @@ namespace Avalon.Interfaces
         Task<ProfileFilter> LoadProfileFilter(CurrentUser currentUser);
         Task AddProfilesToBookmarks(CurrentUser currentUser, string[] profileIds);
         Task RemoveProfilesFromBookmarks(CurrentUser currentUser, string[] profileIds);
-        Task AddProfilesToChatMemberslist(CurrentUser currentUser, string[] profileIds);
-        Task RemoveProfilesFromChatMemberslist(CurrentUser currentUser, string[] profileIds);
         Task AddGroupToCurrentUser(CurrentUser currentUser, string groupId);
         Task RemoveGroupsFromCurrentUser(CurrentUser currentUser, string[] groupIds);
-        Task BlockChatMembers(CurrentUser currentUser, string[] profileIds);
+        Task BlockBookmarks(CurrentUser currentUser, string[] profileIds);
         Task CleanCurrentUser(CurrentUser currentUser);
         Task<bool> CheckForComplains(CurrentUser currentUser);
     }

@@ -18,7 +18,6 @@ namespace Avalon.Data
         private readonly long _maxAge;
         private readonly long _minHeight;
         private readonly long _maxHeight;
-        private readonly long _maxIsBookmarked;
         private readonly long _maxVisited;
         private int _complainsDaysBack;
 
@@ -29,7 +28,6 @@ namespace Avalon.Data
             _maxAge = config.GetValue<long>("MaxAge");
             _minHeight = config.GetValue<long>("MinHeight");
             _maxHeight = config.GetValue<long>("MaxHeight");
-            _maxIsBookmarked = config.GetValue<long>("MaxIsBookmarked");
             _maxVisited = config.GetValue<long>("MaxVisited");
             _complainsDaysBack = config.GetValue<int>("ComplainsDaysBack");
         }
@@ -226,25 +224,6 @@ namespace Avalon.Data
                 throw;
             }
         }
-
-        /// <summary>Gets curretUser's chatmember profiles.</summary>
-        /// <param name="currentUser">The current user.</param>
-        /// <param name="skip">The skip.</param>
-        /// <param name="limit">The limit.</param>
-        /// <returns></returns>
-        //public async Task<IEnumerable<Profile>> GetChatMemberProfiles(CurrentUser currentUser, int skip, int limit)
-        //{
-        //    try
-        //    {
-        //        var chatMembers = currentUser.ChatMemberslist.Select(m => m.ProfileId);
-
-        //        return await _context.Profiles.Find(p => chatMembers.Contains(p.ProfileId)).Project<Profile>(this.GetProjection()).Skip(skip).Limit(limit).ToListAsync();
-        //    }
-        //    catch
-        //    {
-        //        throw;
-        //    }
-        //}
 
         /// <summary>Gets the profile by Auth0Id.</summary>
         /// <param name="auth0Id">Auth0Id of the profile.</param>
@@ -500,7 +479,11 @@ namespace Avalon.Data
             {
                 List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>();
 
-                filters.Add(Builders<Profile>.Filter.In(p => p.ProfileId, currentUser.Bookmarks));
+                //var profileIds = currentUser.Bookmarks.Select(p => p.ProfileId && p.IsBookmarked == false).ToList();
+
+                var profileIds = currentUser.Bookmarks.Where(p => p.IsBookmarked == false).Select(p => p.ProfileId).ToList();
+
+                filters.Add(Builders<Profile>.Filter.In(p => p.ProfileId, profileIds));
 
                 var combineFilters = Builders<Profile>.Filter.And(filters);
 
@@ -552,9 +535,11 @@ namespace Avalon.Data
         {
             try
             {
+                var profileIds = currentUser.Bookmarks.Where(p => p.IsBookmarked == true).Select(p => p.ProfileId).ToList();
+
                 List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>
                 {
-                    Builders<Profile>.Filter.In(p => p.ProfileId, currentUser.IsBookmarked.Keys),
+                    Builders<Profile>.Filter.In(p => p.ProfileId, profileIds),
 
                     //Remove admins from the list.
                     Builders<Profile>.Filter.Ne(p => p.Admin, true)
@@ -600,10 +585,11 @@ namespace Avalon.Data
             }
         }
 
-        /// <summary>Add currentUser.profileId to IsBookmarked list of every profile in profileIds list.</summary>
+        /// <summary>Adds currentUser to profiles Bookmarks.</summary>
         /// <param name="currentUser">The current user.</param>
         /// <param name="profileIds">The profile ids.</param>
-        public async Task AddIsBookmarkedToProfiles(CurrentUser currentUser, string[] profileIds)
+        /// <returns></returns>
+        public async Task AddCurrentUserToProfilesBookmarks(CurrentUser currentUser, string[] profileIds)
         {
             try
             {
@@ -616,18 +602,9 @@ namespace Avalon.Data
 
                 foreach (var profile in profiles)
                 {
-                    var isBookmarkedPair = from pair in profile.IsBookmarked
-                                           orderby pair.Value descending
-                                           select pair;
+                    profile.Bookmarks.Add(new Bookmark() { ProfileId = currentUser.ProfileId, Name = currentUser.Name, Avatar = currentUser.Avatar, Blocked = false, IsBookmarked = true });
 
-                    if (isBookmarkedPair.Count() > _maxIsBookmarked)
-                    {
-                        profile.IsBookmarked.Remove(isBookmarkedPair.Last().Key);
-                    }
-
-                    profile.IsBookmarked.Add(currentUser.ProfileId, DateTime.UtcNow);
-
-                    updates.Add(update.Set(p => p.IsBookmarked, profile.IsBookmarked));
+                    updates.Add(update.Set(p => p.Bookmarks, profile.Bookmarks));
                 }
 
                 var filter = Builders<Profile>
@@ -641,10 +618,11 @@ namespace Avalon.Data
             }
         }
 
-        /// <summary>Remove currentUser.profileId from IsBookmarked list of every profile in profileIds list.</summary>
+        /// <summary>Removes currentUser from  profiles Bookmarks.</summary>
         /// <param name="currentUser">The current user.</param>
         /// <param name="profileIds">The profile ids.</param>
-        public async Task RemoveIsBookmarkedFromProfiles(CurrentUser currentUser, string[] profileIds)
+        /// <returns></returns>
+        public async Task RemoveCurrentUserFromProfilesBookmarks(CurrentUser currentUser, string[] profileIds)
         {
             try
             {
@@ -657,19 +635,13 @@ namespace Avalon.Data
 
                 foreach (var profile in profiles)
                 {
-                    if (profile.IsBookmarked.ContainsKey(currentUser.ProfileId))
-                    {
-                        profile.IsBookmarked.Remove(currentUser.ProfileId);
+                    profile.Bookmarks.RemoveAll(i => i.ProfileId == currentUser.ProfileId && i.IsBookmarked);
 
-                        updates.Add(update.Set(p => p.IsBookmarked, profile.IsBookmarked));
-                    }
+                    updates.Add(update.Set(p => p.Bookmarks, profile.Bookmarks));
                 }
 
                 var filter = Builders<Profile>
                                 .Filter.In(p => p.ProfileId, profileIds);
-
-                if (updates.Count == 0)
-                    return;
 
                 await _context.Profiles.UpdateManyAsync(filter, update.Combine(updates));
             }
@@ -678,6 +650,85 @@ namespace Avalon.Data
                 throw;
             }
         }
+
+        ///// <summary>Add currentUser.profileId to IsBookmarked list of every profile in profileIds list.</summary>
+        ///// <param name="currentUser">The current user.</param>
+        ///// <param name="profileIds">The profile ids.</param>
+        //public async Task AddIsBookmarkedToProfiles(CurrentUser currentUser, string[] profileIds)
+        //{
+        //    try
+        //    {
+        //        var query = _context.Profiles.Find(p => profileIds.Contains(p.ProfileId));
+
+        //        var profiles = await Task.FromResult(query.ToList());
+
+        //        var update = Builders<Profile>.Update;
+        //        var updates = new List<UpdateDefinition<Profile>>();
+
+        //        foreach (var profile in profiles)
+        //        {
+        //            var isBookmarkedPair = from pair in profile.IsBookmarked
+        //                                   orderby pair.Value descending
+        //                                   select pair;
+
+        //            if (isBookmarkedPair.Count() > _maxIsBookmarked)
+        //            {
+        //                profile.IsBookmarked.Remove(isBookmarkedPair.Last().Key);
+        //            }
+
+        //            profile.IsBookmarked.Add(currentUser.ProfileId, DateTime.UtcNow);
+
+        //            updates.Add(update.Set(p => p.IsBookmarked, profile.IsBookmarked));
+        //        }
+
+        //        var filter = Builders<Profile>
+        //                        .Filter.In(p => p.ProfileId, profileIds);
+
+        //        await _context.Profiles.UpdateManyAsync(filter, update.Combine(updates));
+        //    }
+        //    catch
+        //    {
+        //        throw;
+        //    }
+        //}
+
+        ///// <summary>Remove currentUser.profileId from IsBookmarked list of every profile in profileIds list.</summary>
+        ///// <param name="currentUser">The current user.</param>
+        ///// <param name="profileIds">The profile ids.</param>
+        //public async Task RemoveIsBookmarkedFromProfiles(CurrentUser currentUser, string[] profileIds)
+        //{
+        //    try
+        //    {
+        //        var query = _context.Profiles.Find(p => profileIds.Contains(p.ProfileId));
+
+        //        var profiles = await Task.FromResult(query.ToList());
+
+        //        var update = Builders<Profile>.Update;
+        //        var updates = new List<UpdateDefinition<Profile>>();
+
+        //        foreach (var profile in profiles)
+        //        {
+        //            if (profile.IsBookmarked.ContainsKey(currentUser.ProfileId))
+        //            {
+        //                profile.IsBookmarked.Remove(currentUser.ProfileId);
+
+        //                updates.Add(update.Set(p => p.IsBookmarked, profile.IsBookmarked));
+        //            }
+        //        }
+
+        //        var filter = Builders<Profile>
+        //                        .Filter.In(p => p.ProfileId, profileIds);
+
+        //        if (updates.Count == 0)
+        //            return;
+
+        //        await _context.Profiles.UpdateManyAsync(filter, update.Combine(updates));
+        //    }
+        //    catch
+        //    {
+        //        throw;
+        //    }
+        //}
 
         /// <summary>Add currentUser.profileId to visited list of profile.</summary>
         /// <param name="currentUser">The current user.</param>
@@ -845,11 +896,11 @@ namespace Avalon.Data
                 "Gender: 0, " +
                 "Seeking: 0, " +
                 "Bookmarks: 0, " +
-                "ChatMemberslist: 0, " +
                 "ProfileFilter: 0, " +
-                "IsBookmarked: 0, " +
                 "Languagecode: 0, " +
                 "Groups: 0, " +
+                "ChatMemberslist: 0, " +
+                "IsBookmarked: 0, " +
                 "}";
 
             return projection;
@@ -887,13 +938,13 @@ namespace Avalon.Data
                 "Gender: 0, " +
                 "Seeking: 0, " +
                 "Bookmarks: 0, " +
-                "ChatMemberslist: 0, " +
                 "ProfileFilter: 0, " +
-                "IsBookmarked: 0, " +
                 "Languagecode: 0, " +
                 "Visited: 0, " +
                 "Likes: 0, " +
                 "Groups: 0, " +
+                "ChatMemberslist: 0, " +
+                "IsBookmarked: 0, " +
                 "}";
 
             return projection;

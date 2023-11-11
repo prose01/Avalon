@@ -154,13 +154,23 @@ namespace Avalon.Data
             try
             {
                 //Filter out already bookmarked profiles.
-                var newBookmarks = profileIds.Where(i => !currentUser.Bookmarks.Contains(i)).ToList();
+                var newBookmarkIds = profileIds.Where(i => !currentUser.Bookmarks.Any(p => p.ProfileId == i && !p.IsBookmarked)).ToList();
 
-                if (newBookmarks.Count == 0)
+                if (newBookmarkIds.Count == 0)
                     return;
 
                 var filter = Builders<CurrentUser>
                                 .Filter.Eq(c => c.ProfileId, currentUser.ProfileId);
+
+
+                List<Bookmark> newBookmarks = new List<Bookmark>();
+
+                foreach (var bookmarkId in newBookmarkIds)
+                {
+                    var bookmark = this._profilesQueryRepository.GetProfileById(bookmarkId).Result;
+
+                    newBookmarks.Add(new Bookmark() { ProfileId = bookmarkId, Name = bookmark.Name, Avatar = bookmark.Avatar, Blocked = false, IsBookmarked = false });
+                }
 
                 var update = Builders<CurrentUser>
                                 .Update.PushEach(c => c.Bookmarks, newBookmarks);
@@ -181,90 +191,22 @@ namespace Avalon.Data
         {
             try
             {
-                //Filter out already removed bookmarked profiles.
-                var removeBookmarks = profileIds.Where(i => currentUser.Bookmarks.Contains(i)).ToList();
+                ////Filter out already removed bookmarked profiles.
+                //var removeBookmarkIds = profileIds.Where(i => !currentUser.Bookmarks.Any(p => p.ProfileId == i)).ToList();
 
-                if (removeBookmarks.Count == 0)
-                    return;
+                //if (removeBookmarkIds.Count == 0)
+                //    return;
+
+                foreach (var bookmarkId in profileIds)
+                {
+                    currentUser.Bookmarks.RemoveAll(i => i.ProfileId == bookmarkId && !i.IsBookmarked);
+                }
 
                 var filter = Builders<CurrentUser>
                                 .Filter.Eq(c => c.ProfileId, currentUser.ProfileId);
 
                 var update = Builders<CurrentUser>
-                                .Update.PullAll(c => c.Bookmarks, removeBookmarks);
-
-                await _context.CurrentUser.UpdateOneAsync(filter, update);
-            }
-            catch
-            {
-                throw;
-            }
-        }
-
-        /// <summary>Adds the profiles to currentUser ChatMemberslist.</summary>
-        /// <param name="currentUser">The current user.</param>
-        /// <param name="profileIds">The profile ids.</param>
-        /// <returns></returns>
-        public async Task AddProfilesToChatMemberslist(CurrentUser currentUser, string[] profileIds)
-        {
-            try
-            {
-                //Filter out already added ChatMembers.
-                var newChatMemberIds = profileIds.Where(i => !currentUser.ChatMemberslist.Any(m => m.ProfileId == i)).ToList();
-
-                if (newChatMemberIds.Count == 0)
-                    return;
-
-                var filter = Builders<CurrentUser>
-                                .Filter.Eq(c => c.ProfileId, currentUser.ProfileId);
-
-                List<ChatMember> newChatMembers = new List<ChatMember>();
-
-                foreach (var chatMemberId in newChatMemberIds)
-                {
-                    var chatMember = this._profilesQueryRepository.GetProfileById(chatMemberId).Result;
-
-                    // Uncontactable profiles are not added to chatmemberlist unless currentUser is admin.
-                    if (!chatMember.Contactable && !currentUser.Admin) continue;
-
-                    newChatMembers.Add(new ChatMember() { ProfileId = chatMemberId, Name = chatMember.Name, Avatar = chatMember.Avatar, Blocked = false });
-                }
-
-                var update = Builders<CurrentUser>
-                                .Update.PushEach(c => c.ChatMemberslist, newChatMembers);      // TODO: Kig på $addToSet
-
-                await _context.CurrentUser.UpdateOneAsync(filter, update);
-            }
-            catch
-            {
-                throw;
-            }
-        }
-
-        /// <summary>Removes the profiles from currentUser ChatMemberslist.</summary>
-        /// <param name="currentUser">The current user.</param>
-        /// <param name="profileIds">The profile ids.</param>
-        /// <returns></returns>
-        public async Task RemoveProfilesFromChatMemberslist(CurrentUser currentUser, string[] profileIds)
-        {
-            try
-            {
-                //Filter out ChatMembers not on list.
-                if (currentUser.ChatMemberslist.Where(i => profileIds.Contains(i.ProfileId)).ToList().Count == 0)
-                {
-                    return;
-                }
-
-                foreach (var profileId in profileIds)
-                {
-                    currentUser.ChatMemberslist.RemoveAll(i => i.ProfileId == profileId);
-                }
-
-                var filter = Builders<CurrentUser>
-                                    .Filter.Eq(c => c.ProfileId, currentUser.ProfileId);
-
-                var update = Builders<CurrentUser>
-                            .Update.Set(c => c.ChatMemberslist, currentUser.ChatMemberslist);
+                            .Update.Set(c => c.Bookmarks, currentUser.Bookmarks);
 
                 await _context.CurrentUser.UpdateOneAsync(filter, update);
             }
@@ -337,36 +279,36 @@ namespace Avalon.Data
             }
         }
 
-        /// <summary>Blocks or unblocks chatmember profiles.</summary>
+        /// <summary>Blocks or unblocks Bookmarked profiles.</summary>
         /// <param name="currentUser">The current user.</param>
         /// <param name="profileIds">The profile identifiers.</param>
         /// <returns></returns>
-        public async Task BlockChatMembers(CurrentUser currentUser, string[] profileIds)
+        public async Task BlockBookmarks(CurrentUser currentUser, string[] profileIds)
         {
             try
             {
-                List<string> updatableChatMembers = profileIds.Where(i => currentUser.ChatMemberslist.Any(m => m.ProfileId == i)).ToList();
+                List<string> updatableBookmarks = profileIds.Where(i => currentUser.Bookmarks.Any(m => m.ProfileId == i)).ToList();
 
-                if (updatableChatMembers.Count == 0)
+                if (updatableBookmarks.Count == 0)
                     return;
 
                 var filter = Builders<CurrentUser>
                                 .Filter.Eq(c => c.ProfileId, currentUser.ProfileId);
 
-                List<ChatMember> updateChatMembers = new List<ChatMember>();
+                List<Bookmark> updateBookmarkrs = new List<Bookmark>();
 
-                foreach (var member in currentUser.ChatMemberslist)
+                foreach (var member in currentUser.Bookmarks)
                 {
                     if (profileIds.Any(m => member.ProfileId == m))
                     {
                         member.Blocked = !member.Blocked;
                     }
 
-                    updateChatMembers.Add(member);
+                    updateBookmarkrs.Add(member);
                 }
 
                 var update = Builders<CurrentUser>
-                                .Update.Set(c => c.ChatMemberslist, updateChatMembers);
+                                .Update.Set(c => c.Bookmarks, updateBookmarkrs);
 
                 await _context.CurrentUser.UpdateOneAsync(filter, update);
             }
@@ -386,11 +328,11 @@ namespace Avalon.Data
 
                 string[] checkThesesProfiles = currentUser.Visited.Keys.ToArray<string>();
 
-                checkThesesProfiles = checkThesesProfiles.Union(currentUser.Bookmarks).ToArray();
+                //checkThesesProfiles = checkThesesProfiles.Union(currentUser.Bookmarks).ToArray();
 
-                checkThesesProfiles = checkThesesProfiles.Union(currentUser.IsBookmarked.Keys).ToArray();
+                //checkThesesProfiles = checkThesesProfiles.Union(currentUser.IsBookmarked.Keys).ToArray();
 
-                checkThesesProfiles = checkThesesProfiles.Union(currentUser.ChatMemberslist.Select(i => i.ProfileId)).ToArray();
+                checkThesesProfiles = checkThesesProfiles.Union(currentUser.Bookmarks.Select(i => i.ProfileId)).ToArray();
 
                 checkThesesProfiles = checkThesesProfiles.Union(currentUser.Likes).ToArray();
 
@@ -423,29 +365,24 @@ namespace Avalon.Data
                             currentUser.Visited.Remove(deadProfile);
                         }
 
-                        if (currentUser.Bookmarks.Contains(deadProfile))
-                        {
-                            currentUser.Bookmarks.Remove(deadProfile);
-                        }
+                        //if (currentUser.Bookmarks.Contains(deadProfile))
+                        //{
+                        //    currentUser.Bookmarks.Remove(deadProfile);
+                        //}
 
-                        if (currentUser.IsBookmarked.ContainsKey(deadProfile))
-                        {
-                            currentUser.IsBookmarked.Remove(deadProfile);
-                        }
+                        //if (currentUser.IsBookmarked.ContainsKey(deadProfile))
+                        //{
+                        //    currentUser.IsBookmarked.Remove(deadProfile);
+                        //}
 
-                        if (currentUser.ChatMemberslist.Any(i => i.ProfileId == deadProfile))
+                        if (currentUser.Bookmarks.Any(i => i.ProfileId == deadProfile))
                         {
-                            currentUser.ChatMemberslist.RemoveAll(i => i.ProfileId == deadProfile);
+                            currentUser.Bookmarks.RemoveAll(i => i.ProfileId == deadProfile);
                         }
 
                         if (currentUser.Likes.Contains(deadProfile))
                         {
                             currentUser.Likes.Remove(deadProfile);
-                        }
-
-                        if (currentUser.IsBookmarked.ContainsKey(deadProfile))
-                        {
-                            currentUser.IsBookmarked.Remove(deadProfile);
                         }
 
                         if (currentUser.Complains.ContainsKey(deadProfile))

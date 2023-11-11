@@ -16,11 +16,11 @@ namespace Avalon.Model
         public List<GenderType> Seeking { get; set; }
 
         public string Languagecode { get; set; }
-        public List<string> Bookmarks { get; set; }
-        public List<ChatMember> ChatMemberslist { get; set; }
+        //public List<string> Bookmarks { get; set; }
+        public List<Bookmark> Bookmarks { get; set; }
         public ProfileFilter ProfileFilter { get; set; }
         public Dictionary<string, DateTime> Visited { get; set; }
-        public Dictionary<string, DateTime> IsBookmarked { get; set; }
+        //public Dictionary<string, DateTime> IsBookmarked { get; set; }
         public List<string> Likes { get; set; }
         public Dictionary<string, DateTime> Complains { internal get; set; }
         public Dictionary<string, DateTime?>  Groups { get; set; }

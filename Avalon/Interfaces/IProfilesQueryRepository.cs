@@ -21,8 +21,12 @@ namespace Avalon.Interfaces
         Task<(int total, IReadOnlyList<Profile> profiles)> GetProfilesWhoVisitedMe(CurrentUser currentUser, OrderByType orderByType, int skip, int limit);
         Task<(int total, IReadOnlyList<Profile> profiles)> GetProfilesWhoBookmarkedMe(CurrentUser currentUser, OrderByType orderByType, int skip, int limit);
         Task<(int total, IReadOnlyList<Profile> profiles)> GetProfilesWhoLikesMe(CurrentUser currentUser, OrderByType orderByType, int skip, int limit);
-        Task AddIsBookmarkedToProfiles(CurrentUser currentUser, string[] profileIds);
-        Task RemoveIsBookmarkedFromProfiles(CurrentUser currentUser, string[] profileIds);
+
+        Task AddCurrentUserToProfilesBookmarks(CurrentUser currentUser, string[] profileIds);
+        Task RemoveCurrentUserFromProfilesBookmarks(CurrentUser currentUser, string[] profileIds);
+
+        //Task AddIsBookmarkedToProfiles(CurrentUser currentUser, string[] profileIds);
+        //Task RemoveIsBookmarkedFromProfiles(CurrentUser currentUser, string[] profileIds);
         Task AddVisitedToProfiles(CurrentUser currentUser, Profile profile);
         Task AddLikeToProfiles(CurrentUser currentUser, string[] profileIds);
         Task RemoveLikeFromProfiles(CurrentUser currentUser, string[] profileIds);

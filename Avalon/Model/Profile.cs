@@ -16,14 +16,14 @@ namespace Avalon.Model
         internal List<GenderType> Seeking { get; set; }
 
         public string Languagecode { private get; set; }
-        public List<string> Bookmarks { private get; set; }
-        public List<ChatMember> ChatMemberslist { internal get; set; }
+        //public List<string> Bookmarks { private get; set; }
+        public List<Bookmark> Bookmarks { get; set; }
         public ProfileFilter ProfileFilter { private get; set; }
         public Dictionary<string, DateTime> Visited { internal get; set; }
-        public Dictionary<string, DateTime> IsBookmarked { internal get; set; }
+        //public Dictionary<string, DateTime> IsBookmarked { internal get; set; }
         public List<string> Likes { get; set; }
         public Dictionary<string, DateTime> Complains { internal get; set; }
-        public List<string> Groups { internal get; set; }
+        public Dictionary<string, DateTime?> Groups { internal get; set; }
         #endregion
 
         internal override ObjectId _id { get; set; }
