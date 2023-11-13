@@ -535,7 +535,7 @@ namespace Avalon.Data
         {
             try
             {
-                var profileIds = currentUser.Bookmarks.Where(p => p.IsBookmarked == true).Select(p => p.ProfileId).ToList();
+                var profileIds = currentUser.Bookmarks.Where(p => p.IsBookmarked == true && !p.Blocked).Select(p => p.ProfileId).ToList();
 
                 List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>
                 {
@@ -602,6 +602,9 @@ namespace Avalon.Data
 
                 foreach (var profile in profiles)
                 {
+                    if (profile.Bookmarks.Any(b => b.ProfileId == currentUser.ProfileId))
+                        continue;
+
                     profile.Bookmarks.Add(new Bookmark() { ProfileId = currentUser.ProfileId, Name = currentUser.Name, Avatar = currentUser.Avatar, Blocked = false, IsBookmarked = true });
 
                     updates.Add(update.Set(p => p.Bookmarks, profile.Bookmarks));
@@ -609,6 +612,9 @@ namespace Avalon.Data
 
                 var filter = Builders<Profile>
                                 .Filter.In(p => p.ProfileId, profileIds);
+
+                if (updates.Count == 0)
+                    return;
 
                 await _context.Profiles.UpdateManyAsync(filter, update.Combine(updates));
             }
@@ -635,13 +641,16 @@ namespace Avalon.Data
 
                 foreach (var profile in profiles)
                 {
-                    profile.Bookmarks.RemoveAll(i => i.ProfileId == currentUser.ProfileId && i.IsBookmarked);
+                    profile.Bookmarks.RemoveAll(i => i.ProfileId == currentUser.ProfileId && i.IsBookmarked && !i.Blocked);
 
                     updates.Add(update.Set(p => p.Bookmarks, profile.Bookmarks));
                 }
 
                 var filter = Builders<Profile>
                                 .Filter.In(p => p.ProfileId, profileIds);
+
+                if (updates.Count == 0)
+                    return;
 
                 await _context.Profiles.UpdateManyAsync(filter, update.Combine(updates));
             }
@@ -797,6 +806,9 @@ namespace Avalon.Data
                 var filter = Builders<Profile>
                                 .Filter.In(p => p.ProfileId, profileIds);
 
+                if (updates.Count == 0)
+                    return;
+
                 await _context.Profiles.UpdateManyAsync(filter, update.Combine(updates));
             }
             catch
@@ -831,6 +843,9 @@ namespace Avalon.Data
 
                 var filter = Builders<Profile>
                                 .Filter.In(p => p.ProfileId, profileIds);
+
+                if (updates.Count == 0)
+                    return;
 
                 await _context.Profiles.UpdateManyAsync(filter, update.Combine(updates));
             }

@@ -191,13 +191,13 @@ namespace Avalon.Data
         {
             try
             {
-                ////Filter out already removed bookmarked profiles.
-                //var removeBookmarkIds = profileIds.Where(i => !currentUser.Bookmarks.Any(p => p.ProfileId == i)).ToList();
+                //Filter out already removed bookmarked profiles.
+                var removeBookmarkIds = profileIds.Where(i => currentUser.Bookmarks.Any(p => p.ProfileId == i)).ToList();
 
-                //if (removeBookmarkIds.Count == 0)
-                //    return;
+                if (removeBookmarkIds.Count == 0)
+                    return;
 
-                foreach (var bookmarkId in profileIds)
+                foreach (var bookmarkId in removeBookmarkIds)
                 {
                     currentUser.Bookmarks.RemoveAll(i => i.ProfileId == bookmarkId && !i.IsBookmarked);
                 }
@@ -239,6 +239,9 @@ namespace Avalon.Data
                 var filter = Builders<CurrentUser>
                                 .Filter.Eq(c => c.ProfileId, currentUser.ProfileId);
 
+                if (updates.Count == 0)
+                    return;
+
                 await _context.CurrentUser.UpdateOneAsync(filter, update.Combine(updates));
             }
             catch
@@ -260,7 +263,7 @@ namespace Avalon.Data
                 if (removeGroups.Count == 0)
                     return;
 
-                foreach (var groupId in groupIds)
+                foreach (var groupId in removeGroups)
                 {
                     currentUser.Groups.Remove(groupId);
                 }
@@ -292,6 +295,11 @@ namespace Avalon.Data
                 if (updatableBookmarks.Count == 0)
                     return;
 
+                var query = _context.Profiles.Find(p => updatableBookmarks.Contains(p.ProfileId) && p.Bookmarks.Any(b => b.ProfileId == currentUser.ProfileId));
+
+                var profiles = await Task.FromResult(query.ToList());
+
+
                 var filter = Builders<CurrentUser>
                                 .Filter.Eq(c => c.ProfileId, currentUser.ProfileId);
 
@@ -299,12 +307,16 @@ namespace Avalon.Data
 
                 foreach (var member in currentUser.Bookmarks)
                 {
-                    if (profileIds.Any(m => member.ProfileId == m))
+                    if (profiles.Any(p => p.ProfileId == member.ProfileId))
                     {
                         member.Blocked = !member.Blocked;
-                    }
 
-                    updateBookmarkrs.Add(member);
+                        updateBookmarkrs.Add(member);
+                    }
+                    else
+                    {
+                        updateBookmarkrs.Remove(member);
+                    }
                 }
 
                 var update = Builders<CurrentUser>
