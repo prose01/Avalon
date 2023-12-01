@@ -1,7 +1,6 @@
 ﻿using Avalon.Interfaces;
 using Avalon.Model;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
@@ -17,9 +16,9 @@ namespace Avalon.Data
         private int _complainsDaysBack;
         private int _complainsWarnUser;
 
-        public CurrentUserRepository(IOptions<Settings> settings, IConfiguration config, IProfilesQueryRepository profilesQueryRepository)
+        public CurrentUserRepository(IConfiguration config, IProfilesQueryRepository profilesQueryRepository)
         {
-            _context = new Context(settings);
+            _context = new Context(config);
             _profilesQueryRepository = profilesQueryRepository;
             _complainsDaysBack = config.GetValue<int>("ComplainsDaysBack");
             _complainsWarnUser = config.GetValue<int>("ComplainsWarnUser");

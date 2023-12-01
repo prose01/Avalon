@@ -1,7 +1,6 @@
 ﻿using Avalon.Interfaces;
 using Avalon.Model;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
@@ -14,9 +13,9 @@ namespace Avalon.Data
     {
         private readonly Context _context = null;
 
-        public FeedbackRepository(IOptions<Settings> settings, IConfiguration config)
+        public FeedbackRepository(IConfiguration config)
         {
-            _context = new Context(settings);
+            _context = new Context(config);
         }
 
         public async Task AddFeedback(Feedback item)

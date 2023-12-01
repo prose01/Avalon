@@ -1,7 +1,6 @@
 ﻿using Avalon.Interfaces;
 using Avalon.Model;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
@@ -17,9 +16,9 @@ namespace Avalon.Data
         private readonly double _maxGroupComplainPercentage;
         private int _groupComplainsDaysBack;
 
-        public GroupRepository(IOptions<Settings> settings, IConfiguration config)
+        public GroupRepository(IConfiguration config)
         {
-            _context = new Context(settings);
+            _context = new Context(config);
             _maxGroupComplainPercentage = config.GetValue<double>("MaxGroupComplainsPercentage");
             _groupComplainsDaysBack = config.GetValue<int>("GroupComplainsDaysBack");
         }

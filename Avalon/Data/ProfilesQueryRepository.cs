@@ -21,9 +21,9 @@ namespace Avalon.Data
         private readonly long _maxVisited;
         private int _complainsDaysBack;
 
-        public ProfilesQueryRepository(IOptions<Settings> settings, IConfiguration config)
+        public ProfilesQueryRepository(IConfiguration config)
         {
-            _context = new Context(settings);
+            _context = new Context(config);
             _minAge = config.GetValue<long>("MinAge");
             _maxAge = config.GetValue<long>("MaxAge");
             _minHeight = config.GetValue<long>("MinHeight");

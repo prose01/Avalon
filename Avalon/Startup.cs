@@ -109,17 +109,6 @@ namespace Avalon
                     { securitySchema, new[] { "Bearer" } }
                 });
             });
-
-            services.Configure<Settings>(options =>
-            {
-                options.ConnectionString = Configuration.GetSection("Mongo_ConnectionString").Value;
-                options.Database = Configuration.GetSection("Mongo_Database").Value;
-                options.Auth0Id = Configuration.GetSection("Auth0_Claims_nameidentifier").Value;
-                options.Auth0ApiIdentifier = Configuration.GetSection("Auth0_ApiIdentifier").Value;
-                options.Auth0TokenAddress = Configuration.GetSection("Auth0_TokenAddress").Value;
-                options.Client_id = Configuration.GetSection("Auth0_Client_id").Value;
-                options.Client_secret = Configuration.GetSection("Auth0_Client_secret").Value;
-            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline
