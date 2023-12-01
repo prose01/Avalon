@@ -914,7 +914,6 @@ namespace Avalon.Data
                 "ProfileFilter: 0, " +
                 "Languagecode: 0, " +
                 "Groups: 0, " +
-                "ChatMemberslist: 0, " +
                 "IsBookmarked: 0, " +
                 "}";
 
@@ -958,7 +957,6 @@ namespace Avalon.Data
                 "Visited: 0, " +
                 "Likes: 0, " +
                 "Groups: 0, " +
-                "ChatMemberslist: 0, " +
                 "IsBookmarked: 0, " +
                 "}";
 
