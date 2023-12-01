@@ -21,7 +21,7 @@ namespace Avalon.Helpers
         private readonly string _auth0TokenAddress;
         private readonly string _auth0_Client_id;
         private readonly string _auth0_Client_secret;
-        private readonly int _millisecondsAbsoluteExpiration = 750;
+        private readonly int _millisecondsAbsoluteExpiration = 28800000;
         private IMemoryCache _cache;
 
         public HelperMethods(IConfiguration config, ICurrentUserRepository profileRepository, IProfilesQueryRepository profilesQueryRepository)
@@ -89,7 +89,7 @@ namespace Avalon.Helpers
                 request.AddHeader("authorization", "Bearer " + accessToken);
                 var response = await client.ExecuteAsync(request, CancellationToken.None);
             }
-            catch(Exception ex)
+            catch
             {
                 throw;
             }
