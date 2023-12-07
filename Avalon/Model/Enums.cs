@@ -2,7 +2,6 @@
 {
     public enum ClotheStyleType
     {
-        NotChosen,
         Casual,
         Dressy,
         Dandy,
@@ -13,7 +12,6 @@
 
     public enum BodyType
     {
-        NotChosen,
         Atlethic,
         Chubby,
         Normal,
@@ -24,7 +22,6 @@
 
     public enum BodyArtType
     {
-        NotChosen,
         Piercing,
         Tatoo,
         Other
@@ -38,7 +35,6 @@
 
     public enum EatingHabitsType
     {
-        NotChosen,
         Healthy,
         Gastronomic,
         Normal,
@@ -51,7 +47,6 @@
 
     public enum EducationStatusType
     {
-        NotChosen,
         Graduated,
         Student,
         Other
@@ -59,7 +54,6 @@
 
     public enum EducationType
     {
-        NotChosen,
         School,
         Highschool,
         University,
@@ -68,7 +62,6 @@
 
     public enum EmploymentStatusType
     {
-        NotChosen,
         Unemployed,
         Employed,
         SelfEmployed,
@@ -77,7 +70,6 @@
 
     public enum HasChildrenType
     {
-        NotChosen,
         Yes,
         No,
         Other
@@ -85,7 +77,6 @@
 
     public enum WantChildrenType
     {
-        NotChosen,
         Yes,
         No,
         Other
@@ -93,7 +84,6 @@
 
     public enum HasPetsType
     {
-        NotChosen,
         Yes,
         No,
         Other
@@ -101,7 +91,6 @@
 
     public enum LivesInType
     {
-        NotChosen,
         City,
         Suburb,
         Countryside,
@@ -110,7 +99,6 @@
 
     public enum SmokingHabitsType
     {
-        NotChosen,
         NonSmoker,
         OccasionalSmoker,
         Smoker,
@@ -119,7 +107,6 @@
 
     public enum SportsActivityType
     {
-        NotChosen,
         Regularly,
         SomeRegularity,
         Seldom,

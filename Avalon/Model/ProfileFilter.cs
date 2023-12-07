@@ -1,4 +1,6 @@
-﻿using System;
+﻿using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Bson;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -16,18 +18,44 @@ namespace Avalon.Model
         public string Description { get; set; }
         public List<string> Tags { get; set; }
         public GenderType? Gender { get; set; }
-        public BodyType Body { get; set; }
-        public SmokingHabitsType SmokingHabits { get; set; }
-        public HasChildrenType HasChildren { get; set; }
-        public WantChildrenType WantChildren { get; set; }
-        public HasPetsType HasPets { get; set; }
-        public LivesInType LivesIn { get; set; }
-        public EducationType Education { get; set; }
-        public EducationStatusType EducationStatus { get; set; }
-        public EmploymentStatusType EmploymentStatus { get; set; }
-        public SportsActivityType SportsActivity { get; set; }
-        public EatingHabitsType EatingHabits { get; set; }
-        public ClotheStyleType ClotheStyle { get; set; }
-        public BodyArtType BodyArt { get; set; }
+
+        [BsonRepresentation(BsonType.String)]
+        public List<BodyType> Body { get; set; }
+
+        [BsonRepresentation(BsonType.String)]
+        public List<SmokingHabitsType> SmokingHabits { get; set; }
+
+        [BsonRepresentation(BsonType.String)]
+        public List<HasChildrenType> HasChildren { get; set; }
+
+        [BsonRepresentation(BsonType.String)]
+        public List<WantChildrenType> WantChildren { get; set; }
+
+        [BsonRepresentation(BsonType.String)]
+        public List<HasPetsType> HasPets { get; set; }
+
+        [BsonRepresentation(BsonType.String)]
+        public List<LivesInType> LivesIn { get; set; }
+
+        [BsonRepresentation(BsonType.String)]
+        public List<EducationType> Education { get; set; }
+
+        [BsonRepresentation(BsonType.String)]
+        public List<EducationStatusType> EducationStatus { get; set; }
+
+        [BsonRepresentation(BsonType.String)]
+        public List<EmploymentStatusType> EmploymentStatus { get; set; }
+
+        [BsonRepresentation(BsonType.String)]
+        public List<SportsActivityType> SportsActivity { get; set; }
+
+        [BsonRepresentation(BsonType.String)]
+        public List<EatingHabitsType> EatingHabits { get; set; }
+
+        [BsonRepresentation(BsonType.String)]
+        public List<ClotheStyleType> ClotheStyle { get; set; }
+        
+        [BsonRepresentation(BsonType.String)]
+        public List<BodyArtType> BodyArt { get; set; }
     }
 }
