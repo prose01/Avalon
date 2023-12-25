@@ -11,5 +11,7 @@ namespace Avalon.Interfaces
         string GetCurrentUserAuth0Id(ClaimsPrincipal user);
 
         Task DeleteProfileFromAuth0(string profileId);
+
+        Task<CurrentUser> CreateRandomUser();
     }
 }

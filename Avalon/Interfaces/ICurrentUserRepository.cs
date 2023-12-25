@@ -1,5 +1,6 @@
 ﻿using Avalon.Model;
 using MongoDB.Driver;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Avalon.Interfaces
@@ -19,5 +20,6 @@ namespace Avalon.Interfaces
         Task BlockBookmarks(CurrentUser currentUser, string[] profileIds);
         Task CleanCurrentUser(CurrentUser currentUser);
         Task<bool> CheckForComplains(CurrentUser currentUser);
+        Task SaveRandomUsers(List<CurrentUser> randomtUsers);
     }
 }

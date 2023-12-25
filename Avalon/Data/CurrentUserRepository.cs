@@ -451,5 +451,22 @@ namespace Avalon.Data
                 throw;
             }
         }
+
+        /// <summary>Save random users to database.</summary>
+        /// <param name="currentUser">The random users.</param>
+        public async Task SaveRandomUsers(List<CurrentUser> randomtUsers)
+        {
+            try
+            {
+                if (randomtUsers != null)
+                {
+                    await _context.CurrentUser.InsertManyAsync(randomtUsers);
+                }
+            }
+            catch
+            {
+                throw;
+            }
+        }
     }
 }

@@ -732,5 +732,38 @@ namespace Avalon.Controllers
                 return Problem(ex.ToString());
             }
         }
+
+        /// <summary>
+        /// Create random user profiles.
+        /// </summary>
+        [NoCache]
+        [HttpGet("~/CreateRandomUsers")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        public async Task<IActionResult> CreateRandomUsers(int numberOfRandomUsers)
+        {
+            var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            if (currentUser == null || currentUser.Name == null)
+            {
+                return NotFound();
+            }
+
+            if (!currentUser.Admin) throw new ArgumentException($"Current user does not have admin status.");
+
+
+            List<CurrentUser> users = new List<CurrentUser>();
+
+            for (int i = 0; i < numberOfRandomUsers; i++)
+            {
+                users.Add(await _helper.CreateRandomUser());
+            }
+
+            if (users.Count > 0)
+            {
+                await _currentUserRepository.SaveRandomUsers(users);
+            }
+
+            return NoContent();
+        }
     }
 }
