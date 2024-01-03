@@ -739,7 +739,7 @@ namespace Avalon.Controllers
         [NoCache]
         [HttpGet("~/CreateRandomUsers")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
-        public async Task<IActionResult> CreateRandomUsers(int numberOfRandomUsers)
+        public async Task<IActionResult> CreateRandomUsers(int numberOfRandomUsers, string accessToken)
         {
             var currentUser = await _helper.GetCurrentUserProfile(User);
 
@@ -755,7 +755,7 @@ namespace Avalon.Controllers
 
             for (int i = 0; i < numberOfRandomUsers; i++)
             {
-                users.Add(await _helper.CreateRandomUser());
+                users.Add(await _helper.CreateRandomUser(accessToken));
             }
 
             if (users.Count > 0)

@@ -128,7 +128,7 @@ namespace Avalon.Helpers
             }
         }
 
-        public async Task<CurrentUser> CreateRandomUser()
+        public async Task<CurrentUser> CreateRandomUser(string accessToken)
         {
             try
             {
@@ -199,7 +199,7 @@ namespace Avalon.Helpers
                 newUser.Description = "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
 
                 // Images
-                var imageNumber = randomIntFromInterval(1, 88);
+                var imageNumber = randomIntFromInterval(1, 141);
 
                 var imageModel = new ImageModel()
                 {
@@ -210,7 +210,7 @@ namespace Avalon.Helpers
 
                 newUser.Images = new List<ImageModel> { imageModel };
 
-                await this.CopyImageFromRandomFolderToProfileId(imageNumber, newUser.ProfileId);
+                await this.CopyImageFromRandomFolderToProfileId(imageNumber, newUser.ProfileId, accessToken);
 
                 // Body
                 enumMemberCount = Enum.GetNames(typeof(BodyType)).Length;
@@ -281,14 +281,10 @@ namespace Avalon.Helpers
 
         /// <summary>Gets the auth0 token.</summary>
         /// <returns></returns>
-        private async Task CopyImageFromRandomFolderToProfileId(int sourceImage, string profileId)
+        private async Task CopyImageFromRandomFolderToProfileId(int sourceImage, string profileId, string accessToken)
         {
             try
             {
-                _ = _cache.TryGetValue("Auth0Token", out string token);
-
-                var accessToken = string.IsNullOrEmpty(token) ? await GetAuth0Token() : token;
-
                 var client = new RestClient(_artemisUrl);
                 var request = new RestRequest(_artemisUrl + $"CopyImageFromRandomFolderToProfileId/{sourceImage}", Method.Post);
                 request.AddHeader("content-type", "application/json");
