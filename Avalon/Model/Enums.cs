@@ -33,7 +33,8 @@
     public enum GenderType
     {
         Female,
-        Male
+        Male,
+        NonBinary
     }
 
     public enum EatingHabitsType
