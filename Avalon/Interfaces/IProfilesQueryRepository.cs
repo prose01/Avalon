@@ -9,6 +9,7 @@ namespace Avalon.Interfaces
     {
         Task<Profile> SetAsAdmin(string profileId);
         Task<Profile> RemoveAdmin(string profileId);
+        Task<(int total, IReadOnlyList<Profile> profiles)> GetAdminProfiles(CurrentUser currentUser, OrderByType orderByType, int skip, int limit);
         Task<DeleteResult> DeleteProfile(string profileId);
         Task<Profile> GetProfileByAuth0Id(string auth0Id);
         Task<string> GetAuth0Id(string profileId);
@@ -20,7 +21,7 @@ namespace Avalon.Interfaces
         Task<(int total, IReadOnlyList<Profile> profiles)> GetLatestProfiles(CurrentUser currentUser, OrderByType orderByType, int skip, int limit);
         Task<(int total, IReadOnlyList<Profile> profiles)> GetProfilesWhoVisitedMe(CurrentUser currentUser, OrderByType orderByType, int skip, int limit);
         Task<(int total, IReadOnlyList<Profile> profiles)> GetProfilesWhoBookmarkedMe(CurrentUser currentUser, OrderByType orderByType, int skip, int limit);
-        Task<(int total, IReadOnlyList<Profile> profiles)> GetProfilesWhoLikesMe(CurrentUser currentUser, OrderByType orderByType, int skip, int limit);
+        Task<(int total, IReadOnlyList<Profile> profiles)> GetProfilesWhoLikesMe(CurrentUser currentUser, OrderByType orderByType, int skip, int limit);     
 
         Task AddCurrentUserToProfilesBookmarks(CurrentUser currentUser, string[] profileIds);
         Task RemoveCurrentUserFromProfilesBookmarks(CurrentUser currentUser, string[] profileIds);

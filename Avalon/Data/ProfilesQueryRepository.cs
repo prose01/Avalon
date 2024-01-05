@@ -88,6 +88,37 @@ namespace Avalon.Data
             }
         }
 
+        /// <summary>Gets Admin Profiles.</summary>
+        /// <param name="currentUser">The current user.</param>
+        /// <param name="orderByType">The OrderByDescending column type.</param>
+        /// <param name="skip">The skip.</param>
+        /// <param name="limit">The limit.</param>
+        /// <returns></returns>
+        public async Task<(int total, IReadOnlyList<Profile> profiles)> GetAdminProfiles(CurrentUser currentUser, OrderByType orderByType, int skip, int limit)
+        {
+            try
+            {
+                List<FilterDefinition<Profile>> filters = new List<FilterDefinition<Profile>>
+                {
+                    Builders<Profile>.Filter.Eq(p => p.Admin, true),
+                    
+                    //Remove currentUser from the list.
+                    Builders<Profile>.Filter.Ne(p => p.ProfileId, currentUser.ProfileId),
+
+                    Builders<Profile>.Filter.Eq(p => p.Countrycode, currentUser.Countrycode),
+                };
+
+                var combineFilters = Builders<Profile>.Filter.And(filters);
+
+                //Get total number of profiles and profiles mathching the filters.
+                return await this.GetTotalAndProfiles(combineFilters, orderByType, skip, limit);
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
         #endregion
 
         #region Profiles

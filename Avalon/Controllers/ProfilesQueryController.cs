@@ -29,6 +29,8 @@ namespace Avalon.Controllers
             _complainsDeleteUser = config.GetValue<int>("ComplainsDeleteUser");
         }
 
+        #region Admin stuff
+
         /// <summary>
         /// Deletes the specified profile identifiers.
         /// </summary>
@@ -152,6 +154,36 @@ namespace Avalon.Controllers
         }
 
         /// <summary>
+        /// Gets Admin Profiles.
+        /// </summary>
+        /// <param name="parameterFilter"></param>
+        /// <returns></returns>
+        [NoCache]
+        [HttpGet("~/GetAdminProfiles/")]
+        public async Task<IActionResult> GetAdminProfiles([FromQuery] ParameterFilter parameterFilter)
+        {
+            var currentUser = await _helper.GetCurrentUserProfile(User);
+
+            if (currentUser == null || currentUser.Name == null)
+            {
+                int total = 0;
+                List<Profile> profiles = new List<Profile> { };
+
+                return Json(new { total, profiles });
+            }
+
+            if (!currentUser.Admin) throw new ArgumentException($"Current user does not have admin status.");
+
+            var skip = parameterFilter.PageIndex == 0 ? parameterFilter.PageIndex : parameterFilter.PageIndex * parameterFilter.PageSize;
+
+            var tuple = await _profilesQueryRepository.GetAdminProfiles(currentUser, parameterFilter.OrderByType, skip, parameterFilter.PageSize);
+
+            return Json(new { tuple.total, tuple.profiles });
+        }
+
+        #endregion
+
+        /// <summary>
         /// Gets the specified profile identifier.
         /// </summary>
         /// <param name="profileId">The profile identifier.</param>
@@ -234,7 +266,7 @@ namespace Avalon.Controllers
                 }
 
                 // Do not notify profile if admin has visited.
-                if(currentUser.Admin) return NoContent();
+                if (currentUser.Admin) return NoContent();
 
                 if (currentUser.ProfileId == profileId) throw new ArgumentException($"ProfileId is similar to current user profileId.", nameof(profileId));
 
@@ -283,7 +315,7 @@ namespace Avalon.Controllers
                 // Cannot Like profile if currentUser is admin.
                 if (currentUser.Admin) return NoContent();
 
-                if(profileIds.Contains(currentUser.ProfileId)) throw new ArgumentException($"ProfileId is similar to current user profileId.", nameof(profileIds));
+                if (profileIds.Contains(currentUser.ProfileId)) throw new ArgumentException($"ProfileId is similar to current user profileId.", nameof(profileIds));
 
                 await _profilesQueryRepository.AddLikeToProfiles(currentUser, profileIds);
 
@@ -405,7 +437,7 @@ namespace Avalon.Controllers
 
             var tuple = await _profilesQueryRepository.GetProfileByFilter(currentUser, requestBody.ProfileFilter, parameterFilter.OrderByType, skip, parameterFilter.PageSize);
 
-            return Json(new { tuple.total, tuple.profiles }); 
+            return Json(new { tuple.total, tuple.profiles });
         }
 
         /// <summary>Gets the specified profiles based on the CurrentUser's filter.</summary>
