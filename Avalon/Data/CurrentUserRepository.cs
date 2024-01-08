@@ -339,10 +339,6 @@ namespace Avalon.Data
 
                 string[] checkThesesProfiles = currentUser.Visited.Keys.ToArray<string>();
 
-                //checkThesesProfiles = checkThesesProfiles.Union(currentUser.Bookmarks).ToArray();
-
-                //checkThesesProfiles = checkThesesProfiles.Union(currentUser.IsBookmarked.Keys).ToArray();
-
                 checkThesesProfiles = checkThesesProfiles.Union(currentUser.Bookmarks.Select(i => i.ProfileId)).ToArray();
 
                 checkThesesProfiles = checkThesesProfiles.Union(currentUser.Likes).ToArray();
@@ -375,16 +371,6 @@ namespace Avalon.Data
                         {
                             currentUser.Visited.Remove(deadProfile);
                         }
-
-                        //if (currentUser.Bookmarks.Contains(deadProfile))
-                        //{
-                        //    currentUser.Bookmarks.Remove(deadProfile);
-                        //}
-
-                        //if (currentUser.IsBookmarked.ContainsKey(deadProfile))
-                        //{
-                        //    currentUser.IsBookmarked.Remove(deadProfile);
-                        //}
 
                         if (currentUser.Bookmarks.Any(i => i.ProfileId == deadProfile))
                         {

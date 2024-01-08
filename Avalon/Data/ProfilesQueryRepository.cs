@@ -1,7 +1,6 @@
 ﻿using Avalon.Interfaces;
 using Avalon.Model;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
@@ -277,7 +276,6 @@ namespace Avalon.Data
             }
         }
 
-        // Search for anything in filter - eg. { Body: 'something' }
         /// <summary>Gets the total page count and profiles matching filter.</summary>
         /// <param name="currentUser">The current user.</param>
         /// <param name="profileFilter">The profileFilter.</param>
@@ -447,7 +445,6 @@ namespace Avalon.Data
                     ?.FirstOrDefault()
                     ?.Count ?? 0;
 
-                //var totalPages = ((int)count + limit - 1) / limit;
                 var total = (int)count;
 
                 var data = aggregation.First()
@@ -690,85 +687,6 @@ namespace Avalon.Data
                 throw;
             }
         }
-
-        ///// <summary>Add currentUser.profileId to IsBookmarked list of every profile in profileIds list.</summary>
-        ///// <param name="currentUser">The current user.</param>
-        ///// <param name="profileIds">The profile ids.</param>
-        //public async Task AddIsBookmarkedToProfiles(CurrentUser currentUser, string[] profileIds)
-        //{
-        //    try
-        //    {
-        //        var query = _context.Profiles.Find(p => profileIds.Contains(p.ProfileId));
-
-        //        var profiles = await Task.FromResult(query.ToList());
-
-        //        var update = Builders<Profile>.Update;
-        //        var updates = new List<UpdateDefinition<Profile>>();
-
-        //        foreach (var profile in profiles)
-        //        {
-        //            var isBookmarkedPair = from pair in profile.IsBookmarked
-        //                                   orderby pair.Value descending
-        //                                   select pair;
-
-        //            if (isBookmarkedPair.Count() > _maxIsBookmarked)
-        //            {
-        //                profile.IsBookmarked.Remove(isBookmarkedPair.Last().Key);
-        //            }
-
-        //            profile.IsBookmarked.Add(currentUser.ProfileId, DateTime.UtcNow);
-
-        //            updates.Add(update.Set(p => p.IsBookmarked, profile.IsBookmarked));
-        //        }
-
-        //        var filter = Builders<Profile>
-        //                        .Filter.In(p => p.ProfileId, profileIds);
-
-        //        await _context.Profiles.UpdateManyAsync(filter, update.Combine(updates));
-        //    }
-        //    catch
-        //    {
-        //        throw;
-        //    }
-        //}
-
-        ///// <summary>Remove currentUser.profileId from IsBookmarked list of every profile in profileIds list.</summary>
-        ///// <param name="currentUser">The current user.</param>
-        ///// <param name="profileIds">The profile ids.</param>
-        //public async Task RemoveIsBookmarkedFromProfiles(CurrentUser currentUser, string[] profileIds)
-        //{
-        //    try
-        //    {
-        //        var query = _context.Profiles.Find(p => profileIds.Contains(p.ProfileId));
-
-        //        var profiles = await Task.FromResult(query.ToList());
-
-        //        var update = Builders<Profile>.Update;
-        //        var updates = new List<UpdateDefinition<Profile>>();
-
-        //        foreach (var profile in profiles)
-        //        {
-        //            if (profile.IsBookmarked.ContainsKey(currentUser.ProfileId))
-        //            {
-        //                profile.IsBookmarked.Remove(currentUser.ProfileId);
-
-        //                updates.Add(update.Set(p => p.IsBookmarked, profile.IsBookmarked));
-        //            }
-        //        }
-
-        //        var filter = Builders<Profile>
-        //                        .Filter.In(p => p.ProfileId, profileIds);
-
-        //        if (updates.Count == 0)
-        //            return;
-
-        //        await _context.Profiles.UpdateManyAsync(filter, update.Combine(updates));
-        //    }
-        //    catch
-        //    {
-        //        throw;
-        //    }
-        //}
 
         /// <summary>Add currentUser.profileId to visited list of profile.</summary>
         /// <param name="currentUser">The current user.</param>
