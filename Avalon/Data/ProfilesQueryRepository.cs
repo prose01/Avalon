@@ -938,7 +938,7 @@ namespace Avalon.Data
             ProjectionDefinition<Profile> projection = "{ " +
                 "_id: 0, " +
                 "Auth0Id: 0, " +
-                "Admin:0, " +
+                //"Admin:0, " +
                 "Gender: 0, " +
                 "Seeking: 0, " +
                 "Bookmarks: 0, " +
