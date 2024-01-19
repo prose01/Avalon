@@ -160,10 +160,10 @@ namespace Avalon.Data
                 switch (orderByType)
                 {
                     case OrderByType.Name:
-                        sortDefinition = Builders<GroupModel>.Sort.Ascending(g => g.Name);
+                        sortDefinition = Builders<GroupModel>.Sort.Descending(g => g.CreatedOn);
                         break;
                     default:
-                        sortDefinition = Builders<GroupModel>.Sort.Ascending(g => g.Name);
+                        sortDefinition = Builders<GroupModel>.Sort.Descending(g => g.CreatedOn);
                         break;
                 }
 
