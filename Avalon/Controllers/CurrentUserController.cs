@@ -548,6 +548,7 @@ namespace Avalon.Controllers
                     {
                         ProfileId = currentUser.ProfileId,
                         Name = currentUser.Name,
+                        Avatar = currentUser.Avatar,
                         Blocked = false,
                         Complains = new Dictionary<string, DateTime>()
                     }

@@ -218,6 +218,7 @@ namespace Avalon.Data
                 var member = new GroupMember() {
                     ProfileId = currentUser.ProfileId,
                     Name = currentUser.Name,
+                    Avatar = currentUser.Avatar,
                     Blocked = false 
                 }; 
 
@@ -364,7 +365,7 @@ namespace Avalon.Data
             ProjectionDefinition<GroupModel> projection = "{ " +
                 "_id: 0, " +
                 "Countrycode: 0, " +
-                "GroupMemberslist:0, " +      // TODO: See if we can get this back so not to show too much info to users and for perfomance. However, GroupsListviewComponent show GroupBlocked should still work.
+                //"GroupMemberslist:0, " +      // TODO: See if we can get this back so not to show too much info to users and for perfomance. However, GroupsListviewComponent show GroupBlocked should still work.
                 "}";
 
             return projection;

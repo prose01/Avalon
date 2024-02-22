@@ -163,7 +163,7 @@ namespace Avalon.Helpers
                 {
                     CircleColour = "#607D8B",
                     InitialsColour = "#f07537",
-                    Initials = newUser.Name.Substring(newUser.Name.Length - 3)
+                    Initials = newUser.Name.Substring(newUser.Name.Length - 2)
             };
 
                 // Gender
